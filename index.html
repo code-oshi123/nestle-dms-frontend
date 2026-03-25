@@ -338,6 +338,9 @@ tr:hover td{background:rgba(139,105,20,.04)}
 // ═══════════════════════════════════════════════
 const API = 'https://nestle-dms-backend.onrender.com/api';
 let user = null, drivers = [], vehicles = [], pollTimer = null, panelOpen = false;
+
+// ── FIX 3: Keep Render alive — ping every 10 min ──
+setInterval(() => fetch('https://nestle-dms-backend.onrender.com/').catch(()=>{}), 10 * 60 * 1000);
  
 // ═══════════════════════════════════════════════
 // AUTH
@@ -351,9 +354,25 @@ async function doLogin() {
     const r = await fetch(`${API}/login`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass}) });
     if (!r.ok){ showErr('Incorrect email or password.'); setBtnLoading(false); return; }
     user = await r.json();
+    // ── FIX 2: Save token so session survives page refresh ──
+    localStorage.setItem('dms_token', user.token);
+    localStorage.setItem('dms_user',  JSON.stringify(user));
     enterApp();
-  } catch { showErr('Cannot connect — is server.js running?'); setBtnLoading(false); }
+  } catch { showErr('Cannot connect — is server running?'); setBtnLoading(false); }
 }
+
+// ── FIX 2b: Restore session on page load ──
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('dms_user');
+  const token = localStorage.getItem('dms_token');
+  if (saved && token) {
+    try {
+      user = JSON.parse(saved);
+      user.token = token;
+      enterApp();
+    } catch { localStorage.clear(); }
+  }
+});
 function quick(e,p){ document.getElementById('lemail').value=e; document.getElementById('lpass').value=p; doLogin(); }
 function showErr(m){ const el=document.getElementById('lerr'); el.textContent=m; el.style.display='block'; }
 function setBtnLoading(on){ const b=document.getElementById('lbtn'); b.disabled=on; b.textContent=on?'Signing in…':'Sign In'; }
@@ -361,6 +380,9 @@ document.getElementById('lpass').addEventListener('keydown',e=>{ if(e.key==='Ent
  
 function doLogout(){
   stopPoll(); user=null; panelOpen=false;
+  // ── FIX 2c: Clear saved session on logout ──
+  localStorage.removeItem('dms_token');
+  localStorage.removeItem('dms_user');
   document.getElementById('np').classList.remove('open');
   document.getElementById('bell-badge').classList.remove('show');
   document.getElementById('login').style.display='flex';
@@ -905,9 +927,23 @@ async function saveStatus(){
 // ═══════════════════════════════════════════════
 async function api(path, method='GET', body=null){
   try {
-    const opts = { method, headers:{'Content-Type':'application/json'} };
+    // ── FIX 1: Send JWT token with every request ──
+    const token = user?.token || localStorage.getItem('dms_token') || '';
+    const opts = {
+      method,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    };
     if (body) opts.body = JSON.stringify(body);
     const r = await fetch(API+path, opts);
+    // ── FIX 1b: If token expired, force re-login ──
+    if (r.status === 401) {
+      toast('⚠️ Session expired — please sign in again', '#dc2626');
+      setTimeout(() => doLogout(), 1500);
+      return {};
+    }
     return await r.json();
   } catch(e) { toast('❌ Server error: '+e.message,'#dc2626'); return {}; }
 }
