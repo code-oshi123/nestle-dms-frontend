@@ -122,7 +122,7 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .ni-ico.t-warning{background:var(--orange-bg)}.ni-ico.t-alert{background:var(--red-bg)}
 .ni-body{flex:1;min-width:0}
 .ni-title{font-size:13px;font-weight:600;color:var(--brown);line-height:1.3;margin-bottom:3px}
-.ni-msg{font-size:12px;color:var(--brown-m);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.ni-msg{font-size:12px;color:var(--brown-m);line-height:1.5;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical}
 .ni-foot{display:flex;align-items:center;gap:8px;margin-top:4px}
 .ni-time{font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace}
 .ni-ref{font-size:10px;color:var(--tan);font-family:'DM Mono',monospace;background:rgba(139,105,20,.12);padding:1px 6px;border-radius:4px}
@@ -1275,11 +1275,12 @@ async function loadProductsForOrderForm() {
         return `<option value="${id}">${escapeHtml(name)}</option>`;
       }).join('');
     } else {
-      // Keep backward compatibility even if Stock table isn't ready.
-      sel.innerHTML = '<option value="1">Default Product</option>';
+      toast('⚠️ No products found for this account. Check Stock table', '#ea580c');
+      sel.innerHTML = '<option value="">No products available</option>';
     }
   } catch {
-    sel.innerHTML = '<option value="1">Default Product</option>';
+    toast('❌ Failed to load products for dropdown', '#dc2626');
+    sel.innerHTML = '<option value="">Failed to load products</option>';
   }
 }
 
