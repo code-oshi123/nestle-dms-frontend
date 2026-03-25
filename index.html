@@ -330,6 +330,9 @@ tr:hover td{background:rgba(139,105,20,.03)}
       <div class="fg"><label>Delivery</label><input id="a-label" disabled/></div>
       <div class="fg"><label>Driver *</label><select id="a-driver"><option value="">Loading…</option></select></div>
       <div class="fg"><label>Vehicle *</label><select id="a-vehicle"><option value="">Loading…</option></select></div>
+      <div class="alert-banner alert-warn" id="a-reassign-note" style="display:none;margin-bottom:10px">
+        ⚠️ <strong>Reassignment:</strong> The previous driver will be notified that this delivery has been removed from their route.
+      </div>
       <div class="alert-banner alert-info" style="margin-bottom:0">
         ℹ️ Route data (stops, distance, ETA) will be saved automatically. Driver &amp; Warehouse will be notified.
       </div>
@@ -872,12 +875,15 @@ async function doConsolidate() {
 // ══ ROUTE PLANNER PAGES ════════════════════════
 async function pageAssign() {
   const data = await api('/deliveries');
-  const pending  = data.filter(d => d.status === 'pending');
-  const assigned = data.filter(d => d.status !== 'pending');
+  const pending     = data.filter(d => d.status === 'pending');
+  // ── FIX: Split assigned into reassignable vs locked ──
+  const reassignable = data.filter(d => ['assigned','warehouse_ready','loaded'].includes(d.status));
+  const locked       = data.filter(d => ['in-transit','delivered','failed'].includes(d.status));
+
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Plan Routes &amp; Assign</div>
-      <div class="sec-sub">Assign drivers and vehicles — route data saved automatically, Driver + Warehouse notified 🔔</div></div>
+      <div class="sec-sub">Assign drivers and vehicles — route saved automatically, Driver + Warehouse notified 🔔</div></div>
       <button class="btn btn-tan" onclick="optimiseAll()">⚡ Optimise &amp; Save All Routes</button>
     </div>
     <div class="card">
@@ -894,10 +900,13 @@ async function pageAssign() {
       </table></div>
     </div>
     <div class="card">
-      <div class="card-title">✅ Assigned &amp; Active <span class="badge b-green" style="margin-left:8px">${assigned.length}</span></div>
+      <div class="card-title">🔄 Assigned — Can Reassign <span class="badge b-blue" style="margin-left:8px">${reassignable.length}</span></div>
+      <div class="alert-banner alert-info" style="margin-bottom:14px">
+        ℹ️ Reassignment is allowed while status is <strong>Assigned</strong>, <strong>Warehouse Ready</strong>, or <strong>Loaded</strong>. Once <strong>In Transit</strong>, the route is locked.
+      </div>
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>ETA</th></tr></thead>
-        <tbody>${assigned.length ? assigned.map(d=>`
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>ETA</th><th>Action</th></tr></thead>
+        <tbody>${reassignable.length ? reassignable.map(d=>`
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td>${d.retailer}</td><td>${d.city}</td>
@@ -905,16 +914,35 @@ async function pageAssign() {
             <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
             <td>${delBadge(d.status)}</td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>None assigned yet.</div></div></td></tr>'}</tbody>
+            <td><button class="btn btn-orange btn-sm" onclick="openAssign('${d.id}','${d.retailer}','${d.city}',true)">🔄 Reassign</button></td>
+          </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div>No reassignable deliveries.</div></div></td></tr>'}</tbody>
+      </table></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔒 In Transit / Completed — Locked <span class="badge b-gray" style="margin-left:8px">${locked.length}</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>ETA</th></tr></thead>
+        <tbody>${locked.length ? locked.map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td>${d.retailer}</td><td>${d.city}</td>
+            <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
+            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
+            <td>${delBadge(d.status)}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>No locked deliveries.</div></div></td></tr>'}</tbody>
       </table></div>
     </div>`);
 }
 
-function openAssign(id, retailer, city) {
+function openAssign(id, retailer, city, isReassign=false) {
   document.getElementById('a-id').value    = id;
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
+  document.querySelector('#m-assign .modal-title').textContent = isReassign ? '🔄 Reassign Driver & Vehicle' : '🚚 Assign Driver & Vehicle';
   document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
   document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type} · ${v.cap}</option>`).join('');
+  const note = document.getElementById('a-reassign-note');
+  if (note) note.style.display = isReassign ? 'flex' : 'none';
   openModal('m-assign');
 }
 
@@ -925,10 +953,13 @@ async function saveAssign() {
   if (!drv || !veh) { toast('⚠️ Select both driver and vehicle', '#ea580c'); return; }
   const [driverId, driverName] = drv.split('|');
   const [vehicleId]            = veh.split('|');
-  // ── FIX: backend auto-saves route on assign ──
   const r = await api(`/deliveries/${id}/assign`, 'PUT', { driverId, driverName, vehicleId });
+  if (r.error) {
+    toast(`❌ ${r.error}`, '#B71C1C');
+    return;
+  }
   closeModal('m-assign');
-  toast(`✅ ${driverName} assigned — Route saved, Driver + Warehouse notified 🔔 ETA: ${r.eta}`);
+  toast(`✅ ${driverName} assigned to ${id} — Route saved, Driver + Warehouse notified 🔔 ETA: ${r.eta}`);
   pollBadge();
   pageAssign();
 }
@@ -957,22 +988,33 @@ async function pageRoutes() {
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Saved Routes</div>
-      <div class="sec-sub">Route data (path, stops, ETAs, driver, vehicle) stored in database</div></div>
+      <div class="sec-sub">Route data — path, stops, ETAs, driver, vehicle. 🔒 = locked (in-transit/completed), 🔄 = reassignable</div></div>
     </div>
-    <div class="card">${data.length ? data.map(r => {
+    <div class="card">${Array.isArray(data) && data.length ? data.map(r => {
       const cities = r.cities ? JSON.parse(r.cities) : [];
+      const isLocked = ['in-transit','delivered','failed'].includes(r.deliveryStatus);
+      const lockBadge = r.deliveryStatus
+        ? (isLocked
+            ? `<span class="badge b-red" style="margin-left:auto">🔒 ${r.deliveryStatus}</span>`
+            : `<span class="badge b-green" style="margin-left:auto">🔄 ${r.deliveryStatus}</span>`)
+        : '';
       return `<div style="padding:16px 0;border-bottom:1px solid var(--cream-dk)">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
           <span class="mono" style="color:var(--red)">${r.id}</span>
           <span class="badge b-navy">👤 ${r.driverName||'—'}</span>
           <span class="badge b-blue">🚛 ${r.vehicleId||'—'}</span>
           <span class="badge b-teal">📍 ${r.stops} stop${r.stops!==1?'s':''}</span>
-          <span class="badge b-gray" style="margin-left:auto">📏 ${r.distKm} km · ⏱ ${Math.floor(r.durMins/60)}h ${r.durMins%60}m</span>
+          <span class="badge b-gray">📏 ${r.distKm} km · ⏱ ${Math.floor(r.durMins/60)}h ${r.durMins%60}m</span>
+          ${lockBadge}
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
           <span style="font-size:12px;color:var(--brown-l);font-weight:600">🏭 Depot →</span>
           ${cities.map((c,i)=>`<span class="badge b-gray">${i+1}. ${c}</span>`).join('<span style="color:var(--brown-l);font-size:12px"> → </span>')}
         </div>
+        ${r.deliveryId && !isLocked ? `
+        <div style="margin-top:10px">
+          <button class="btn btn-orange btn-sm" onclick="openAssign('${r.deliveryId}','${r.driverName||''}','${cities[0]||''}',true)">🔄 Reassign Driver</button>
+        </div>` : ''}
       </div>`;
     }).join('') : '<div class="empty"><div class="empty-icon">💾</div><div>No routes saved yet. Assign deliveries to auto-save routes.</div></div>'}</div>`);
 }
@@ -1041,27 +1083,75 @@ async function pageWhPrepare() {
 
 // ══ DISTRIBUTOR PAGES ═══════════════════════════
 async function pageMyRoutes() {
-  const data = await api(`/deliveries?role=distributor&userId=${user.id}`);
+  // ── FIX: Fetch both deliveries AND saved route data ──
+  const [data, routes] = await Promise.all([
+    api(`/deliveries?role=distributor&userId=${user.id}`),
+    api(`/routes/my?driverId=${user.id}`)
+  ]);
+
+  // Build route summary from saved Routes (use first unique route found)
+  const routeMap = {};
+  (Array.isArray(routes) ? routes : []).forEach(r => {
+    if (r.routeId && !routeMap[r.routeId]) routeMap[r.routeId] = r;
+  });
+  const routeList = Object.values(routeMap);
+
+  // Build a city→delivery lookup for the route stop rendering
+  const deliveryByCity = {};
+  data.forEach(d => { deliveryByCity[d.city] = d; });
+
+  const routeSection = routeList.length ? routeList.map(rt => {
+    const cities = rt.cities ? JSON.parse(rt.cities) : [];
+    const hrs    = Math.floor(rt.durMins/60);
+    const mins   = rt.durMins % 60;
+    return `
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-title" style="margin-bottom:14px">
+          🗺️ My Route
+          <span class="badge b-teal" style="margin-left:8px">📍 ${rt.stops} stop${rt.stops!==1?'s':''}</span>
+          <span class="badge b-gray" style="margin-left:6px">📏 ${rt.distKm} km</span>
+          <span class="badge b-gray" style="margin-left:6px">⏱ ${hrs}h ${mins}m</span>
+          <span class="badge b-blue" style="margin-left:6px">🚛 ${rt.vehicleId||'—'}</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:12px;background:var(--cream);border-radius:8px">
+          <span style="font-size:12px;color:var(--brown-l);font-weight:600">🏭 Depot</span>
+          ${cities.map((c,i) => {
+            const d = deliveryByCity[c];
+            const badge = d ? delBadge(d.status) : '';
+            return `<span style="color:var(--brown-l);font-size:12px"> → </span>
+              <span style="display:inline-flex;align-items:center;gap:5px">
+                <span class="badge b-navy">${i+1}. ${c}</span>${badge}
+              </span>`;
+          }).join('')}
+        </div>
+      </div>`;
+  }).join('') : '';
+
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">My Delivery Routes</div>
-    <div class="sec-sub">Your assigned deliveries for today — check status and ETA</div></div></div>
+    <div class="sec-sub">Your assigned deliveries — route plan, stop order, distance &amp; ETA</div></div></div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-v">${data.length}</div><div class="kpi-l">Total Stops</div></div>
       <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${data.filter(d=>d.status==='delivered').length}</div><div class="kpi-l">Delivered</div></div>
       <div class="kpi" style="border-top-color:var(--orange)"><div class="kpi-v">${data.filter(d=>d.status==='in-transit').length}</div><div class="kpi-l">In Transit</div></div>
       <div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-v">${data.filter(d=>['warehouse_ready','loaded'].includes(d.status)).length}</div><div class="kpi-l">Ready for Pickup</div></div>
     </div>
-    <div class="card"><div class="tw"><table>
-      <thead><tr><th>#</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th></tr></thead>
-      <tbody>${data.length ? data.map((d,i)=>`
-        <tr>
-          <td><span class="mono" style="color:var(--red)">${i+1}</span></td>
-          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          <td>${d.items} · ${d.kg}kg</td>
-          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-          <td>${delBadge(d.status)}</td>
-        </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">🛣️</div><div>No deliveries assigned to you yet.</div></div></td></tr>'}</tbody>
-    </table></div></div>`);
+    ${routeSection || ''}
+    <div class="card">
+      <div class="card-title">📦 All My Deliveries</div>
+      <div class="tw"><table>
+        <thead><tr><th>#</th><th>Retailer</th><th>City</th><th>Items</th><th>Vehicle</th><th>ETA</th><th>Status</th></tr></thead>
+        <tbody>${data.length ? data.map((d,i)=>`
+          <tr>
+            <td><span class="mono" style="color:var(--red)">${i+1}</span></td>
+            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+            <td>${d.items} · ${d.kg}kg</td>
+            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+            <td>${delBadge(d.status)}</td>
+          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🛣️</div><div>No deliveries assigned to you yet.</div></div></td></tr>'}</tbody>
+      </table></div>
+    </div>`);
 }
 
 async function pageUpdStatus() {
