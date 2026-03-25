@@ -526,7 +526,7 @@ function nav(id) {
 async function render(id) {
   setContent('<div class="empty"><div class="empty-icon">⏳</div><div>Loading…</div></div>');
   if (id==='my-orders')   await pageMyOrders();
-  if (id==='req-order')   pageReqOrder();
+  if (id==='req-order')   await pageReqOrder();
   if (id==='all-orders')  await pageAllOrders();
   if (id==='deliveries')  await pageDeliveries();
   if (id==='consolidate') pageConsolidate();
@@ -576,7 +576,7 @@ async function pageMyOrders() {
     </table></div></div>`);
 }
 
-function pageReqOrder() {
+async function pageReqOrder() {
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">Request Delivery Order</div>
     <div class="sec-sub">Submit a new order — the Order Processing Team will be notified immediately 🔔</div></div></div>
@@ -593,6 +593,13 @@ function pageReqOrder() {
             <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
           </select>
           <div class="field-err" id="err-city">Please select a city.</div>
+        </div>
+        <div class="fg">
+          <label>Product <span style="color:var(--red)">*</span></label>
+          <select id="i-product">
+            <option value="">Select product…</option>
+          </select>
+          <div class="field-err" id="err-product">Please select a product.</div>
         </div>
         <div class="fg">
           <label>Items (whole number) <span style="color:var(--red)">*</span></label>
@@ -616,6 +623,8 @@ function pageReqOrder() {
       <div id="submit-err" class="alert-banner alert-error" style="display:none;margin-top:4px"></div>
       <button class="btn btn-tan" onclick="submitOrder()" style="margin-top:8px">Submit Request → OPT notified 🔔</button>
     </div>`);
+
+  await loadProductsForOrderForm();
 }
 
 // ── FIX: Strict input validation ──
@@ -651,8 +660,9 @@ async function submitOrder() {
   const cityEl  = document.getElementById('i-city');
   const itemsEl = document.getElementById('i-items');
   const kgEl    = document.getElementById('i-kg');
+  const productEl = document.getElementById('i-product');
   const prio    = document.getElementById('i-prio').value;
-  const notes   = document.getElementById('i-notes').value;
+  const notes   = document.getElementById('i-notes').value.trim();
   const errBox  = document.getElementById('submit-err');
 
   let valid = true;
@@ -663,6 +673,17 @@ async function submitOrder() {
     valid = false;
   } else {
     document.getElementById('err-city').classList.remove('show');
+  }
+
+  // Product — required (so backend can check the right stock row)
+  const productIdNum = Number(productEl.value);
+  if (!productEl.value || !Number.isInteger(productIdNum) || productIdNum <= 0) {
+    productEl.classList.add('err');
+    document.getElementById('err-product').classList.add('show');
+    valid = false;
+  } else {
+    productEl.classList.remove('err');
+    document.getElementById('err-product').classList.remove('show');
   }
 
   // Items — must be positive integer
@@ -694,10 +715,16 @@ async function submitOrder() {
   }
   errBox.style.display = 'none';
 
+  const productName = (productEl.options[productEl.selectedIndex]?.textContent || '').trim();
+  const specifics = productName; // keeps payload explicit for receivers
+
   const r = await api('/orders', 'POST', {
     retailerId:   user.id,
     retailerName: user.name,
     city:         cityEl.value,
+    productId:    productIdNum,
+    productName,
+    specifics,
     items:        itemsNum,
     kg:           kgNum,
     priority:     prio,
@@ -1073,6 +1100,7 @@ async function pageWhPrepare() {
         <tr>
           <td><span class="mono">${d.id}</span></td>
           <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          
           <td>${d.items} · ${d.kg}kg</td>
           <td>${d.driverName||'—'}</td>
           <td>${delBadge(d.status)}</td>
@@ -1231,6 +1259,30 @@ async function loadRef() {
   [drivers, vehicles] = await Promise.all([ api('/drivers'), api('/vehicles') ]);
 }
 
+async function loadProductsForOrderForm() {
+  const sel = document.getElementById('i-product');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Loading…</option>';
+  const errEl = document.getElementById('err-product');
+  if (errEl) errEl.classList.remove('show');
+
+  try {
+    const products = await api('/products');
+    if (Array.isArray(products) && products.length) {
+      sel.innerHTML = products.map(p => {
+        const id = p.id;
+        const name = (p.productName || `Product ${id}`);
+        return `<option value="${id}">${escapeHtml(name)}</option>`;
+      }).join('');
+    } else {
+      // Keep backward compatibility even if Stock table isn't ready.
+      sel.innerHTML = '<option value="1">Default Product</option>';
+    }
+  } catch {
+    sel.innerHTML = '<option value="1">Default Product</option>';
+  }
+}
+
 function setContent(html) { document.getElementById('main-content').innerHTML = html; }
 function openModal(id)    { document.getElementById(id).classList.add('open'); }
 function closeModal(id)   { document.getElementById(id).classList.remove('open'); }
@@ -1241,6 +1293,15 @@ function toast(msg, bg) {
   t.style.background = bg || 'var(--tan)';
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 3800);
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function prioBadge(p) {
