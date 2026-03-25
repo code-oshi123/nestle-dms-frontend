@@ -4,93 +4,175 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Nestlé — Smart Delivery Management System</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Source+Sans+3:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  /* ── Nestlé brand palette from mockups ── */
-  --tan:#8B6914;        /* dark warm gold — headers, active states */
-  --tan-d:#6b4f0f;      /* deeper gold for hover */
-  --tan-l:#A67C1E;      /* mid gold */
-  --cream:#F5EDD6;      /* warm parchment — login bg, card bg */
-  --cream-d:#EDE0C0;    /* slightly deeper cream — bg */
-  --cream-dk:#D9C89A;   /* border, divider */
-  --parchment:#FAF4E8;  /* page background */
-  --brown:#3D2B0A;      /* deep brown — primary text */
-  --brown-m:#6B4E1A;    /* medium brown — labels, subtext */
-  --brown-l:#9E7A3A;    /* light brown — muted text */
-  --white:#FFFDF8;      /* off-white */
- 
-  /* ── Status colours — kept vivid for legibility on cream ── */
+  --tan:#8B6914;
+  --tan-d:#6b4f0f;
+  --tan-l:#A67C1E;
+  --cream:#F7F0DF;
+  --cream-d:#EDE0C0;
+  --cream-dk:#D9C89A;
+  --parchment:#FAF5E8;
+  --brown:#3D2B0A;
+  --brown-m:#6B4E1A;
+  --brown-l:#9E7A3A;
+  --white:#FFFDF8;
   --green:#2E7D32;--green-bg:#E8F5E9;
   --orange:#D84315;--orange-bg:#FBE9E7;
   --blue:#1565C0;--blue-bg:#E3F2FD;
   --purple:#6A1B9A;--purple-bg:#F3E5F5;
   --red:#B71C1C;--red-bg:#FFEBEE;
- 
   --shadow:0 1px 3px rgba(61,43,10,.06),0 4px 20px rgba(61,43,10,.08);
   --shadow-card:0 2px 8px rgba(61,43,10,.10),0 8px 28px rgba(61,43,10,.07);
   --r:12px;--r-sm:8px;
 }
- 
-body{font-family:'Source Sans 3',sans-serif;background:var(--parchment);color:var(--brown);min-height:100vh}
- 
-/* ── LOGIN ── */
-#login{min-height:100vh;display:flex;align-items:center;justify-content:center;
-  background:linear-gradient(145deg,#3D2B0A 0%,#6B4E1A 55%,#8B6914 100%);
-  position:relative;overflow:hidden}
-#login::before{content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(45deg,transparent,transparent 40px,rgba(255,255,255,.015) 40px,rgba(255,255,255,.015) 41px);
-  pointer-events:none}
-.lcard{background:var(--cream);border-radius:20px;padding:44px 40px;width:100%;max-width:420px;
-  box-shadow:0 16px 60px rgba(0,0,0,.35);border:1px solid var(--cream-dk);position:relative}
-.llogo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
-.lbox{width:44px;height:44px;background:var(--tan);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--cream);font-size:22px}
-.lbrand{font-size:19px;font-weight:700;color:var(--brown);font-family:'Playfair Display',serif}
-.lbrand span{display:block;font-size:11px;color:var(--brown-l);text-transform:uppercase;letter-spacing:.8px;font-weight:500;font-family:'Source Sans 3',sans-serif}
-.lh{font-size:24px;font-weight:700;color:var(--brown);margin-bottom:4px;font-family:'Playfair Display',serif}
-.ls{font-size:13px;color:var(--brown-m);margin-bottom:24px}
-.fi{margin-bottom:14px}
-.fi label{display:block;font-size:11px;font-weight:600;color:var(--brown-m);margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px}
-.fi input{width:100%;padding:11px 14px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:inherit;font-size:14px;color:var(--brown);outline:none;transition:border-color .2s;background:var(--white)}
-.fi input:focus{border-color:var(--tan)}
-.lbtn{width:100%;padding:13px;background:var(--tan);color:var(--cream);border:none;border-radius:var(--r-sm);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:background .2s;letter-spacing:.3px}
-.lbtn:hover{background:var(--tan-d)}
+
+body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown);min-height:100vh}
+
+/* ══ LOGIN ══════════════════════════════════ */
+#login{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(145deg,#2a1c06 0%,#3D2B0A 40%,#6B4E1A 75%,#8B6914 100%);
+  position:relative;overflow:hidden
+}
+#login::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 20%,rgba(166,124,30,.18) 0%,transparent 60%),
+             radial-gradient(ellipse at 10% 80%,rgba(139,105,20,.12) 0%,transparent 50%);
+  pointer-events:none
+}
+#login::after{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,transparent,transparent 60px,rgba(255,255,255,.012) 60px,rgba(255,255,255,.012) 61px);
+  pointer-events:none
+}
+
+.lcard{
+  background:var(--cream);border-radius:24px;padding:48px 44px;width:100%;max-width:440px;
+  box-shadow:0 24px 80px rgba(0,0,0,.4),0 0 0 1px rgba(217,200,154,.5);
+  position:relative;z-index:1;
+  animation:slideUp .5s cubic-bezier(.34,1.56,.64,1)
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* Login logo — real Nestlé image */
+.llogo{display:flex;align-items:center;gap:16px;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--cream-dk)}
+.llogo-img{width:56px;height:56px;object-fit:contain;background:var(--white);border-radius:12px;padding:6px;border:1px solid var(--cream-dk)}
+.lbrand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--brown);line-height:1.1}
+.lbrand span{display:block;font-size:10px;font-family:'Jost',sans-serif;color:var(--brown-l);text-transform:uppercase;letter-spacing:1px;font-weight:500;margin-top:3px}
+
+.lh{font-size:26px;font-weight:600;color:var(--brown);margin-bottom:4px;font-family:'Cormorant Garamond',serif}
+.ls{font-size:13px;color:var(--brown-m);margin-bottom:26px;font-weight:400}
+.fi{margin-bottom:16px}
+.fi label{display:block;font-size:10px;font-weight:600;color:var(--brown-m);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px}
+.fi input{width:100%;padding:12px 16px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:'Jost',sans-serif;font-size:14px;color:var(--brown);outline:none;transition:border-color .2s,box-shadow .2s;background:var(--white)}
+.fi input:focus{border-color:var(--tan);box-shadow:0 0 0 3px rgba(139,105,20,.12)}
+.lbtn{
+  width:100%;padding:14px;
+  background:linear-gradient(135deg,var(--tan) 0%,var(--tan-l) 100%);
+  color:var(--cream);border:none;border-radius:var(--r-sm);
+  font-family:'Jost',sans-serif;font-size:15px;font-weight:600;cursor:pointer;
+  transition:all .2s;letter-spacing:.4px;
+  box-shadow:0 4px 16px rgba(139,105,20,.35)
+}
+.lbtn:hover{background:linear-gradient(135deg,var(--tan-d) 0%,var(--tan) 100%);box-shadow:0 6px 20px rgba(139,105,20,.45);transform:translateY(-1px)}
+.lbtn:active{transform:translateY(0)}
 .lerr{background:#fff0f0;border:1px solid #f9c0c0;color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
-.quick{margin-top:22px;padding-top:18px;border-top:1px solid var(--cream-dk)}
-.qlbl{font-size:11px;font-weight:600;color:var(--brown-l);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-.qbtns{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.qbtn{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--white);border:1px solid var(--cream-dk);border-radius:var(--r-sm);cursor:pointer;font-family:inherit;font-size:12px;color:var(--brown);transition:all .15s;text-align:left}
-.qbtn:hover{background:var(--cream-d);border-color:var(--brown-l)}
-.qav{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+
+.quick{margin-top:26px;padding-top:20px;border-top:1px solid var(--cream-dk)}
+.qlbl{font-size:10px;font-weight:600;color:var(--brown-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.qbtns{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.qbtn{
+  display:flex;align-items:center;gap:9px;padding:9px 11px;
+  background:var(--white);border:1px solid var(--cream-dk);border-radius:var(--r-sm);
+  cursor:pointer;font-family:'Jost',sans-serif;font-size:12px;color:var(--brown);
+  transition:all .15s;text-align:left
+}
+.qbtn:hover{background:var(--cream-d);border-color:var(--tan);transform:translateY(-1px)}
+.qav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
 .qname{font-weight:600;font-size:12px}.qrole{font-size:10px;color:var(--brown-l)}
- 
-/* ── APP SHELL ── */
+
+/* ══ APP SHELL ══════════════════════════════ */
 #app{display:none;min-height:100vh}
-.topbar{background:linear-gradient(90deg,#3D2B0A,#6B4E1A);height:60px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.3)}
-.tl{display:flex;align-items:center;gap:14px}
-.tlogo{width:34px;height:34px;background:var(--tan);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-weight:700;color:var(--cream);font-size:16px}
-.ttitle{font-size:15px;font-weight:700;color:var(--cream);font-family:'Playfair Display',serif;letter-spacing:.2px}
-.tsub{font-size:10px;color:rgba(245,237,214,.5);letter-spacing:.4px}
-.tr{display:flex;align-items:center;gap:12px}
-.tav{width:32px;height:32px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+
+/* TOPBAR */
+.topbar{
+  background:linear-gradient(90deg,#2a1c06 0%,#3D2B0A 35%,#5a3c10 100%);
+  height:64px;padding:0 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 20px rgba(0,0,0,.35),0 1px 0 rgba(217,200,154,.1)
+}
+.tl{display:flex;align-items:center;gap:16px}
+
+/* Real Nestlé logo in topbar */
+.tlogo-wrap{
+  width:42px;height:42px;border-radius:10px;
+  background:rgba(255,253,248,.12);
+  border:1px solid rgba(217,200,154,.25);
+  display:flex;align-items:center;justify-content:center;
+  padding:5px;flex-shrink:0
+}
+.tlogo-img{width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1) sepia(1) saturate(0.4) brightness(1.8)}
+
+.tdivider{width:1px;height:32px;background:rgba(217,200,154,.2)}
+.ttitle-wrap{}
+.ttitle{font-size:16px;font-weight:600;color:var(--cream);font-family:'Cormorant Garamond',serif;letter-spacing:.3px;line-height:1.1}
+.tsub{font-size:10px;color:rgba(245,237,214,.45);letter-spacing:.6px;font-weight:400;margin-top:2px}
+
+.tr{display:flex;align-items:center;gap:14px}
+.tav{
+  width:34px;height:34px;border-radius:50%;
+  background:linear-gradient(135deg,var(--tan),var(--tan-l));
+  color:var(--cream);display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+  box-shadow:0 2px 8px rgba(0,0,0,.3)
+}
+.tuser-info{text-align:right}
 .tname{font-size:13px;font-weight:600;color:var(--cream)}
-.trole{font-size:10px;color:rgba(245,237,214,.5)}
-.tout{padding:6px 14px;background:rgba(245,237,214,.1);border:1px solid rgba(245,237,214,.25);border-radius:7px;color:var(--cream);font-family:inherit;font-size:12px;cursor:pointer;transition:background .15s}
-.tout:hover{background:rgba(245,237,214,.2)}
- 
-/* ── NOTIFICATION BELL ── */
+.trole{font-size:10px;color:rgba(245,237,214,.5);margin-top:1px}
+.tout{
+  padding:7px 16px;
+  background:rgba(245,237,214,.08);
+  border:1px solid rgba(245,237,214,.2);
+  border-radius:8px;color:var(--cream);font-family:'Jost',sans-serif;
+  font-size:12px;font-weight:500;cursor:pointer;transition:all .15s
+}
+.tout:hover{background:rgba(245,237,214,.18);border-color:rgba(245,237,214,.4)}
+
+/* NOTIFICATION BELL */
 .bell-wrap{position:relative;cursor:pointer}
-.bell-btn{width:36px;height:36px;border-radius:50%;background:rgba(245,237,214,.1);border:1px solid rgba(245,237,214,.25);display:flex;align-items:center;justify-content:center;font-size:17px;transition:background .15s;cursor:pointer}
-.bell-btn:hover{background:rgba(245,237,214,.25)}
-.bell-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;border-radius:20px;min-width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid #3D2B0A}
+.bell-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(245,237,214,.08);
+  border:1px solid rgba(245,237,214,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:all .15s;cursor:pointer
+}
+.bell-btn:hover{background:rgba(245,237,214,.2)}
+.bell-badge{
+  position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;
+  border-radius:20px;min-width:18px;height:18px;font-size:10px;font-weight:700;
+  display:none;align-items:center;justify-content:center;padding:0 4px;
+  border:2px solid #2a1c06
+}
 .bell-badge.show{display:flex}
- 
-/* ── NOTIFICATION PANEL ── */
-.np{position:fixed;top:60px;right:0;width:380px;max-height:calc(100vh - 60px);background:var(--cream);box-shadow:-6px 0 28px rgba(61,43,10,.18);z-index:200;display:none;flex-direction:column;border-left:1px solid var(--cream-dk)}
+
+/* NOTIFICATION PANEL */
+.np{
+  position:fixed;top:64px;right:0;width:380px;max-height:calc(100vh - 64px);
+  background:var(--cream);box-shadow:-6px 0 28px rgba(61,43,10,.18);
+  z-index:200;display:none;flex-direction:column;border-left:1px solid var(--cream-dk)
+}
 .np.open{display:flex}
-.np-hdr{padding:16px 18px;border-bottom:1px solid var(--cream-dk);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:var(--tan);color:var(--cream)}
-.np-title{font-size:15px;font-weight:700;color:var(--cream);display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif}
+.np-hdr{
+  padding:16px 18px;border-bottom:1px solid var(--cream-dk);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  background:linear-gradient(90deg,var(--tan),var(--tan-l));color:var(--cream)
+}
+.np-title{font-size:15px;font-weight:600;color:var(--cream);display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
 .np-cnt{font-size:11px;background:var(--red);color:#fff;border-radius:20px;padding:2px 8px}
 .np-acts{display:flex;gap:6px;align-items:center}
 .np-readall{font-size:11px;font-weight:600;color:var(--cream);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);cursor:pointer;padding:4px 10px;border-radius:4px}
@@ -101,8 +183,6 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--parchment);color:va
 .np-empty{text-align:center;padding:40px 20px;color:var(--brown-l)}
 .np-empty-ico{font-size:28px;margin-bottom:8px}
 .np-empty-txt{font-size:13px}
- 
-/* notification item */
 .ni{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--cream-dk);cursor:pointer;transition:background .12s;position:relative}
 .ni:hover{background:var(--cream-d)}
 .ni.unread{background:rgba(166,124,30,.08)}
@@ -121,49 +201,71 @@ body{font-family:'Source Sans 3',sans-serif;background:var(--parchment);color:va
 .ni-foot{display:flex;align-items:center;gap:8px;margin-top:4px}
 .ni-time{font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace}
 .ni-ref{font-size:10px;color:var(--tan);font-family:'DM Mono',monospace;background:rgba(139,105,20,.12);padding:1px 6px;border-radius:4px}
- 
-/* ── TABS ── */
-.tabs{background:var(--cream);border-bottom:2px solid var(--cream-dk);padding:0 28px;display:flex;gap:2px;overflow-x:auto}
-.tab{padding:13px 18px;border:none;background:none;font-family:inherit;font-size:12px;font-weight:600;color:var(--brown-l);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;white-space:nowrap;display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ══ TABS ════════════════════════════════════ */
+.tabs{
+  background:var(--white);
+  border-bottom:1px solid var(--cream-dk);
+  padding:0 28px;display:flex;gap:2px;overflow-x:auto;
+  box-shadow:0 1px 6px rgba(61,43,10,.06)
+}
+.tab{
+  padding:14px 20px;border:none;background:none;
+  font-family:'Jost',sans-serif;font-size:12px;font-weight:600;
+  color:var(--brown-l);cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:color .15s,border-color .15s;white-space:nowrap;
+  display:flex;align-items:center;gap:7px;
+  text-transform:uppercase;letter-spacing:.6px
+}
 .tab:hover{color:var(--brown)}
 .tab.active{color:var(--tan);border-bottom-color:var(--tan)}
- 
-/* ── MAIN ── */
-.main{padding:28px;max-width:1160px;margin:0 auto}
-.card{background:var(--cream);border-radius:var(--r);box-shadow:var(--shadow-card);padding:24px;margin-bottom:18px;border:1px solid var(--cream-dk)}
-.card-title{font-size:15px;font-weight:700;color:var(--brown);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-family:'Playfair Display',serif}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.sec-title{font-size:22px;font-weight:700;color:var(--brown);font-family:'Playfair Display',serif}
-.sec-sub{font-size:13px;color:var(--brown-m);margin-top:3px}
- 
+
+/* ══ MAIN ════════════════════════════════════ */
+.main{padding:28px;max-width:1180px;margin:0 auto}
+.card{
+  background:var(--white);border-radius:var(--r);
+  box-shadow:var(--shadow-card);padding:24px;margin-bottom:18px;
+  border:1px solid var(--cream-dk)
+}
+.card-title{font-size:15px;font-weight:600;color:var(--brown);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-title{font-size:24px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
+.sec-sub{font-size:13px;color:var(--brown-m);margin-top:4px;font-weight:400}
+
 /* KPI */
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
-.kpi{background:var(--cream);border-radius:var(--r);padding:18px 20px;box-shadow:var(--shadow-card);border:1px solid var(--cream-dk);border-left:4px solid var(--tan)}
-.kpi-v{font-size:26px;font-weight:700;color:var(--brown);font-family:'Playfair Display',serif}
-.kpi-l{font-size:12px;color:var(--brown-l);margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
- 
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.kpi{
+  background:var(--white);border-radius:var(--r);padding:20px 22px;
+  box-shadow:var(--shadow-card);border:1px solid var(--cream-dk);
+  border-top:3px solid var(--tan);transition:transform .15s
+}
+.kpi:hover{transform:translateY(-2px)}
+.kpi-v{font-size:28px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
+.kpi-l{font-size:11px;color:var(--brown-l);margin-top:5px;text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+
 /* BUTTONS */
-.btn{padding:9px 18px;border-radius:var(--r-sm);border:none;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;letter-spacing:.2px}
+.btn{padding:9px 18px;border-radius:var(--r-sm);border:none;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;letter-spacing:.2px}
 .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#8B0000}
 .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1B5E20}
 .btn-orange{background:var(--orange);color:#fff}.btn-orange:hover{background:#BF360C}
 .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#0D47A1}
 .btn-purple{background:var(--purple);color:#fff}
 .btn-ghost{background:transparent;color:var(--brown);border:1.5px solid var(--cream-dk)}.btn-ghost:hover{border-color:var(--tan);color:var(--tan)}
-.btn-tan{background:var(--tan);color:var(--cream)}.btn-tan:hover{background:var(--tan-d)}
+.btn-tan{background:linear-gradient(135deg,var(--tan),var(--tan-l));color:var(--cream);box-shadow:0 2px 8px rgba(139,105,20,.3)}.btn-tan:hover{background:linear-gradient(135deg,var(--tan-d),var(--tan));transform:translateY(-1px)}
 .btn-sm{padding:5px 12px;font-size:12px}
- 
+
 /* TABLE */
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.6px;border-bottom:2px solid var(--cream-dk);background:rgba(139,105,20,.05)}
-td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--cream-dk);vertical-align:middle;color:var(--brown)}
+th{text-align:left;padding:11px 14px;font-size:10px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.8px;border-bottom:1.5px solid var(--cream-dk);background:rgba(139,105,20,.04)}
+td{padding:13px 14px;font-size:13px;border-bottom:1px solid rgba(217,200,154,.5);vertical-align:middle;color:var(--brown);font-weight:400}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(139,105,20,.04)}
+tr:hover td{background:rgba(139,105,20,.03)}
 .mono{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--tan)}
- 
+
 /* BADGES */
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;white-space:nowrap}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;white-space:nowrap;font-family:'Jost',sans-serif}
 .b-gray{background:var(--cream-dk);color:var(--brown-m)}
 .b-blue{background:var(--blue-bg);color:var(--blue)}
 .b-green{background:var(--green-bg);color:var(--green)}
@@ -171,50 +273,52 @@ tr:hover td{background:rgba(139,105,20,.04)}
 .b-red{background:var(--red-bg);color:var(--red)}
 .b-purple{background:var(--purple-bg);color:var(--purple)}
 .b-navy{background:#E8EAF6;color:#283593}
- 
+
 /* FORM */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fg{margin-bottom:14px}
 .fg.full{grid-column:1/-1}
-.fg label{display:block;font-size:11px;font-weight:600;color:var(--brown-m);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
-.fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:inherit;font-size:13px;color:var(--brown);outline:none;transition:border-color .2s;background:var(--white)}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--tan)}
+.fg label{display:block;font-size:10px;font-weight:600;color:var(--brown-m);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:'Jost',sans-serif;font-size:13px;color:var(--brown);outline:none;transition:border-color .2s,box-shadow .2s;background:var(--white)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--tan);box-shadow:0 0 0 3px rgba(139,105,20,.1)}
 .fg input:disabled{background:var(--cream-d);color:var(--brown-l)}
- 
+
 /* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(61,43,10,.55);z-index:300;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg{position:fixed;inset:0;background:rgba(42,28,6,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
 .modal-bg.open{display:flex}
-.modal{background:var(--cream);border-radius:16px;padding:0;width:100%;max-width:480px;box-shadow:0 16px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;border:1px solid var(--cream-dk)}
-.modal-title{font-size:18px;font-weight:700;color:var(--cream);margin-bottom:0;padding:20px 24px;background:var(--tan);border-radius:14px 14px 0 0;font-family:'Playfair Display',serif}
+.modal{background:var(--white);border-radius:16px;padding:0;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;border:1px solid var(--cream-dk)}
+.modal-title{font-size:18px;font-weight:600;color:var(--cream);margin-bottom:0;padding:20px 24px;background:linear-gradient(90deg,var(--tan),var(--tan-l));border-radius:14px 14px 0 0;font-family:'Cormorant Garamond',serif}
 .modal .modal-body{padding:24px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
- 
+
 /* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;color:#fff;padding:13px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:360px}
+.toast{position:fixed;bottom:24px;right:24px;color:#fff;padding:13px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:360px;font-family:'Jost',sans-serif}
 .toast.show{transform:translateY(0);opacity:1}
- 
+
 /* EMPTY */
 .empty{text-align:center;padding:44px 24px;color:var(--brown-l)}
 .empty-icon{font-size:32px;margin-bottom:10px}
- 
-@media(max-width:768px){.kpi-row{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.main{padding:14px}.np{width:100%}}
+
+@media(max-width:768px){.kpi-row{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.main{padding:14px}.np{width:100%}.topbar{padding:0 16px}.tuser-info{display:none}}
 </style>
 </head>
 <body>
- 
+
 <!-- ══ LOGIN ══════════════════════════════════════════════ -->
 <div id="login">
   <div class="lcard">
     <div class="llogo">
-      <div class="lbox">N</div>
-      <div class="lbrand">Nestlé <span>Smart Distribution & Delivery · Sri Lanka</span></div>
+      <img class="llogo-img" src="data:image/jpeg;base64,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" alt="Nestlé"/>
+      <div>
+        <div class="lbrand">Nestlé<span>Smart Distribution &amp; Delivery · Sri Lanka</span></div>
+      </div>
     </div>
-    <div class="lh">Sign in</div>
-    <div class="ls">Access your role-based workspace</div>
+    <div class="lh">Welcome back</div>
+    <div class="ls">Sign in to access your role-based workspace</div>
     <div class="lerr" id="lerr">Incorrect email or password.</div>
     <div class="fi"><label>Email</label><input id="lemail" type="email" placeholder="you@nestle.lk"/></div>
     <div class="fi"><label>Password</label><input id="lpass" type="password" placeholder="••••••••"/></div>
-    <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In</button>
+    <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In →</button>
     <div class="quick">
       <div class="qlbl">Quick demo access</div>
       <div class="qbtns">
@@ -227,20 +331,28 @@ tr:hover td{background:rgba(139,105,20,.04)}
     </div>
   </div>
 </div>
- 
+
 <!-- ══ APP ════════════════════════════════════════════════ -->
 <div id="app">
- 
+
   <!-- Topbar -->
   <div class="topbar">
     <div class="tl">
-      <div class="tlogo">N</div>
-      <div><div class="ttitle">Nestlé <span style="font-size:11px;opacity:.45;font-family:'Source Sans 3',sans-serif;font-weight:400">Smart DMS</span></div><div class="tsub">Good food, Good life · Sri Lanka</div></div>
+      <div class="tlogo-wrap">
+        <img class="tlogo-img" src="data:image/jpeg;base64,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" alt="Nestlé"/>
+      </div>
+      <div class="tdivider"></div>
+      <div class="ttitle-wrap">
+        <div class="ttitle">Nestlé <span style="font-size:11px;opacity:.4;font-family:'Jost',sans-serif;font-weight:400">Smart DMS</span></div>
+        <div class="tsub">Good food, Good life · Sri Lanka</div>
+      </div>
     </div>
     <div class="tr">
       <div class="tav" id="tav">?</div>
-      <div><div class="tname" id="tname">—</div><div class="trole" id="trole">—</div></div>
-      <!-- Bell -->
+      <div class="tuser-info">
+        <div class="tname" id="tname">—</div>
+        <div class="trole" id="trole">—</div>
+      </div>
       <div class="bell-wrap" onclick="togglePanel()">
         <div class="bell-btn">🔔</div>
         <div class="bell-badge" id="bell-badge">0</div>
@@ -248,7 +360,7 @@ tr:hover td{background:rgba(139,105,20,.04)}
       <button class="tout" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
- 
+
   <!-- Notification Panel -->
   <div class="np" id="np">
     <div class="np-hdr">
@@ -262,17 +374,15 @@ tr:hover td{background:rgba(139,105,20,.04)}
       <div class="np-empty"><div class="np-empty-ico">🔔</div><div class="np-empty-txt">No notifications yet.</div></div>
     </div>
   </div>
- 
+
   <!-- Tabs -->
   <div class="tabs" id="nav-tabs"></div>
- 
+
   <!-- Content -->
   <div class="main" id="main-content"></div>
 </div>
- 
+
 <!-- ══ MODALS ══════════════════════════════════════════════ -->
- 
-<!-- Confirm/Reject order (OPT) -->
 <div class="modal-bg" id="m-confirm">
   <div class="modal">
     <div class="modal-title" id="mc-title">Review Order Request</div>
@@ -288,8 +398,7 @@ tr:hover td{background:rgba(139,105,20,.04)}
     </div>
   </div>
 </div>
- 
-<!-- Assign driver/vehicle (Route Planner) -->
+
 <div class="modal-bg" id="m-assign">
   <div class="modal">
     <div class="modal-title">🚚 Assign Driver &amp; Vehicle</div>
@@ -306,8 +415,7 @@ tr:hover td{background:rgba(139,105,20,.04)}
     </div>
   </div>
 </div>
- 
-<!-- Update Delivery Status (Distributor) -->
+
 <div class="modal-bg" id="m-status">
   <div class="modal">
     <div class="modal-title">📋 Update Delivery Status</div>
@@ -329,22 +437,15 @@ tr:hover td{background:rgba(139,105,20,.04)}
     </div>
   </div>
 </div>
- 
+
 <div class="toast" id="toast" style="background:var(--brown)"><span id="toast-msg"></span></div>
- 
+
 <script>
-// ═══════════════════════════════════════════════
-// CONFIG
-// ═══════════════════════════════════════════════
 const API = 'https://nestle-dms-backend.onrender.com/api';
 let user = null, drivers = [], vehicles = [], pollTimer = null, panelOpen = false;
 
-// ── FIX 3: Keep Render alive — ping every 10 min ──
 setInterval(() => fetch('https://nestle-dms-backend.onrender.com/').catch(()=>{}), 10 * 60 * 1000);
- 
-// ═══════════════════════════════════════════════
-// AUTH
-// ═══════════════════════════════════════════════
+
 async function doLogin() {
   const email = document.getElementById('lemail').value.trim();
   const pass  = document.getElementById('lpass').value;
@@ -354,33 +455,28 @@ async function doLogin() {
     const r = await fetch(`${API}/login`,{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password:pass}) });
     if (!r.ok){ showErr('Incorrect email or password.'); setBtnLoading(false); return; }
     user = await r.json();
-    // ── FIX 2: Save token so session survives page refresh ──
     localStorage.setItem('dms_token', user.token);
     localStorage.setItem('dms_user',  JSON.stringify(user));
     enterApp();
   } catch { showErr('Cannot connect — is server running?'); setBtnLoading(false); }
 }
 
-// ── FIX 2b: Restore session on page load ──
 window.addEventListener('DOMContentLoaded', () => {
   const saved = localStorage.getItem('dms_user');
   const token = localStorage.getItem('dms_token');
   if (saved && token) {
-    try {
-      user = JSON.parse(saved);
-      user.token = token;
-      enterApp();
-    } catch { localStorage.clear(); }
+    try { user = JSON.parse(saved); user.token = token; enterApp(); }
+    catch { localStorage.clear(); }
   }
 });
+
 function quick(e,p){ document.getElementById('lemail').value=e; document.getElementById('lpass').value=p; doLogin(); }
 function showErr(m){ const el=document.getElementById('lerr'); el.textContent=m; el.style.display='block'; }
-function setBtnLoading(on){ const b=document.getElementById('lbtn'); b.disabled=on; b.textContent=on?'Signing in…':'Sign In'; }
+function setBtnLoading(on){ const b=document.getElementById('lbtn'); b.disabled=on; b.textContent=on?'Signing in…':'Sign In →'; }
 document.getElementById('lpass').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
- 
+
 function doLogout(){
   stopPoll(); user=null; panelOpen=false;
-  // ── FIX 2c: Clear saved session on logout ──
   localStorage.removeItem('dms_token');
   localStorage.removeItem('dms_user');
   document.getElementById('np').classList.remove('open');
@@ -391,7 +487,7 @@ function doLogout(){
   document.getElementById('lemail').value='';
   document.getElementById('lpass').value='';
 }
- 
+
 function enterApp(){
   document.getElementById('login').style.display='none';
   document.getElementById('app').style.display='block';
@@ -404,34 +500,29 @@ function enterApp(){
   buildNav();
   startPoll();
 }
- 
+
 function roleLabel(r){
   return { retailer:'Retailer', order_team:'Order Processing Team',
            route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor' }[r]||r;
 }
- 
-// ═══════════════════════════════════════════════
-// NOTIFICATION SYSTEM
-// ═══════════════════════════════════════════════
+
 const NOTIF_ICONS = { info:'ℹ️', success:'✅', warning:'⚠️', alert:'🚨' };
- 
+
 function togglePanel(){
   panelOpen = !panelOpen;
   document.getElementById('np').classList.toggle('open', panelOpen);
   if (panelOpen) loadPanel();
 }
- 
+
 async function loadPanel(){
   if (!user) return;
   const data = await api(`/notifications?userId=${user.id}`);
   const list  = document.getElementById('np-list');
   const unread = data.filter(n=>!n.isRead).length;
   updateBadge(unread);
- 
   const cnt = document.getElementById('np-cnt');
   if (unread>0){ cnt.textContent=unread; cnt.style.display='inline-flex'; }
   else cnt.style.display='none';
- 
   if (!data.length){
     list.innerHTML='<div class="np-empty"><div class="np-empty-ico">🔔</div><div class="np-empty-txt">No notifications yet.</div></div>';
     return;
@@ -449,7 +540,7 @@ async function loadPanel(){
       </div>
     </div>`).join('');
 }
- 
+
 async function markRead(id, el){
   await api(`/notifications/${id}/read`,'PUT',{});
   el.classList.remove('unread');
@@ -458,31 +549,28 @@ async function markRead(id, el){
   const unread = document.querySelectorAll('.ni.unread').length;
   if (unread>0){ cnt.textContent=unread; cnt.style.display='inline-flex'; } else cnt.style.display='none';
 }
- 
+
 async function markAllRead(){
   if (!user) return;
   await api('/notifications/read-all','PUT',{ userId:user.id });
   await loadPanel();
 }
- 
+
 async function pollBadge(){
   if (!user) return;
   const data = await api(`/notifications/unread?userId=${user.id}`);
   updateBadge(data.count||0);
 }
- 
+
 function updateBadge(cnt){
   const b = document.getElementById('bell-badge');
   if (cnt>0){ b.textContent=cnt>99?'99+':cnt; b.classList.add('show'); }
   else b.classList.remove('show');
 }
- 
+
 function startPoll(){ pollBadge(); pollTimer=setInterval(pollBadge,12000); }
 function stopPoll(){ if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
- 
-// ═══════════════════════════════════════════════
-// NAV — role-based tabs
-// ═══════════════════════════════════════════════
+
 const ROLE_PAGES = {
   retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'        },{id:'req-order',   ico:'➕', lbl:'Request Order'     }],
   order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Orders'   },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'    },{id:'consolidate', ico:'📊', lbl:'Consolidate'      }],
@@ -490,7 +578,7 @@ const ROLE_PAGES = {
   warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'         },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'      }],
   distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'        },{id:'upd-status',  ico:'✅', lbl:'Update Status'     }],
 };
- 
+
 function buildNav(){
   const pages = ROLE_PAGES[user.role]||[];
   document.getElementById('nav-tabs').innerHTML = pages.map((p,i)=>
@@ -498,16 +586,13 @@ function buildNav(){
   ).join('');
   if (pages.length) render(pages[0].id);
 }
- 
+
 function nav(id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   const el=document.getElementById('tab-'+id); if(el) el.classList.add('active');
   render(id);
 }
- 
-// ═══════════════════════════════════════════════
-// PAGE RENDERER
-// ═══════════════════════════════════════════════
+
 async function render(id){
   setContent('<div class="empty"><div class="empty-icon">⏳</div><div>Loading…</div></div>');
   if (id==='my-orders')   await pageMyOrders();
@@ -522,14 +607,13 @@ async function render(id){
   if (id==='my-routes')   await pageMyRoutes();
   if (id==='upd-status')  await pageUpdStatus();
 }
- 
-// ─── RETAILER: MY ORDERS ──────────────────────
+
 async function pageMyOrders(){
   const data = await api(`/orders?role=retailer&userId=${user.id}`);
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">My Orders</div><div class="sec-sub">Track your submitted orders and their status</div></div>
-      <button class="btn btn-red" onclick="nav('req-order')">+ New Request</button>
+      <button class="btn btn-tan" onclick="nav('req-order')">+ New Request</button>
     </div>
     <div class="card"><div class="tw"><table>
       <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Reason</th><th>Submitted</th></tr></thead>
@@ -541,12 +625,11 @@ async function pageMyOrders(){
           <td>${prioBadge(o.prio)}</td>
           <td>${orderBadge(o.status)}</td>
           <td style="font-size:12px;color:var(--brown-l);max-width:200px">${o.status==='rejected'&&o.rejectReason?o.rejectReason:'—'}</td>
-          <td style="font-size:12px;color:var(--brown-l);font-family:\'DM Mono\',monospace">${o.created}</td>
+          <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
         </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
 }
- 
-// ─── RETAILER: REQUEST ORDER ──────────────────
+
 function pageReqOrder(){
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">Request Delivery Order</div><div class="sec-sub">Submit a new order — the Order Processing Team will be notified immediately</div></div></div>
@@ -568,10 +651,10 @@ function pageReqOrder(){
         </div>
         <div class="fg"><label>Notes</label><input id="i-notes" placeholder="Special instructions…"/></div>
       </div>
-      <button class="btn btn-red" onclick="submitOrder()" style="margin-top:4px">Submit Request → OPT notified 🔔</button>
+      <button class="btn btn-tan" onclick="submitOrder()" style="margin-top:4px">Submit Request → OPT notified 🔔</button>
     </div>`);
 }
- 
+
 async function submitOrder(){
   const city=document.getElementById('i-city').value, items=document.getElementById('i-items').value,
         kg=document.getElementById('i-kg').value, prio=document.getElementById('i-prio').value,
@@ -580,8 +663,7 @@ async function submitOrder(){
   const r = await api('/orders','POST',{ retailerId:user.id, retailerName:user.name, city, items:+items, kg:+kg, priority:prio, notes });
   if (r.id){ toast(`✅ Order ${r.id} submitted — Order Team notified 🔔`); pollBadge(); nav('my-orders'); }
 }
- 
-// ─── ORDER TEAM: ALL ORDERS ───────────────────
+
 async function pageAllOrders(){
   const data = await api('/orders');
   setContent(`
@@ -598,21 +680,21 @@ async function pageAllOrders(){
           <td>${o.items} · ${o.kg}kg</td>
           <td>${prioBadge(o.prio)}</td>
           <td>${orderBadge(o.status)}</td>
-          <td style="font-size:12px;color:var(--brown-l);font-family:\'DM Mono\',monospace">${o.created}</td>
+          <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
           <td>${o.status==='pending'
             ?`<button class="btn btn-tan btn-sm" onclick="openConfirm('${o.id}','${o.retailer}','${o.city}')">Review →</button>`
             :`<span style="font-size:12px;color:var(--brown-l)">${o.confirmedBy||'processed'}</span>`}</td>
         </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No orders received yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
 }
- 
+
 function openConfirm(id, retailer, city){
   document.getElementById('mc-id').value    = id;
   document.getElementById('mc-label').value = `${id} — ${retailer}, ${city}`;
   document.getElementById('mc-reason').value = '';
   openModal('m-confirm');
 }
- 
+
 async function confirmOrder(action){
   const id     = document.getElementById('mc-id').value;
   const reason = document.getElementById('mc-reason').value;
@@ -624,8 +706,7 @@ async function confirmOrder(action){
   pollBadge();
   pageAllOrders();
 }
- 
-// ─── ORDER TEAM: ALL DELIVERIES ───────────────
+
 async function pageDeliveries(){
   const data = await api('/deliveries');
   setContent(`
@@ -640,19 +721,18 @@ async function pageDeliveries(){
           <td>${prioBadge(d.prio)}</td>
           <td>${delBadge(d.status)}</td>
           <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'<span style="color:var(--brown-l);font-size:12px">—</span>'}</td>
-          <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
-        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet. Consolidate confirmed orders first.</div></div></td></tr>'}</tbody>
+          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
 }
- 
-// ─── ORDER TEAM: CONSOLIDATE ─────────────────
+
 function pageConsolidate(){
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">Consolidate Orders</div><div class="sec-sub">Convert confirmed orders into delivery records — Route Planner &amp; Warehouse notified</div></div></div>
     <div class="card" style="max-width:560px">
       <p style="font-size:14px;line-height:1.8;color:var(--brown-l);margin-bottom:20px">
         This action takes all <strong style="color:var(--brown)">confirmed</strong> orders and creates a delivery record for each one.<br><br>
-        <strong style="color:var(--brown)">Priority rule:</strong> If only <strong>1</strong> confirmed order exists, it is processed immediately only when its priority is <strong style="color:var(--red)">urgent</strong> or <strong style="color:var(--orange)">high</strong>. A single <strong>normal</strong> or <strong>low</strong> priority order is held — OPT is notified to wait until more orders are confirmed before consolidating.<br><br>
+        <strong style="color:var(--brown)">Priority rule:</strong> If only <strong>1</strong> confirmed order exists, it is processed immediately only when its priority is <strong style="color:var(--red)">urgent</strong> or <strong style="color:var(--orange)">high</strong>.<br><br>
         🔔 <strong style="color:var(--brown)">Route Planner</strong> is notified to assign drivers and vehicles.<br>
         🔔 <strong style="color:var(--brown)">Warehouse</strong> is notified to prepare for incoming cargo.
       </p>
@@ -661,23 +741,21 @@ function pageConsolidate(){
       </button>
     </div>`);
 }
- 
+
 async function doConsolidate(){
   const r = await api('/deliveries/consolidate','POST',{});
   if (r.created===0 && r.held===0) {
     toast('⚠️ No confirmed orders to consolidate','#ea580c');
   } else if (r.held===1 && r.reason==='single_low_priority') {
-    toast(`⏳ Order ${r.orderId} held — low/normal priority. Wait for more orders or upgrade priority.`,'#ea580c');
+    toast(`⏳ Order ${r.orderId} held — low/normal priority.`,'#ea580c');
     pollBadge();
   } else {
     const word = r.created === 1 ? 'delivery' : 'deliveries';
     toast(`✅ ${r.created} ${word} created — Route Planner + Warehouse notified 🔔`,'#16a34a');
     pollBadge();
   }
- 
 }
- 
-// ─── ROUTE PLANNER: ASSIGN ────────────────────
+
 async function pageAssign(){
   const data = await api('/deliveries');
   const pending  = data.filter(d=>d.status==='pending');
@@ -685,7 +763,7 @@ async function pageAssign(){
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Plan Routes &amp; Assign</div><div class="sec-sub">Assign drivers and vehicles — Driver + Warehouse notified automatically</div></div>
-      <button class="btn btn-red" onclick="optimiseAll()">⚡ Optimise &amp; Save All Routes</button>
+      <button class="btn btn-tan" onclick="optimiseAll()">⚡ Optimise &amp; Save All Routes</button>
     </div>
     <div class="card">
       <div class="card-title">⏳ Pending Assignment <span class="badge b-orange" style="margin-left:8px">${pending.length}</span></div>
@@ -711,12 +789,12 @@ async function pageAssign(){
             <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
             <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
             <td>${delBadge(d.status)}</td>
-            <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
           </tr>`).join(''):'<tr><td colspan="7"><div class="empty"><div>None assigned yet.</div></div></td></tr>'}</tbody>
       </table></div>
     </div>`);
 }
- 
+
 function openAssign(id, retailer, city){
   document.getElementById('a-id').value    = id;
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
@@ -724,7 +802,7 @@ function openAssign(id, retailer, city){
   document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type} · ${v.cap}</option>`).join('');
   openModal('m-assign');
 }
- 
+
 async function saveAssign(){
   const id  = document.getElementById('a-id').value;
   const drv = document.getElementById('a-driver').value;
@@ -738,7 +816,7 @@ async function saveAssign(){
   pollBadge();
   pageAssign();
 }
- 
+
 async function optimiseAll(){
   const data = await api('/deliveries');
   const assigned = data.filter(d=>d.driverId);
@@ -754,12 +832,11 @@ async function optimiseAll(){
   toast(`✅ ${Object.keys(byDriver).length} routes saved to database`);
   nav('routes');
 }
- 
-// ─── ROUTE PLANNER: SAVED ROUTES ─────────────
+
 async function pageRoutes(){
   const data = await api('/routes');
   setContent(`
-    <div class="sec-hdr"><div><div class="sec-title">Saved Routes</div><div class="sec-sub">Optimised routes stored in SQL Server</div></div></div>
+    <div class="sec-hdr"><div><div class="sec-title">Saved Routes</div><div class="sec-sub">Optimised routes stored in the database</div></div></div>
     <div class="card">${data.length ? data.map(r=>{
       const cities = r.cities ? JSON.parse(r.cities) : [];
       return `<div style="padding:16px 0;border-bottom:1px solid var(--cream-dk)">
@@ -777,15 +854,14 @@ async function pageRoutes(){
       </div>`;
     }).join('') : '<div class="empty"><div class="empty-icon">💾</div><div>No routes saved yet. Assign deliveries first.</div></div>'}</div>`);
 }
- 
-// ─── WAREHOUSE: INCOMING ──────────────────────
+
 async function pageWhIncoming(){
   const data = await api('/deliveries');
   const relevant = data.filter(d=>['assigned','warehouse_ready','loaded'].includes(d.status));
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Incoming Deliveries</div>
-      <div class="sec-sub">Mark cargo ready → Driver notified · Mark vehicle loaded → Driver notified to confirm pickup</div></div>
+      <div class="sec-sub">Mark cargo ready → Driver notified · Mark vehicle loaded → Driver notified</div></div>
     </div>
     <div class="card"><div class="tw"><table>
       <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
@@ -799,29 +875,28 @@ async function pageWhIncoming(){
           <td>${delBadge(d.status)}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             ${d.status==='assigned'
-              ?`<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready → notify driver</button>`:''}
+              ?`<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready</button>`:''}
             ${d.status==='warehouse_ready'
-              ?`<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Vehicle Loaded → notify driver</button>`:''}
+              ?`<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Vehicle Loaded</button>`:''}
             ${d.status==='loaded'
               ?`<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting pickup</span>`:''}
           </td>
         </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
 }
- 
+
 async function markReady(id){
   await api(`/deliveries/${id}/warehouse-ready`,'PUT',{});
-  toast(`✅ Cargo ready — Driver notified to come pick up 🔔`);
+  toast(`✅ Cargo ready — Driver notified 🔔`);
   pollBadge(); pageWhIncoming();
 }
- 
+
 async function markLoaded(id){
   await api(`/deliveries/${id}/loaded`,'PUT',{});
-  toast(`📦 Vehicle loaded — Driver notified to confirm pickup 🔔`);
+  toast(`📦 Vehicle loaded — Driver notified 🔔`);
   pollBadge(); pageWhIncoming();
 }
- 
-// ─── WAREHOUSE: CARGO STATUS ──────────────────
+
 async function pageWhPrepare(){
   const data = await api('/deliveries');
   setContent(`
@@ -835,21 +910,20 @@ async function pageWhPrepare(){
           <td>${d.items} · ${d.kg}kg</td>
           <td>${d.driverName||'—'}</td>
           <td>${delBadge(d.status)}</td>
-          <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
         </tr>`).join(''):'<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
 }
- 
-// ─── DISTRIBUTOR: MY ROUTES ───────────────────
+
 async function pageMyRoutes(){
   const data = await api(`/deliveries?role=distributor&userId=${user.id}`);
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">My Delivery Routes</div><div class="sec-sub">Your assigned deliveries for today</div></div></div>
     <div class="kpi-row">
       <div class="kpi"><div class="kpi-v">${data.length}</div><div class="kpi-l">Total Stops</div></div>
-      <div class="kpi" style="border-left-color:var(--green)"><div class="kpi-v">${data.filter(d=>d.status==='delivered').length}</div><div class="kpi-l">Delivered</div></div>
-      <div class="kpi" style="border-left-color:var(--orange)"><div class="kpi-v">${data.filter(d=>d.status==='in-transit').length}</div><div class="kpi-l">In Transit</div></div>
-      <div class="kpi" style="border-left-color:var(--purple)"><div class="kpi-v">${data.filter(d=>['warehouse_ready','loaded'].includes(d.status)).length}</div><div class="kpi-l">Ready for Pickup</div></div>
+      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${data.filter(d=>d.status==='delivered').length}</div><div class="kpi-l">Delivered</div></div>
+      <div class="kpi" style="border-top-color:var(--orange)"><div class="kpi-v">${data.filter(d=>d.status==='in-transit').length}</div><div class="kpi-l">In Transit</div></div>
+      <div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-v">${data.filter(d=>['warehouse_ready','loaded'].includes(d.status)).length}</div><div class="kpi-l">Ready for Pickup</div></div>
     </div>
     <div class="card"><div class="tw"><table>
       <thead><tr><th>#</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th></tr></thead>
@@ -858,13 +932,12 @@ async function pageMyRoutes(){
           <td><span class="mono" style="color:var(--red)">${i+1}</span></td>
           <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
           <td>${d.items} · ${d.kg}kg</td>
-          <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
           <td>${delBadge(d.status)}</td>
         </tr>`).join(''):'<tr><td colspan="6"><div class="empty"><div class="empty-icon">🛣️</div><div>No deliveries assigned to you yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
 }
- 
-// ─── DISTRIBUTOR: UPDATE STATUS ───────────────
+
 async function pageUpdStatus(){
   const data = await api(`/deliveries?role=distributor&userId=${user.id}`);
   const active    = data.filter(d=>!['delivered','failed'].includes(d.status));
@@ -882,7 +955,7 @@ async function pageUpdStatus(){
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td style="font-family:\'DM Mono\',monospace;font-size:12px">${d.eta||'—'}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
             <td><button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${d.retailer}','${d.city}')">Update →</button></td>
           </tr>`).join(''):'<tr><td colspan="6"><div class="empty"><div>All stops complete!</div></div></td></tr>'}</tbody>
@@ -901,7 +974,7 @@ async function pageUpdStatus(){
       </table></div>
     </div>`);
 }
- 
+
 function openStatus(id, retailer, city){
   document.getElementById('s-id').value    = id;
   document.getElementById('s-label').value = `${id} — ${retailer}, ${city}`;
@@ -909,36 +982,25 @@ function openStatus(id, retailer, city){
   document.getElementById('s-status').value = 'in-transit';
   openModal('m-status');
 }
- 
+
 async function saveStatus(){
   const id        = document.getElementById('s-id').value;
   const newStatus = document.getElementById('s-status').value;
   const note      = document.getElementById('s-note').value;
   await api(`/deliveries/${id}/status`,'PUT',{ newStatus, note, updatedBy:user.id });
   closeModal('m-status');
-  const labels = { 'in-transit':'Retailer, OPT + Warehouse notified', 'delivered':'Retailer, OPT + Warehouse notified ✅', 'failed':'Retailer, OPT + Warehouse alerted ❌' };
+  const labels = { 'in-transit':'Retailer, OPT + Warehouse notified', 'delivered':'✅ Delivered', 'failed':'❌ Failed' };
   toast(`📋 Status → "${newStatus.replace('-',' ')}" — ${labels[newStatus]||''} 🔔`,'#16a34a');
   pollBadge();
   pageUpdStatus();
 }
- 
-// ═══════════════════════════════════════════════
-// HELPERS
-// ═══════════════════════════════════════════════
+
 async function api(path, method='GET', body=null){
   try {
-    // ── FIX 1: Send JWT token with every request ──
     const token = user?.token || localStorage.getItem('dms_token') || '';
-    const opts = {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    };
+    const opts = { method, headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`} };
     if (body) opts.body = JSON.stringify(body);
     const r = await fetch(API+path, opts);
-    // ── FIX 1b: If token expired, force re-login ──
     if (r.status === 401) {
       toast('⚠️ Session expired — please sign in again', '#dc2626');
       setTimeout(() => doLogout(), 1500);
@@ -947,15 +1009,15 @@ async function api(path, method='GET', body=null){
     return await r.json();
   } catch(e) { toast('❌ Server error: '+e.message,'#dc2626'); return {}; }
 }
- 
+
 async function loadRef(){
   [drivers, vehicles] = await Promise.all([ api('/drivers'), api('/vehicles') ]);
 }
- 
+
 function setContent(html){ document.getElementById('main-content').innerHTML = html; }
 function openModal(id)    { document.getElementById(id).classList.add('open'); }
 function closeModal(id)   { document.getElementById(id).classList.remove('open'); }
- 
+
 function toast(msg, bg){
   const t = document.getElementById('toast');
   document.getElementById('toast-msg').textContent = msg;
@@ -963,7 +1025,7 @@ function toast(msg, bg){
   t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 3500);
 }
- 
+
 function prioBadge(p){
   return `<span class="badge ${p==='urgent'?'b-red':p==='high'?'b-orange':'b-gray'}">${p}</span>`;
 }
