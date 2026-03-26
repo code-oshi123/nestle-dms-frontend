@@ -1435,7 +1435,6 @@ async function pageMyRoutes() {
     const hrs  = Math.floor((rt.durMins||0) / 60);
     const mins = (rt.durMins||0) % 60;
 
-    // Match delivery status per stop
     const deliveryMap = {};
     deliveries.forEach(d => { deliveryMap[d.id] = d; });
 
@@ -1458,11 +1457,12 @@ async function pageMyRoutes() {
             ${sd.retailer ? `<strong>${sd.retailer}</strong>` : ''}${sd.items ? ` · ${sd.items} items` : ''}${sd.priority ? ` · ${prioBadge(sd.priority)}` : ''}
           </div>
           ${sd.stopNote ? `<div style="font-size:12px;color:var(--brown-l);font-style:italic;margin-top:3px">📌 ${sd.stopNote}</div>` : ''}
-          ${sd.deliveryId ? `<div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--tan);margin-top:2px">${sd.deliveryId}</div>` : ''}
+          ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);margin-top:2px">${sd.deliveryId}</div>` : ''}
         </div>
       </div>`;
     }).join('');
 
+    // Only show synthetic banner if route is actually synthetic
     const syntheticBanner = rt._synthetic ? `
       <div class="alert-banner alert-info" style="margin-bottom:14px">
         ℹ️ This route was reconstructed from your assigned deliveries. Your planner can publish a full route plan with sequenced ETAs and notes.
@@ -1509,7 +1509,6 @@ async function pageMyRoutes() {
   const inTransit = deliveries.filter(d=>d.status==='in-transit').length;
   const ready     = deliveries.filter(d=>['warehouse_ready','loaded'].includes(d.status)).length;
 
-  // Only show "no route yet" if driver also has no deliveries at all
   const noRouteMsg = deliveries.length === 0 ? `
     <div class="alert-banner alert-info" style="margin-bottom:18px">
       ℹ️ No deliveries assigned yet. Your planner will publish a full route briefing — you will be notified immediately.
