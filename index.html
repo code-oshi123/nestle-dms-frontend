@@ -444,22 +444,36 @@ tr:hover td{background:rgba(139,105,20,.03)}
 </div>
 
 <div class="modal-bg" id="m-status">
-  <div class="modal">
+  <div class="modal" style="max-width:500px">
     <div class="modal-title">📋 Update Delivery Status</div>
     <div class="modal-body">
       <input type="hidden" id="s-id"/>
       <div class="fg"><label>Delivery</label><input id="s-label" disabled/></div>
-      <div class="fg"><label>New Status *</label>
-        <select id="s-status">
-          <option value="in-transit">In Transit — notifies Retailer, OPT, Warehouse</option>
-          <option value="delivered">Delivered ✓ — notifies Retailer, OPT, Warehouse</option>
-          <option value="failed">Failed ✗ — notifies Retailer, OPT, Warehouse</option>
+      <div class="fg"><label>New Status <span style="color:var(--red)">*</span></label>
+        <select id="s-status" onchange="onStatusChange()">
+          <option value="in-transit">🚛 In Transit — driver departed for delivery</option>
+          <option value="delivered">✅ Delivered — successfully handed over</option>
+          <option value="failed">❌ Failed — could not complete delivery</option>
         </select>
       </div>
-      <div class="fg"><label>Note / Reason</label><input id="s-note" placeholder="e.g. Customer unavailable / delivered at gate"/></div>
+      <div class="fg" id="s-note-wrap">
+        <label>Note / Reason <span id="s-note-req" style="color:var(--red);display:none">* Required for Failed</span></label>
+        <input id="s-note" placeholder="e.g. Customer unavailable / delivered at gate / wrong address"/>
+        <div class="field-err" id="s-note-err">A reason is required when marking a delivery as failed.</div>
+      </div>
+      <!-- Notification preview -->
+      <div id="s-notif-preview" style="background:var(--cream);border:1px solid var(--cream-dk);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--brown-m);margin-bottom:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">🔔 Will notify</div>
+        <div id="s-notif-list" style="display:flex;flex-wrap:wrap;gap:6px">
+          <span class="badge b-blue">Retailer</span>
+          <span class="badge b-gray">Order Team</span>
+          <span class="badge b-purple">Warehouse</span>
+          <span class="badge b-teal">Route Planner</span>
+        </div>
+      </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('m-status')">Cancel</button>
-        <button class="btn btn-tan"   onclick="saveStatus()">Update &amp; Notify All 🔔</button>
+        <button class="btn btn-tan"   onclick="saveStatus()" id="s-submit-btn">Update &amp; Notify All 🔔</button>
       </div>
     </div>
   </div>
@@ -1534,55 +1548,145 @@ async function pageUpdStatus() {
   const data      = await api(`/deliveries?role=distributor&userId=${user.id}`);
   const active    = data.filter(d => !['delivered','failed'].includes(d.status));
   const completed = data.filter(d => ['delivered','failed'].includes(d.status));
+  const total     = data.length;
+  const deliveredCount = data.filter(d => d.status === 'delivered').length;
+  const pct = total > 0 ? Math.round((deliveredCount / total) * 100) : 0;
+
+  const progressBar = total > 0 ? `
+    <div class="card" style="margin-bottom:18px;padding:18px 22px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;color:var(--brown)">📊 Today's Delivery Progress</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tan)">${deliveredCount} / ${total} delivered</div>
+      </div>
+      <div style="height:10px;background:var(--cream-dk);border-radius:10px;overflow:hidden">
+        <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--green),#4CAF50);border-radius:10px;transition:width .4s"></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+        ${data.filter(d=>d.status==='in-transit').length ? `<span class="badge b-orange">🚛 ${data.filter(d=>d.status==='in-transit').length} In Transit</span>` : ''}
+        ${data.filter(d=>['assigned','loaded','warehouse_ready'].includes(d.status)).length ? `<span class="badge b-blue">📦 ${data.filter(d=>['assigned','loaded','warehouse_ready'].includes(d.status)).length} Pending Departure</span>` : ''}
+        ${deliveredCount ? `<span class="badge b-green">✅ ${deliveredCount} Delivered</span>` : ''}
+        ${data.filter(d=>d.status==='failed').length ? `<span class="badge b-red">❌ ${data.filter(d=>d.status==='failed').length} Failed</span>` : ''}
+      </div>
+    </div>` : '';
+
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Update Delivery Status</div>
-      <div class="sec-sub">Status updates are instantly sent to Retailer, Order Team &amp; Warehouse 🔔</div></div>
+      <div class="sec-sub">Updates instantly notify Retailer, Order Team, Warehouse &amp; Route Planner 🔔</div></div>
     </div>
+    ${progressBar}
     <div class="card">
       <div class="card-title">Active Stops <span class="badge b-orange" style="margin-left:8px">${active.length}</span></div>
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>ETA</th><th>Current Status</th><th>Action</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Current Status</th><th>Action</th></tr></thead>
         <tbody>${active.length ? active.map(d=>`
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+            <td style="font-size:12px">${d.items} items · ${d.kg}kg</td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
-            <td><button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${d.retailer}','${d.city}')">Update →</button></td>
-          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div>All stops complete! 🎉</div></div></td></tr>'}</tbody>
+            <td><button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button></td>
+          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>All stops complete! 🎉</div></div></td></tr>'}</tbody>
       </table></div>
     </div>
     <div class="card">
       <div class="card-title">Completed <span class="badge b-green" style="margin-left:8px">${completed.length}</span></div>
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Final Status</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Final Status</th></tr></thead>
         <tbody>${completed.length ? completed.map(d=>`
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td>${d.retailer}</td><td>${d.city}</td>
+            <td style="font-size:12px">${d.items} items</td>
             <td>${delBadge(d.status)}</td>
-          </tr>`).join('') : '<tr><td colspan="4"><div class="empty"><div>No completed deliveries yet.</div></div></td></tr>'}</tbody>
+          </tr>`).join('') : '<tr><td colspan="5"><div class="empty"><div>No completed deliveries yet.</div></div></td></tr>'}</tbody>
       </table></div>
     </div>`);
 }
 
-function openStatus(id, retailer, city) {
+function openStatus(id, retailer, city, currentStatus) {
   document.getElementById('s-id').value    = id;
   document.getElementById('s-label').value = `${id} — ${retailer}, ${city}`;
   document.getElementById('s-note').value  = '';
-  document.getElementById('s-status').value = 'in-transit';
+  document.getElementById('s-note-err').classList.remove('show');
+  document.getElementById('s-note').classList.remove('err');
+
+  // Pre-select logical next status
+  const sel = document.getElementById('s-status');
+  if (currentStatus === 'loaded' || currentStatus === 'warehouse_ready' || currentStatus === 'assigned') {
+    sel.value = 'in-transit';
+  } else if (currentStatus === 'in-transit') {
+    sel.value = 'delivered';
+  } else {
+    sel.value = 'in-transit';
+  }
+  onStatusChange();
   openModal('m-status');
+}
+
+function onStatusChange() {
+  const status = document.getElementById('s-status').value;
+  const reqLabel = document.getElementById('s-note-req');
+  const noteInput = document.getElementById('s-note');
+  const btn = document.getElementById('s-submit-btn');
+
+  if (status === 'failed') {
+    reqLabel.style.display = 'inline';
+    noteInput.placeholder = 'Required: reason delivery failed (e.g. address not found, customer refused)';
+    btn.className = 'btn btn-red';
+    btn.textContent = '❌ Mark Failed & Notify All';
+  } else if (status === 'delivered') {
+    reqLabel.style.display = 'none';
+    noteInput.placeholder = 'Optional: any delivery note (e.g. left with security, signed by manager)';
+    btn.className = 'btn btn-green';
+    btn.textContent = '✅ Mark Delivered & Notify All';
+  } else {
+    reqLabel.style.display = 'none';
+    noteInput.placeholder = 'Optional: e.g. departed at 14:30, en route via highway';
+    btn.className = 'btn btn-tan';
+    btn.textContent = '🚛 Mark In Transit & Notify All';
+  }
 }
 
 async function saveStatus() {
   const id        = document.getElementById('s-id').value;
   const newStatus = document.getElementById('s-status').value;
-  const note      = document.getElementById('s-note').value;
-  await api(`/deliveries/${id}/status`, 'PUT', { newStatus, note, updatedBy:user.id });
+  const note      = document.getElementById('s-note').value.trim();
+  const noteErr   = document.getElementById('s-note-err');
+  const noteInput = document.getElementById('s-note');
+
+  // Client-side validation: note required for failed
+  if (newStatus === 'failed' && !note) {
+    noteErr.classList.add('show');
+    noteInput.classList.add('err');
+    noteInput.focus();
+    return;
+  }
+  noteErr.classList.remove('show');
+  noteInput.classList.remove('err');
+
+  const btn = document.getElementById('s-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const result = await api(`/deliveries/${id}/status`, 'PUT', { newStatus, note, updatedBy: user.id });
+  btn.disabled = false;
+  onStatusChange(); // reset button text
+
+  if (result.error) {
+    toast(`❌ ${result.error}`, '#dc2626');
+    return;
+  }
+
   closeModal('m-status');
-  const labels = { 'in-transit':'Retailer, OPT + Warehouse notified', 'delivered':'All parties notified', 'failed':'All parties notified' };
-  toast(`📋 Status → "${newStatus.replace('-',' ')}" — ${labels[newStatus]||''} 🔔`, '#16a34a');
+  const labels = {
+    'in-transit': '🚛 In Transit — Retailer, Order Team, Warehouse & Route Planner notified 🔔',
+    'delivered':  '✅ Delivered — All 4 parties notified 🔔',
+    'failed':     '❌ Failed — All 4 parties notified 🔔'
+  };
+  const colours = { 'in-transit': '#1565C0', 'delivered': '#16a34a', 'failed': '#dc2626' };
+  toast(labels[newStatus] || `Status → "${newStatus}"`, colours[newStatus] || 'var(--tan)');
   pollBadge();
   pageUpdStatus();
 }
