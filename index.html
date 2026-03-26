@@ -1457,8 +1457,7 @@ async function pageMyRoutes() {
             ${sd.retailer ? `<strong>${sd.retailer}</strong>` : ''}${sd.items ? ` · ${sd.items} items` : ''}${sd.priority ? ` · ${prioBadge(sd.priority)}` : ''}
           </div>
           ${sd.stopNote ? `<div style="font-size:12px;color:var(--brown-l);font-style:italic;margin-top:3px">📌 ${sd.stopNote}</div>` : ''}
-          ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);margin-top:2px">${sd.deliveryId}</div>` : ''}
-        </div>
+${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);margin-top:2px">${sd.deliveryId}</div>` : ''}        </div>
       </div>`;
     }).join('');
 
