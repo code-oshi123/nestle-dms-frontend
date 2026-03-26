@@ -469,6 +469,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
           <span class="badge b-gray">Order Team</span>
           <span class="badge b-purple">Warehouse</span>
           <span class="badge b-teal">Route Planner</span>
+          <span class="badge b-navy">Driver</span>
         </div>
       </div>
       <div class="modal-actions">
@@ -1077,7 +1078,7 @@ async function openRouteBuilder() {
   }
 
   // Populate driver + vehicle dropdowns
-  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' + drivers.map(d=>`<option value="${d.userId||d.id}|${d.name}">${d.name}</option>`).join('');
+  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
   document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type}</option>`).join('');
 
   // Set default date to today
@@ -1204,7 +1205,7 @@ function openAssign(id, retailer, city, isReassign=false) {
   document.getElementById('a-id').value    = id;
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
   document.querySelector('#m-assign .modal-title').textContent = isReassign ? '🔄 Reassign Driver & Vehicle' : '🚚 Quick Assign Driver & Vehicle';
-  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' + drivers.map(d=>`<option value="${d.userId||d.id}|${d.name}">${d.name}</option>`).join('');
+  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
   document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type} · ${v.cap}</option>`).join('');
   document.getElementById('a-eta').value   = '';
   document.getElementById('a-notes').value = '';
