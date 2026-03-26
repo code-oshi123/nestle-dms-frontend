@@ -607,11 +607,6 @@ async function pageReqOrder() {
           <div class="field-err" id="err-items">Items must be a positive whole number (no decimals or negatives).</div>
         </div>
         <div class="fg">
-          <label>Weight (kg) <span style="color:var(--red)">*</span></label>
-          <input id="i-kg" type="number" min="0.1" step="0.1" placeholder="e.g. 240" oninput="validateKg(this)"/>
-          <div class="field-err" id="err-kg">Weight must be a positive number greater than 0.</div>
-        </div>
-        <div class="fg">
           <label>Priority</label>
           <select id="i-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
         </div>
@@ -643,23 +638,10 @@ function validateItems(el) {
   return true;
 }
 
-function validateKg(el) {
-  const v = parseFloat(el.value);
-  const err = document.getElementById('err-kg');
-  if (isNaN(v) || v <= 0) {
-    el.classList.add('err');
-    err.classList.add('show');
-    return false;
-  }
-  el.classList.remove('err');
-  err.classList.remove('show');
-  return true;
-}
 
 async function submitOrder() {
   const cityEl  = document.getElementById('i-city');
   const itemsEl = document.getElementById('i-items');
-  const kgEl    = document.getElementById('i-kg');
   const productEl = document.getElementById('i-product');
   const prio    = document.getElementById('i-prio').value;
   const notes   = document.getElementById('i-notes').value.trim();
@@ -697,17 +679,6 @@ async function submitOrder() {
     document.getElementById('err-items').classList.remove('show');
   }
 
-  // KG — must be positive number
-  const kgNum = parseFloat(kgEl.value);
-  if (!kgEl.value || isNaN(kgNum) || kgNum <= 0) {
-    kgEl.classList.add('err');
-    document.getElementById('err-kg').classList.add('show');
-    valid = false;
-  } else {
-    kgEl.classList.remove('err');
-    document.getElementById('err-kg').classList.remove('show');
-  }
-
   if (!valid) {
     errBox.textContent = '⚠️ Please fix the errors above before submitting.';
     errBox.style.display = 'flex';
@@ -726,7 +697,6 @@ async function submitOrder() {
     productName,
     specifics,
     items:        itemsNum,
-    kg:           kgNum,
     priority:     prio,
     notes
   });
@@ -1275,8 +1245,28 @@ async function loadProductsForOrderForm() {
         return `<option value="${id}">${escapeHtml(name)}</option>`;
       }).join('');
     } else {
-      toast('⚠️ No products found for this account. Check Stock table', '#ea580c');
-      sel.innerHTML = '<option value="">No products available</option>';
+      // Fallback: hardcoded Nestlé product list
+      const nestleProducts = [
+        { id: 1,  name: 'Milo Active Go 1kg' },
+        { id: 2,  name: 'Milo Active Go 400g' },
+        { id: 3,  name: 'Nestomalt 400g' },
+        { id: 4,  name: 'Nestomalt 1kg' },
+        { id: 5,  name: 'Nescafé Classic 200g' },
+        { id: 6,  name: 'Nescafé Classic 50g' },
+        { id: 7,  name: 'Nescafé 3-in-1 Original Box (30 sachets)' },
+        { id: 8,  name: 'KitKat 4-Finger 45g' },
+        { id: 9,  name: 'KitKat Chunky 40g' },
+        { id: 10, name: 'Maggi Noodles Chicken 77g' },
+        { id: 11, name: 'Maggi Noodles Masala 77g' },
+        { id: 12, name: 'Nestlé Cerelac Wheat 400g' },
+        { id: 13, name: 'Nestlé NAN Pro 1 400g' },
+        { id: 14, name: 'Nestlé Everyday Dairy Whitener 400g' },
+        { id: 15, name: 'Nestlé Milkmaid Condensed Milk 400g' },
+      ];
+      sel.innerHTML = nestleProducts.map(p =>
+        `<option value="${p.id}">${escapeHtml(p.name)}</option>`
+      ).join('');
+      toast('ℹ️ Showing default product list — stock data unavailable', '#1565C0');
     }
   } catch {
     toast('❌ Failed to load products for dropdown', '#dc2626');
