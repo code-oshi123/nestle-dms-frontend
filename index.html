@@ -616,7 +616,7 @@ function stopPoll()  { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; 
 // ══ NAV ═════════════════════════════════════════
 const ROLE_PAGES = {
   retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    }],
-  order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'consolidate', ico:'📊', lbl:'Consolidate'     }],
+  order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'consolidate', ico:'📊', lbl:'Consolidate'     },{id:'retailers', ico:'🏪', lbl:'Retailers'}],
   route_planner: [{id:'assign',      ico:'🗺️', lbl:'Plan Routes'    },{id:'routes',      ico:'💾', lbl:'Saved Routes'     }],
   warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     }],
   distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'      },{id:'upd-status',  ico:'✅', lbl:'Update Status'    }],
@@ -649,6 +649,7 @@ async function render(id) {
   if (id==='wh-prepare')  await pageWhPrepare();
   if (id==='my-routes')   await pageMyRoutes();
   if (id==='upd-status')  await pageUpdStatus();
+  if (id==='retailers')   await pageRetailers();
 }
 
 // ══ RETAILER PAGES ═══════════════════════════════
@@ -1687,6 +1688,177 @@ async function saveStatus() {
   toast(labels[newStatus] || `Status → "${newStatus}"`, colours[newStatus] || 'var(--tan)');
   pollBadge();
   pageUpdStatus();
+}
+
+// ══ ORDER TEAM — RETAILER MANAGEMENT ════════════
+async function pageRetailers() {
+  const retailers = await api('/retailers');
+  if (retailers.error) {
+    setContent(`<div class="alert-banner alert-error">❌ ${retailers.error}</div>`);
+    return;
+  }
+
+  setContent(`
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-title">Retailer Accounts</div>
+        <div class="sec-sub">Add new retailers so they can log in and place orders immediately</div>
+      </div>
+      <button class="btn btn-tan" onclick="openAddRetailer()">+ Add Retailer</button>
+    </div>
+
+    <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+      <div class="kpi"><div class="kpi-v">${retailers.length}</div><div class="kpi-l">Total Retailers</div></div>
+      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${retailers.filter(r => {
+        const d = new Date(r.createdAt); const now = new Date();
+        return now - d < 7 * 24 * 60 * 60 * 1000;
+      }).length}</div><div class="kpi-l">Added This Week</div></div>
+      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-v">${retailers.length > 0 ? '✓' : '—'}</div><div class="kpi-l">Can Place Orders</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏪 All Retailers <span class="badge b-gray" style="margin-left:8px">${retailers.length}</span></div>
+      ${retailers.length ? `
+      <div class="tw"><table>
+        <thead><tr><th>Avatar</th><th>Name</th><th>Email / Username</th><th>Added</th><th>Actions</th></tr></thead>
+        <tbody>${retailers.map(r => `
+          <tr>
+            <td><div style="width:34px;height:34px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${escapeHtml(r.avatar||'?')}</div></td>
+            <td><strong>${escapeHtml(r.name)}</strong></td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--brown-m)">${escapeHtml(r.Email)}</td>
+            <td style="font-size:12px;color:var(--brown-l)">${r.createdAt||'—'}</td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="openRetailerResetPw(${r.id},'${escapeHtml(r.name)}')">🔑 Reset PW</button>
+              <button class="btn btn-red btn-sm" onclick="deleteRetailer(${r.id},'${escapeHtml(r.name)}')">✕ Remove</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>` : `
+      <div class="empty">
+        <div class="empty-icon">🏪</div>
+        <div>No retailers yet. Click <strong>+ Add Retailer</strong> to add one.</div>
+      </div>`}
+    </div>
+
+    <!-- Add Retailer Modal -->
+    <div class="modal-bg" id="m-add-retailer" style="z-index:400">
+      <div class="modal" style="max-width:440px">
+        <div class="modal-title">🏪 Add New Retailer</div>
+        <div class="modal-body">
+          <div class="fg"><label>Store / Business Name <span style="color:var(--red)">*</span></label>
+            <input id="ar-name" placeholder="e.g. Keells Super Colombo 7"/></div>
+          <div class="fg"><label>Email <span style="color:var(--red)">*</span></label>
+            <input id="ar-email" type="text" placeholder="e.g. keells@nestle.lk"/></div>
+          <div class="fg"><label>Password <span style="color:var(--red)">*</span></label>
+            <input id="ar-pass" type="password" placeholder="Min 4 characters"/>
+            <div style="font-size:11px;color:var(--brown-l);margin-top:3px">Share this with the retailer so they can log in</div></div>
+          <div class="fg"><label>Avatar Initials <span style="color:var(--brown-l);font-weight:400;text-transform:none">(optional — auto from name)</span></label>
+            <input id="ar-avatar" placeholder="e.g. KS" maxlength="2" style="max-width:80px;text-transform:uppercase"/></div>
+          <div id="ar-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('m-add-retailer')">Cancel</button>
+            <button class="btn btn-tan" onclick="saveNewRetailer()" id="ar-btn">Create Retailer Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal-bg" id="m-retailer-pw" style="z-index:400">
+      <div class="modal" style="max-width:380px">
+        <div class="modal-title">🔑 Reset Retailer Password</div>
+        <div class="modal-body">
+          <input type="hidden" id="rpw-id"/>
+          <div class="fg"><label id="rpw-label">New password</label>
+            <input id="rpw-pass" type="password" placeholder="Min 4 characters"/></div>
+          <div id="rpw-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('m-retailer-pw')">Cancel</button>
+            <button class="btn btn-tan" onclick="saveRetailerPw()" id="rpw-btn">Reset Password</button>
+          </div>
+        </div>
+      </div>
+    </div>`);
+}
+
+function openAddRetailer() {
+  ['ar-name','ar-email','ar-pass','ar-avatar'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('ar-err').style.display = 'none';
+  const btn = document.getElementById('ar-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Create Retailer Account'; }
+  openModal('m-add-retailer');
+}
+
+async function saveNewRetailer() {
+  const name   = document.getElementById('ar-name').value.trim();
+  const email  = document.getElementById('ar-email').value.trim();
+  const pass   = document.getElementById('ar-pass').value;
+  const avatar = document.getElementById('ar-avatar').value.trim();
+  const errEl  = document.getElementById('ar-err');
+
+  if (!name || !email || !pass) {
+    errEl.textContent = '⚠️ Name, email and password are all required.';
+    errEl.style.display = 'flex'; return;
+  }
+  if (pass.length < 4) {
+    errEl.textContent = '⚠️ Password must be at least 4 characters.';
+    errEl.style.display = 'flex'; return;
+  }
+
+  const btn = document.getElementById('ar-btn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  const r = await api('/retailers', 'POST', { name, email, password: pass, avatar });
+  btn.disabled = false; btn.textContent = 'Create Retailer Account';
+
+  if (r.error) {
+    errEl.textContent = `❌ ${r.error}`;
+    errEl.style.display = 'flex'; return;
+  }
+
+  closeModal('m-add-retailer');
+  toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a');
+  await pageRetailers();
+}
+
+function openRetailerResetPw(id, name) {
+  document.getElementById('rpw-id').value = id;
+  document.getElementById('rpw-label').textContent = `New password for ${name}`;
+  document.getElementById('rpw-pass').value = '';
+  document.getElementById('rpw-err').style.display = 'none';
+  const btn = document.getElementById('rpw-btn');
+  if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; }
+  openModal('m-retailer-pw');
+}
+
+async function saveRetailerPw() {
+  const id   = document.getElementById('rpw-id').value;
+  const pass = document.getElementById('rpw-pass').value;
+  const errEl = document.getElementById('rpw-err');
+  if (!pass || pass.length < 4) {
+    errEl.textContent = '⚠️ Password must be at least 4 characters.';
+    errEl.style.display = 'flex'; return;
+  }
+  const btn = document.getElementById('rpw-btn');
+  btn.disabled = true; btn.textContent = 'Resetting…';
+  const r = await api(`/retailers/${id}/reset-password`, 'PUT', { password: pass });
+  btn.disabled = false; btn.textContent = 'Reset Password';
+  if (r.error) {
+    errEl.textContent = `❌ ${r.error}`;
+    errEl.style.display = 'flex'; return;
+  }
+  closeModal('m-retailer-pw');
+  toast('✅ Password reset successfully');
+}
+
+async function deleteRetailer(id, name) {
+  if (!confirm(`Remove retailer "${name}"?\n\nThis will delete their account. Their past orders will remain in the system.`)) return;
+  const r = await api(`/retailers/${id}`, 'DELETE');
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+  toast(`✅ Retailer "${name}" removed`);
+  await pageRetailers();
 }
 
 // ══ UTILS ════════════════════════════════════════
