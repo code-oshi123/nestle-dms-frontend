@@ -288,6 +288,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
         <button class="qbtn" onclick="quick('route@nestle.lk','route123')"><div class="qav" style="background:#2E7D32">CR</div><div><div class="qname">Chamodi Rupasinghe</div><div class="qrole">Route Planner</div></div></button>
         <button class="qbtn" onclick="quick('warehouse@nestle.lk','wh123')"><div class="qav" style="background:#6A1B9A">KB</div><div><div class="qname">Kasun Bandara</div><div class="qrole">Warehouse</div></div></button>
         <button class="qbtn" onclick="quick('driver1@nestle.lk','drv123')"><div class="qav" style="background:#D84315">KS</div><div><div class="qname">Kumara Silva</div><div class="qrole">Distributor</div></div></button>
+        <button class="qbtn" onclick="quick('admin@nestle.lk','admin123')"><div class="qav" style="background:#1B5E20">SA</div><div><div class="qname">System Admin</div><div class="qrole">Admin</div></div></button>
       </div>
     </div>
   </div>
@@ -545,7 +546,9 @@ function enterApp() {
 
 function roleLabel(r) {
   return { retailer:'Retailer', order_team:'Order Processing Team',
-           route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor' }[r] || r;
+           route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor',
+  admin:         [{id:'admin-users', ico:'👥', lbl:'User Management'}],
+           admin:'System Administrator' }[r] || r;
 }
 
 // ══ NOTIFICATIONS ═══════════════════════════════
@@ -649,6 +652,7 @@ async function render(id) {
   if (id==='wh-prepare')  await pageWhPrepare();
   if (id==='my-routes')   await pageMyRoutes();
   if (id==='upd-status')  await pageUpdStatus();
+  if (id==='admin-users') await pageAdminUsers();
 }
 
 // ══ RETAILER PAGES ═══════════════════════════════
@@ -1077,15 +1081,8 @@ async function openRouteBuilder() {
   }
 
   // Populate driver + vehicle dropdowns
-  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' +
-    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — delivery in progress)' : ''}</option>`).join('');
-  document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' +
-    vehicles.map(v => {
-      const cap = parseFloat(v.cap) || 0;
-      const loaded = parseFloat(v.loadedKg) || 0;
-      const remaining = cap > 0 ? ` · ${loaded}/${cap}kg used` : '';
-      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${remaining}${v.busy ? ' (in use)' : ''}</option>`;
-    }).join('');
+  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
+  document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type}</option>`).join('');
 
   // Set default date to today
   document.getElementById('rb-date').value = new Date().toISOString().split('T')[0];
@@ -1199,10 +1196,7 @@ async function publishRoute() {
     stops: filledStops, distKm, durMins, cities
   });
 
-  if (r.error) {
-    toast(`❌ ${r.error}`, '#B71C1C');
-    return; // Keep modal open so planner can choose a different driver/vehicle
-  }
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
 
   closeModal('m-route-builder');
   toast(`✅ Route published — ${filledStops.length} stops — Driver, Warehouse &amp; Retailers notified 🔔`);
@@ -1214,15 +1208,8 @@ function openAssign(id, retailer, city, isReassign=false) {
   document.getElementById('a-id').value    = id;
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
   document.querySelector('#m-assign .modal-title').textContent = isReassign ? '🔄 Reassign Driver & Vehicle' : '🚚 Quick Assign Driver & Vehicle';
-  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' +
-    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — delivery in progress)' : ''}</option>`).join('');
-  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' +
-    vehicles.map(v => {
-      const cap = parseFloat(v.cap) || 0;
-      const loaded = parseFloat(v.loadedKg) || 0;
-      const remaining = cap > 0 ? ` · ${loaded}/${cap}kg` : (v.cap ? ` · ${v.cap}` : '');
-      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${remaining}${v.busy ? ' (in use)' : ''}</option>`;
-    }).join('');
+  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
+  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type} · ${v.cap}</option>`).join('');
   document.getElementById('a-eta').value   = '';
   document.getElementById('a-notes').value = '';
   const note = document.getElementById('a-reassign-note');
@@ -1704,6 +1691,192 @@ async function saveStatus() {
   toast(labels[newStatus] || `Status → "${newStatus}"`, colours[newStatus] || 'var(--tan)');
   pollBadge();
   pageUpdStatus();
+}
+
+// ══ ADMIN PAGES ═════════════════════════════════
+async function pageAdminUsers() {
+  const users = await api('/users');
+  if (users.error) {
+    setContent(`<div class="alert-banner alert-error">❌ ${users.error}</div>`);
+    return;
+  }
+
+  const ROLE_LABELS = {
+    retailer:'Retailer', order_team:'Order Team', route_planner:'Route Planner',
+    warehouse:'Warehouse', distributor:'Distributor'
+  };
+  const ROLE_COLORS = {
+    retailer:'b-teal', order_team:'b-blue', route_planner:'b-purple',
+    warehouse:'b-navy', distributor:'b-orange'
+  };
+
+  setContent(`
+    <div class="sec-hdr">
+      <div><div class="sec-title">User Management</div>
+      <div class="sec-sub">Add, view and remove system users — passwords are hashed automatically</div></div>
+      <button class="btn btn-tan" onclick="openAddUser()">+ Add User</button>
+    </div>
+
+    <div class="kpi-row" style="grid-template-columns:repeat(5,1fr)">
+      ${['retailer','order_team','route_planner','warehouse','distributor'].map(role => {
+        const count = users.filter(u => u.role === role).length;
+        return `<div class="kpi"><div class="kpi-v">${count}</div><div class="kpi-l">${ROLE_LABELS[role]}</div></div>`;
+      }).join('')}
+    </div>
+
+    <div class="card">
+      <div class="card-title">👥 All System Users <span class="badge b-gray" style="margin-left:8px">${users.length}</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Avatar</th><th>Added</th><th>Actions</th></tr></thead>
+        <tbody>${users.length ? users.map(u => `
+          <tr>
+            <td><strong>${escapeHtml(u.name)}</strong></td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${escapeHtml(u.Email)}</td>
+            <td><span class="badge ${ROLE_COLORS[u.role]||'b-gray'}">${ROLE_LABELS[u.role]||u.role}</span></td>
+            <td><div style="width:32px;height:32px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${escapeHtml(u.avatar||'?')}</div></td>
+            <td style="font-size:12px;color:var(--brown-l)">${u.createdAt||'—'}</td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="openResetPassword(${u.id},'${escapeHtml(u.name)}')">🔑 Reset PW</button>
+              ${u.id !== user.id ? `<button class="btn btn-red btn-sm" onclick="deleteUser(${u.id},'${escapeHtml(u.name)}')">✕ Remove</button>` : '<span style="font-size:11px;color:var(--brown-l);padding:4px 8px">(you)</span>'}
+            </td>
+          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div>No users found.</div></div></td></tr>'}
+        </tbody>
+      </table></div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal-bg" id="m-add-user" style="z-index:400">
+      <div class="modal" style="max-width:460px">
+        <div class="modal-title">👤 Add New User</div>
+        <div class="modal-body">
+          <div class="form-grid">
+            <div class="fg"><label>Full Name <span style="color:var(--red)">*</span></label>
+              <input id="au-name" placeholder="e.g. Kamal Perera"/></div>
+            <div class="fg"><label>Email <span style="color:var(--red)">*</span></label>
+              <input id="au-email" type="text" placeholder="kamal@nestle.lk"/></div>
+            <div class="fg"><label>Password <span style="color:var(--red)">*</span></label>
+              <input id="au-pass" type="password" placeholder="Min 4 characters"/></div>
+            <div class="fg"><label>Role <span style="color:var(--red)">*</span></label>
+              <select id="au-role">
+                <option value="">Select role…</option>
+                <option value="retailer">Retailer</option>
+                <option value="order_team">Order Processing Team</option>
+                <option value="route_planner">Route Planner</option>
+                <option value="warehouse">Warehouse</option>
+                <option value="distributor">Distributor / Driver</option>
+              </select></div>
+            <div class="fg full"><label>Avatar Initials <span style="color:var(--brown-l);font-weight:400;text-transform:none">(optional — auto-generated from name)</span></label>
+              <input id="au-avatar" placeholder="e.g. KP" maxlength="2" style="max-width:80px;text-transform:uppercase"/></div>
+          </div>
+          <div id="au-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('m-add-user')">Cancel</button>
+            <button class="btn btn-tan" onclick="saveNewUser()" id="au-btn">Create User</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal-bg" id="m-reset-pw" style="z-index:400">
+      <div class="modal" style="max-width:380px">
+        <div class="modal-title">🔑 Reset Password</div>
+        <div class="modal-body">
+          <input type="hidden" id="rp-id"/>
+          <div class="fg"><label id="rp-label">New Password for user</label>
+            <input id="rp-pass" type="password" placeholder="Min 4 characters"/></div>
+          <div id="rp-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('m-reset-pw')">Cancel</button>
+            <button class="btn btn-tan" onclick="saveResetPassword()" id="rp-btn">Reset Password</button>
+          </div>
+        </div>
+      </div>
+    </div>`);
+}
+
+function openAddUser() {
+  ['au-name','au-email','au-pass','au-avatar'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('au-role').value = '';
+  document.getElementById('au-err').style.display = 'none';
+  document.getElementById('au-btn').disabled = false;
+  document.getElementById('au-btn').textContent = 'Create User';
+  openModal('m-add-user');
+}
+
+async function saveNewUser() {
+  const name   = document.getElementById('au-name').value.trim();
+  const email  = document.getElementById('au-email').value.trim();
+  const pass   = document.getElementById('au-pass').value;
+  const role   = document.getElementById('au-role').value;
+  const avatar = document.getElementById('au-avatar').value.trim();
+  const errEl  = document.getElementById('au-err');
+
+  if (!name || !email || !pass || !role) {
+    errEl.textContent = '⚠️ Name, email, password and role are all required.';
+    errEl.style.display = 'flex'; return;
+  }
+  if (pass.length < 4) {
+    errEl.textContent = '⚠️ Password must be at least 4 characters.';
+    errEl.style.display = 'flex'; return;
+  }
+
+  const btn = document.getElementById('au-btn');
+  btn.disabled = true; btn.textContent = 'Creating…';
+
+  const r = await api('/users', 'POST', { name, email, password: pass, role, avatar });
+  btn.disabled = false; btn.textContent = 'Create User';
+
+  if (r.error) {
+    errEl.textContent = `❌ ${r.error}`;
+    errEl.style.display = 'flex'; return;
+  }
+
+  closeModal('m-add-user');
+  toast(`✅ User "${name}" created as ${role}`, '#16a34a');
+  await pageAdminUsers(); // refresh list
+}
+
+function openResetPassword(id, name) {
+  document.getElementById('rp-id').value = id;
+  document.getElementById('rp-label').textContent = `New password for ${name}`;
+  document.getElementById('rp-pass').value = '';
+  document.getElementById('rp-err').style.display = 'none';
+  document.getElementById('rp-btn').disabled = false;
+  document.getElementById('rp-btn').textContent = 'Reset Password';
+  openModal('m-reset-pw');
+}
+
+async function saveResetPassword() {
+  const id   = document.getElementById('rp-id').value;
+  const pass = document.getElementById('rp-pass').value;
+  const errEl = document.getElementById('rp-err');
+
+  if (!pass || pass.length < 4) {
+    errEl.textContent = '⚠️ Password must be at least 4 characters.';
+    errEl.style.display = 'flex'; return;
+  }
+
+  const btn = document.getElementById('rp-btn');
+  btn.disabled = true; btn.textContent = 'Resetting…';
+
+  const r = await api(`/users/${id}/reset-password`, 'PUT', { password: pass });
+  btn.disabled = false; btn.textContent = 'Reset Password';
+
+  if (r.error) {
+    errEl.textContent = `❌ ${r.error}`;
+    errEl.style.display = 'flex'; return;
+  }
+  closeModal('m-reset-pw');
+  toast('✅ Password reset successfully');
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`Remove user "${name}"? This cannot be undone.`)) return;
+  const r = await api(`/users/${id}`, 'DELETE');
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+  toast(`✅ User "${name}" removed`);
+  await pageAdminUsers();
 }
 
 // ══ UTILS ════════════════════════════════════════
