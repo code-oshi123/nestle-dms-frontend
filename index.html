@@ -277,7 +277,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
     <div class="lh">Welcome back</div>
     <div class="ls">Sign in to access your role-based workspace</div>
     <div class="lerr" id="lerr">Incorrect email or password.</div>
-    <div class="fi"><label>Email</label><input id="lemail" type="text" placeholder="you@nestle.lk"/></div>
+    <div class="fi"><label>Email</label><input id="lemail" type="email" placeholder="you@nestle.lk"/></div>
     <div class="fi"><label>Password</label><input id="lpass" type="password" placeholder="••••••••"/></div>
     <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In →</button>
     <div class="quick">
@@ -516,7 +516,6 @@ function quick(e,p) { document.getElementById('lemail').value=e; document.getEle
 function showErr(m) { const el=document.getElementById('lerr'); el.textContent=m; el.style.display='block'; }
 function setBtnLoading(on) { const b=document.getElementById('lbtn'); b.disabled=on; b.textContent=on?'Signing in…':'Sign In →'; }
 document.getElementById('lpass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-document.getElementById('lemail').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lpass').focus(); });
 
 function doLogout() {
   stopPoll(); user=null; panelOpen=false;
@@ -1042,7 +1041,10 @@ async function pageAssign() {
             <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
-            <td><button class="btn btn-orange btn-sm" onclick="openAssign('${d.id}','${d.retailer}','${d.city}',true)">🔄 Reassign</button></td>
+            <td style="display:flex;gap:6px">
+              <button class="btn btn-orange btn-sm" onclick="openAssign('${d.id}','${d.retailer}','${d.city}',true)">🔄 Reassign</button>
+              <button class="btn btn-ghost btn-sm" onclick="openDeliveryHistory('${d.id}','${d.retailer}','${d.city}')">📋 History</button>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table></div>` : '<div class="empty"><div>No reassignable deliveries.</div></div>'}
@@ -1201,6 +1203,34 @@ async function publishRoute() {
   nav('routes');
 }
 
+async function openDeliveryHistory(deliveryId, retailer, city) {
+  const data = await api(`/deliveries/${deliveryId}/history`);
+  const rows = Array.isArray(data) ? data : [];
+  const timeline = rows.length ? rows.map((h, i) => `
+    <div style="display:flex;gap:12px;padding:10px 0;${i < rows.length-1 ? 'border-bottom:1px solid var(--cream-dk)' : ''}">
+      <div style="width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;background:${h.status==='delivered'?'var(--green)':h.status==='failed'?'var(--red)':h.status==='in-transit'?'var(--orange)':'var(--blue)'}"></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          ${delBadge(h.status)}
+          <span style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace">${h.time}</span>
+          ${h.updatedBy ? `<span style="font-size:11px;color:var(--tan)">by user #${h.updatedBy}</span>` : ''}
+        </div>
+        ${h.note ? `<div style="font-size:12px;color:var(--brown-m);font-style:italic">Note: ${h.note}</div>` : ''}
+      </div>
+    </div>`).join('') :
+    '<div style="text-align:center;padding:20px;color:var(--brown-l);font-size:13px">No status history recorded yet. Status changes will appear here once the driver updates the delivery.</div>';
+
+  document.getElementById('m-route-detail-body').innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:15px;font-weight:600;color:var(--brown);margin-bottom:4px">Delivery #${deliveryId}</div>
+      <div style="font-size:13px;color:var(--brown-m)">${retailer} — ${city}</div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--tan);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Status History</div>
+    ${timeline}
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-route-detail')">Close</button></div>`;
+  openModal('m-route-detail');
+}
+
 function openAssign(id, retailer, city, isReassign=false) {
   document.getElementById('a-id').value    = id;
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
@@ -1223,12 +1253,23 @@ async function saveAssign() {
   if (!drv || !veh) { toast('⚠️ Select both driver and vehicle', '#ea580c'); return; }
   const [driverId, driverName] = drv.split('|');
   const [vehicleId]            = veh.split('|');
+
+  // Disable button while saving to prevent double-submit
+  const btn = document.querySelector('#m-assign .btn-tan');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
   const r = await api(`/deliveries/${id}/assign`, 'PUT', { driverId, driverName, vehicleId, etaOverride: etaVal || null, deliveryNotes: notes || null });
-  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Assign & Notify Driver 🔔'; }
+
+  if (r.error) {
+    toast(`❌ ${r.error}`, '#B71C1C');
+    return; // Keep modal open so user can correct the error
+  }
   closeModal('m-assign');
   toast(`✅ ${driverName} assigned to ${id} — Route briefing sent to driver 🔔 ETA: ${r.eta}`);
   pollBadge();
-  pageAssign();
+  await pageAssign(); // await ensures list is refreshed before user sees it
 }
 
 async function pageRoutes() {
@@ -1238,7 +1279,7 @@ async function pageRoutes() {
   const routeCards = routes.length ? routes.map(r => {
     const cities    = r.cities ? JSON.parse(r.cities) : [];
     const stopsData = r.stops_data ? JSON.parse(r.stops_data) : [];
-    const isLocked  = ['in-transit','delivered','failed'].includes(r.deliveryStatus);
+    const isLocked  = ['in-transit','delivered','failed'].includes(r.deliveryStatus) || !r.deliveryStatus || r.deliveryStatus === 'no delivery';
     const hrs       = Math.floor(r.durMins / 60);
     const mins      = r.durMins % 60;
     const statusCol = r.deliveryStatus
@@ -1747,7 +1788,7 @@ async function loadProductsForOrderForm() {
       sel.innerHTML = nestleProducts.map(p =>
         `<option value="${p.id}">${escapeHtml(p.name)}</option>`
       ).join('');
-      // products loaded silently from fallback list
+      toast('ℹ️ Showing default product list — stock data unavailable', '#1565C0');
     }
   } catch {
     toast('❌ Failed to load products for dropdown', '#dc2626');
