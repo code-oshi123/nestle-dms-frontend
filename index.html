@@ -277,7 +277,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
     <div class="lh">Welcome back</div>
     <div class="ls">Sign in to access your role-based workspace</div>
     <div class="lerr" id="lerr">Incorrect email or password.</div>
-    <div class="fi"><label>Email</label><input id="lemail" type="email" placeholder="you@nestle.lk"/></div>
+    <div class="fi"><label>Email / Username</label><input id="lemail" type="text" placeholder="you@nestle.lk" autocomplete="username"/></div>
     <div class="fi"><label>Password</label><input id="lpass" type="password" placeholder="••••••••"/></div>
     <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In →</button>
     <div class="quick">
@@ -288,6 +288,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
         <button class="qbtn" onclick="quick('route@nestle.lk','route123')"><div class="qav" style="background:#2E7D32">CR</div><div><div class="qname">Chamodi Rupasinghe</div><div class="qrole">Route Planner</div></div></button>
         <button class="qbtn" onclick="quick('warehouse@nestle.lk','wh123')"><div class="qav" style="background:#6A1B9A">KB</div><div><div class="qname">Kasun Bandara</div><div class="qrole">Warehouse</div></div></button>
         <button class="qbtn" onclick="quick('driver1@nestle.lk','drv123')"><div class="qav" style="background:#D84315">KS</div><div><div class="qname">Kumara Silva</div><div class="qrole">Distributor</div></div></button>
+        <button class="qbtn" onclick="quick('admin@nestle.lk','nestle2025')"><div class="qav" style="background:#1B5E20">SA</div><div><div class="qname">System Admin</div><div class="qrole">Admin</div></div></button>
       </div>
     </div>
   </div>
@@ -516,6 +517,7 @@ function quick(e,p) { document.getElementById('lemail').value=e; document.getEle
 function showErr(m) { const el=document.getElementById('lerr'); el.textContent=m; el.style.display='block'; }
 function setBtnLoading(on) { const b=document.getElementById('lbtn'); b.disabled=on; b.textContent=on?'Signing in…':'Sign In →'; }
 document.getElementById('lpass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+document.getElementById('lemail').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lpass').focus(); });
 
 function doLogout() {
   stopPoll(); user=null; panelOpen=false;
@@ -545,7 +547,8 @@ function enterApp() {
 
 function roleLabel(r) {
   return { retailer:'Retailer', order_team:'Order Processing Team',
-           route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor' }[r] || r;
+           route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor',
+           admin:'System Administrator' }[r] || r;
 }
 
 // ══ NOTIFICATIONS ═══════════════════════════════
@@ -650,6 +653,7 @@ async function render(id) {
   if (id==='my-routes')   await pageMyRoutes();
   if (id==='upd-status')  await pageUpdStatus();
   if (id==='retailers')   await pageRetailers();
+  if (id==='admin-users') await pageAdminUsers();
 }
 
 // ══ RETAILER PAGES ═══════════════════════════════
@@ -1042,7 +1046,10 @@ async function pageAssign() {
             <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
-            <td><button class="btn btn-orange btn-sm" onclick="openAssign('${d.id}','${d.retailer}','${d.city}',true)">🔄 Reassign</button></td>
+            <td style="display:flex;gap:6px">
+              <button class="btn btn-orange btn-sm" onclick="openAssign('${d.id}','${d.retailer}','${d.city}',true)">🔄 Reassign</button>
+              <button class="btn btn-ghost btn-sm" onclick="openDeliveryHistory('${d.id}','${d.retailer}','${d.city}')">📋 History</button>
+            </td>
           </tr>`).join('')}
         </tbody>
       </table></div>` : '<div class="empty"><div>No reassignable deliveries.</div></div>'}
@@ -1078,8 +1085,15 @@ async function openRouteBuilder() {
   }
 
   // Populate driver + vehicle dropdowns
-  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
-  document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type}</option>`).join('');
+  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' +
+    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — delivery in progress)' : ''}</option>`).join('');
+  document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' +
+    vehicles.map(v => {
+      const cap = parseFloat(v.cap) || 0;
+      const loaded = parseFloat(v.loadedKg) || 0;
+      const rem = cap > 0 ? ` · ${loaded}/${cap}kg used` : '';
+      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${rem}${v.busy ? ' (in use)' : ''}</option>`;
+    }).join('');
 
   // Set default date to today
   document.getElementById('rb-date').value = new Date().toISOString().split('T')[0];
@@ -1193,7 +1207,7 @@ async function publishRoute() {
     stops: filledStops, distKm, durMins, cities
   });
 
-  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; } // Keep modal open so planner can fix
 
   closeModal('m-route-builder');
   toast(`✅ Route published — ${filledStops.length} stops — Driver, Warehouse &amp; Retailers notified 🔔`);
@@ -1205,8 +1219,15 @@ function openAssign(id, retailer, city, isReassign=false) {
   document.getElementById('a-id').value    = id;
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
   document.querySelector('#m-assign .modal-title').textContent = isReassign ? '🔄 Reassign Driver & Vehicle' : '🚚 Quick Assign Driver & Vehicle';
-  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
-  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type} · ${v.cap}</option>`).join('');
+  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' +
+    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — delivery in progress)' : ''}</option>`).join('');
+  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' +
+    vehicles.map(v => {
+      const cap = parseFloat(v.cap) || 0;
+      const loaded = parseFloat(v.loadedKg) || 0;
+      const rem = cap > 0 ? ` · ${loaded}/${cap}kg` : (v.cap ? ` · ${v.cap}` : '');
+      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${rem}${v.busy ? ' (in use)' : ''}</option>`;
+    }).join('');
   document.getElementById('a-eta').value   = '';
   document.getElementById('a-notes').value = '';
   const note = document.getElementById('a-reassign-note');
@@ -1223,12 +1244,15 @@ async function saveAssign() {
   if (!drv || !veh) { toast('⚠️ Select both driver and vehicle', '#ea580c'); return; }
   const [driverId, driverName] = drv.split('|');
   const [vehicleId]            = veh.split('|');
+  const btn = document.querySelector('#m-assign .btn-tan');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   const r = await api(`/deliveries/${id}/assign`, 'PUT', { driverId, driverName, vehicleId, etaOverride: etaVal || null, deliveryNotes: notes || null });
+  if (btn) { btn.disabled = false; btn.textContent = 'Assign & Notify Driver 🔔'; }
   if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
   closeModal('m-assign');
   toast(`✅ ${driverName} assigned to ${id} — Route briefing sent to driver 🔔 ETA: ${r.eta}`);
   pollBadge();
-  pageAssign();
+  await pageAssign();
 }
 
 async function pageRoutes() {
@@ -1238,7 +1262,7 @@ async function pageRoutes() {
   const routeCards = routes.length ? routes.map(r => {
     const cities    = r.cities ? JSON.parse(r.cities) : [];
     const stopsData = r.stops_data ? JSON.parse(r.stops_data) : [];
-    const isLocked  = ['in-transit','delivered','failed'].includes(r.deliveryStatus);
+    const isLocked  = ['in-transit','delivered','failed'].includes(r.deliveryStatus) || !r.deliveryStatus || r.deliveryStatus === 'no delivery';
     const hrs       = Math.floor(r.durMins / 60);
     const mins      = r.durMins % 60;
     const statusCol = r.deliveryStatus
@@ -1690,32 +1714,48 @@ async function saveStatus() {
   pageUpdStatus();
 }
 
+// ══ DELIVERY HISTORY ════════════════════════════
+async function openDeliveryHistory(deliveryId, retailer, city) {
+  const data = await api(`/deliveries/${deliveryId}/history`);
+  const rows = Array.isArray(data) ? data : [];
+  const timeline = rows.length ? rows.map((h, i) => `
+    <div style="display:flex;gap:12px;padding:10px 0;${i < rows.length-1 ? 'border-bottom:1px solid var(--cream-dk)' : ''}">
+      <div style="width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;background:${h.status==='delivered'?'var(--green)':h.status==='failed'?'var(--red)':h.status==='in-transit'?'var(--orange)':'var(--blue)'}"></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          ${delBadge(h.status)}
+          <span style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace">${h.time||''}</span>
+        </div>
+        ${h.note ? `<div style="font-size:12px;color:var(--brown-m);font-style:italic">Note: ${escapeHtml(h.note)}</div>` : ''}
+      </div>
+    </div>`).join('') :
+    '<div style="text-align:center;padding:20px;color:var(--brown-l);font-size:13px">No status history yet. Status changes will appear here.</div>';
+
+  document.getElementById('m-route-detail-body').innerHTML = `
+    <div style="margin-bottom:14px">
+      <div style="font-size:15px;font-weight:600;color:var(--brown);margin-bottom:4px">Delivery #${deliveryId}</div>
+      <div style="font-size:13px;color:var(--brown-m)">${escapeHtml(retailer)} — ${escapeHtml(city)}</div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:var(--tan);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Status History</div>
+    ${timeline}
+    <div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-route-detail')">Close</button></div>`;
+  openModal('m-route-detail');
+}
+
 // ══ ORDER TEAM — RETAILER MANAGEMENT ════════════
 async function pageRetailers() {
   const retailers = await api('/retailers');
-  if (retailers.error) {
-    setContent(`<div class="alert-banner alert-error">❌ ${retailers.error}</div>`);
-    return;
-  }
-
+  if (retailers.error) { setContent(`<div class="alert-banner alert-error">❌ ${retailers.error}</div>`); return; }
   setContent(`
     <div class="sec-hdr">
-      <div>
-        <div class="sec-title">Retailer Accounts</div>
-        <div class="sec-sub">Add new retailers so they can log in and place orders immediately</div>
-      </div>
+      <div><div class="sec-title">Retailer Accounts</div>
+      <div class="sec-sub">Add retailers so they can log in and place orders immediately</div></div>
       <button class="btn btn-tan" onclick="openAddRetailer()">+ Add Retailer</button>
     </div>
-
-    <div class="kpi-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="kpi-row" style="grid-template-columns:repeat(2,1fr)">
       <div class="kpi"><div class="kpi-v">${retailers.length}</div><div class="kpi-l">Total Retailers</div></div>
-      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${retailers.filter(r => {
-        const d = new Date(r.createdAt); const now = new Date();
-        return now - d < 7 * 24 * 60 * 60 * 1000;
-      }).length}</div><div class="kpi-l">Added This Week</div></div>
-      <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-v">${retailers.length > 0 ? '✓' : '—'}</div><div class="kpi-l">Can Place Orders</div></div>
+      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${retailers.length > 0 ? '✓' : '—'}</div><div class="kpi-l">Can Place Orders</div></div>
     </div>
-
     <div class="card">
       <div class="card-title">🏪 All Retailers <span class="badge b-gray" style="margin-left:8px">${retailers.length}</span></div>
       ${retailers.length ? `
@@ -1723,7 +1763,7 @@ async function pageRetailers() {
         <thead><tr><th>Avatar</th><th>Name</th><th>Email / Username</th><th>Added</th><th>Actions</th></tr></thead>
         <tbody>${retailers.map(r => `
           <tr>
-            <td><div style="width:34px;height:34px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">${escapeHtml(r.avatar||'?')}</div></td>
+            <td><div style="width:32px;height:32px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">${escapeHtml(r.avatar||'?')}</div></td>
             <td><strong>${escapeHtml(r.name)}</strong></td>
             <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--brown-m)">${escapeHtml(r.Email)}</td>
             <td style="font-size:12px;color:var(--brown-l)">${r.createdAt||'—'}</td>
@@ -1733,26 +1773,18 @@ async function pageRetailers() {
             </td>
           </tr>`).join('')}
         </tbody>
-      </table></div>` : `
-      <div class="empty">
-        <div class="empty-icon">🏪</div>
-        <div>No retailers yet. Click <strong>+ Add Retailer</strong> to add one.</div>
-      </div>`}
+      </table></div>` : '<div class="empty"><div class="empty-icon">🏪</div><div>No retailers yet. Click <strong>+ Add Retailer</strong>.</div></div>'}
     </div>
-
     <!-- Add Retailer Modal -->
     <div class="modal-bg" id="m-add-retailer" style="z-index:400">
       <div class="modal" style="max-width:440px">
         <div class="modal-title">🏪 Add New Retailer</div>
         <div class="modal-body">
-          <div class="fg"><label>Store / Business Name <span style="color:var(--red)">*</span></label>
-            <input id="ar-name" placeholder="e.g. Keells Super Colombo 7"/></div>
-          <div class="fg"><label>Email <span style="color:var(--red)">*</span></label>
-            <input id="ar-email" type="text" placeholder="e.g. keells@nestle.lk"/></div>
-          <div class="fg"><label>Password <span style="color:var(--red)">*</span></label>
-            <input id="ar-pass" type="password" placeholder="Min 4 characters"/>
+          <div class="fg"><label>Business Name <span style="color:var(--red)">*</span></label><input id="ar-name" placeholder="e.g. Keells Super Colombo 7"/></div>
+          <div class="fg"><label>Email <span style="color:var(--red)">*</span></label><input id="ar-email" type="text" placeholder="e.g. keells@nestle.lk"/></div>
+          <div class="fg"><label>Password <span style="color:var(--red)">*</span></label><input id="ar-pass" type="password" placeholder="Min 4 characters"/>
             <div style="font-size:11px;color:var(--brown-l);margin-top:3px">Share this with the retailer so they can log in</div></div>
-          <div class="fg"><label>Avatar Initials <span style="color:var(--brown-l);font-weight:400;text-transform:none">(optional — auto from name)</span></label>
+          <div class="fg"><label>Avatar Initials <span style="color:var(--brown-l);font-weight:400">(optional)</span></label>
             <input id="ar-avatar" placeholder="e.g. KS" maxlength="2" style="max-width:80px;text-transform:uppercase"/></div>
           <div id="ar-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
           <div class="modal-actions">
@@ -1762,15 +1794,13 @@ async function pageRetailers() {
         </div>
       </div>
     </div>
-
-    <!-- Reset Password Modal -->
+    <!-- Reset PW Modal -->
     <div class="modal-bg" id="m-retailer-pw" style="z-index:400">
       <div class="modal" style="max-width:380px">
         <div class="modal-title">🔑 Reset Retailer Password</div>
         <div class="modal-body">
           <input type="hidden" id="rpw-id"/>
-          <div class="fg"><label id="rpw-label">New password</label>
-            <input id="rpw-pass" type="password" placeholder="Min 4 characters"/></div>
+          <div class="fg"><label id="rpw-label">New password</label><input id="rpw-pass" type="password" placeholder="Min 4 characters"/></div>
           <div id="rpw-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
           <div class="modal-actions">
             <button class="btn btn-ghost" onclick="closeModal('m-retailer-pw')">Cancel</button>
@@ -1782,83 +1812,168 @@ async function pageRetailers() {
 }
 
 function openAddRetailer() {
-  ['ar-name','ar-email','ar-pass','ar-avatar'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  document.getElementById('ar-err').style.display = 'none';
-  const btn = document.getElementById('ar-btn');
-  if (btn) { btn.disabled = false; btn.textContent = 'Create Retailer Account'; }
+  ['ar-name','ar-email','ar-pass','ar-avatar'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('ar-err').style.display='none';
+  const btn=document.getElementById('ar-btn'); if(btn){btn.disabled=false;btn.textContent='Create Retailer Account';}
   openModal('m-add-retailer');
 }
-
 async function saveNewRetailer() {
-  const name   = document.getElementById('ar-name').value.trim();
-  const email  = document.getElementById('ar-email').value.trim();
-  const pass   = document.getElementById('ar-pass').value;
-  const avatar = document.getElementById('ar-avatar').value.trim();
-  const errEl  = document.getElementById('ar-err');
-
-  if (!name || !email || !pass) {
-    errEl.textContent = '⚠️ Name, email and password are all required.';
-    errEl.style.display = 'flex'; return;
-  }
-  if (pass.length < 4) {
-    errEl.textContent = '⚠️ Password must be at least 4 characters.';
-    errEl.style.display = 'flex'; return;
-  }
-
-  const btn = document.getElementById('ar-btn');
-  btn.disabled = true; btn.textContent = 'Creating…';
-
-  const r = await api('/retailers', 'POST', { name, email, password: pass, avatar });
-  btn.disabled = false; btn.textContent = 'Create Retailer Account';
-
-  if (r.error) {
-    errEl.textContent = `❌ ${r.error}`;
-    errEl.style.display = 'flex'; return;
-  }
-
+  const name=document.getElementById('ar-name').value.trim();
+  const email=document.getElementById('ar-email').value.trim();
+  const pass=document.getElementById('ar-pass').value;
+  const avatar=document.getElementById('ar-avatar').value.trim();
+  const errEl=document.getElementById('ar-err');
+  if(!name||!email||!pass){errEl.textContent='⚠️ Name, email and password are all required.';errEl.style.display='flex';return;}
+  if(pass.length<4){errEl.textContent='⚠️ Password must be at least 4 characters.';errEl.style.display='flex';return;}
+  const btn=document.getElementById('ar-btn');btn.disabled=true;btn.textContent='Creating…';
+  const r=await api('/retailers','POST',{name,email,password:pass,avatar});
+  btn.disabled=false;btn.textContent='Create Retailer Account';
+  if(r.error){errEl.textContent=`❌ ${r.error}`;errEl.style.display='flex';return;}
   closeModal('m-add-retailer');
-  toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a');
+  toast(`✅ Retailer "${name}" added — they can now log in and place orders`,'#16a34a');
   await pageRetailers();
 }
-
-function openRetailerResetPw(id, name) {
-  document.getElementById('rpw-id').value = id;
-  document.getElementById('rpw-label').textContent = `New password for ${name}`;
-  document.getElementById('rpw-pass').value = '';
-  document.getElementById('rpw-err').style.display = 'none';
-  const btn = document.getElementById('rpw-btn');
-  if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; }
+function openRetailerResetPw(id,name){
+  document.getElementById('rpw-id').value=id;
+  document.getElementById('rpw-label').textContent=`New password for ${name}`;
+  document.getElementById('rpw-pass').value='';
+  document.getElementById('rpw-err').style.display='none';
+  const btn=document.getElementById('rpw-btn');if(btn){btn.disabled=false;btn.textContent='Reset Password';}
   openModal('m-retailer-pw');
 }
-
-async function saveRetailerPw() {
-  const id   = document.getElementById('rpw-id').value;
-  const pass = document.getElementById('rpw-pass').value;
-  const errEl = document.getElementById('rpw-err');
-  if (!pass || pass.length < 4) {
-    errEl.textContent = '⚠️ Password must be at least 4 characters.';
-    errEl.style.display = 'flex'; return;
-  }
-  const btn = document.getElementById('rpw-btn');
-  btn.disabled = true; btn.textContent = 'Resetting…';
-  const r = await api(`/retailers/${id}/reset-password`, 'PUT', { password: pass });
-  btn.disabled = false; btn.textContent = 'Reset Password';
-  if (r.error) {
-    errEl.textContent = `❌ ${r.error}`;
-    errEl.style.display = 'flex'; return;
-  }
-  closeModal('m-retailer-pw');
-  toast('✅ Password reset successfully');
+async function saveRetailerPw(){
+  const id=document.getElementById('rpw-id').value;
+  const pass=document.getElementById('rpw-pass').value;
+  const errEl=document.getElementById('rpw-err');
+  if(!pass||pass.length<4){errEl.textContent='⚠️ Password must be at least 4 characters.';errEl.style.display='flex';return;}
+  const btn=document.getElementById('rpw-btn');btn.disabled=true;btn.textContent='Resetting…';
+  const r=await api(`/retailers/${id}/reset-password`,'PUT',{password:pass});
+  btn.disabled=false;btn.textContent='Reset Password';
+  if(r.error){errEl.textContent=`❌ ${r.error}`;errEl.style.display='flex';return;}
+  closeModal('m-retailer-pw');toast('✅ Password reset successfully');
+}
+async function deleteRetailer(id,name){
+  if(!confirm(`Remove retailer "${name}"?\n\nTheir past orders will remain in the system.`)) return;
+  const r=await api(`/retailers/${id}`,'DELETE');
+  if(r.error){toast(`❌ ${r.error}`,'#B71C1C');return;}
+  toast(`✅ Retailer "${name}" removed`);await pageRetailers();
 }
 
-async function deleteRetailer(id, name) {
-  if (!confirm(`Remove retailer "${name}"?\n\nThis will delete their account. Their past orders will remain in the system.`)) return;
-  const r = await api(`/retailers/${id}`, 'DELETE');
-  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
-  toast(`✅ Retailer "${name}" removed`);
-  await pageRetailers();
+// ══ ADMIN — USER MANAGEMENT ══════════════════════
+async function pageAdminUsers() {
+  const users = await api('/users');
+  if (users.error) { setContent(`<div class="alert-banner alert-error">❌ ${users.error}</div>`); return; }
+  const RLABELS = {retailer:'Retailer',order_team:'Order Team',route_planner:'Route Planner',warehouse:'Warehouse',distributor:'Distributor'};
+  const RCOLORS = {retailer:'b-teal',order_team:'b-blue',route_planner:'b-purple',warehouse:'b-navy',distributor:'b-orange'};
+  setContent(`
+    <div class="sec-hdr">
+      <div><div class="sec-title">User Management</div><div class="sec-sub">Add, view and remove system users</div></div>
+      <button class="btn btn-tan" onclick="openAddUser()">+ Add User</button>
+    </div>
+    <div class="card">
+      <div class="card-title">👥 All Users <span class="badge b-gray" style="margin-left:8px">${users.length}</span></div>
+      <div class="tw"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead>
+        <tbody>${users.length ? users.map(u=>`
+          <tr>
+            <td><strong>${escapeHtml(u.name)}</strong></td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${escapeHtml(u.Email)}</td>
+            <td><span class="badge ${RCOLORS[u.role]||'b-gray'}">${RLABELS[u.role]||u.role}</span></td>
+            <td style="font-size:12px;color:var(--brown-l)">${u.createdAt||'—'}</td>
+            <td style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="openAdminResetPw(${u.id},'${escapeHtml(u.name)}')">🔑 Reset PW</button>
+              ${u.id !== user.id ? `<button class="btn btn-red btn-sm" onclick="deleteUser(${u.id},'${escapeHtml(u.name)}')">✕ Remove</button>` : '<span style="font-size:11px;color:var(--brown-l);padding:4px 8px">(you)</span>'}
+            </td>
+          </tr>`).join('') : '<tr><td colspan="5"><div class="empty"><div>No users found.</div></div></td></tr>'}
+        </tbody>
+      </table></div>
+    </div>
+    <!-- Add User Modal -->
+    <div class="modal-bg" id="m-add-user" style="z-index:400">
+      <div class="modal" style="max-width:460px">
+        <div class="modal-title">👤 Add New User</div>
+        <div class="modal-body">
+          <div class="fg"><label>Full Name <span style="color:var(--red)">*</span></label><input id="au-name" placeholder="e.g. Kamal Perera"/></div>
+          <div class="fg"><label>Email <span style="color:var(--red)">*</span></label><input id="au-email" type="text" placeholder="kamal@nestle.lk"/></div>
+          <div class="fg"><label>Password <span style="color:var(--red)">*</span></label><input id="au-pass" type="password" placeholder="Min 4 characters"/></div>
+          <div class="fg"><label>Role <span style="color:var(--red)">*</span></label>
+            <select id="au-role">
+              <option value="">Select role…</option>
+              <option value="retailer">Retailer</option>
+              <option value="order_team">Order Processing Team</option>
+              <option value="route_planner">Route Planner</option>
+              <option value="warehouse">Warehouse</option>
+              <option value="distributor">Distributor / Driver</option>
+            </select></div>
+          <div id="au-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('m-add-user')">Cancel</button>
+            <button class="btn btn-tan" onclick="saveNewUser()" id="au-btn">Create User</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Admin Reset PW Modal -->
+    <div class="modal-bg" id="m-admin-pw" style="z-index:400">
+      <div class="modal" style="max-width:380px">
+        <div class="modal-title">🔑 Reset Password</div>
+        <div class="modal-body">
+          <input type="hidden" id="apw-id"/>
+          <div class="fg"><label id="apw-label">New password</label><input id="apw-pass" type="password" placeholder="Min 4 characters"/></div>
+          <div id="apw-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
+          <div class="modal-actions">
+            <button class="btn btn-ghost" onclick="closeModal('m-admin-pw')">Cancel</button>
+            <button class="btn btn-tan" onclick="saveAdminPw()" id="apw-btn">Reset Password</button>
+          </div>
+        </div>
+      </div>
+    </div>`);
+}
+function openAddUser(){
+  ['au-name','au-email','au-pass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('au-role').value='';
+  document.getElementById('au-err').style.display='none';
+  const btn=document.getElementById('au-btn');if(btn){btn.disabled=false;btn.textContent='Create User';}
+  openModal('m-add-user');
+}
+async function saveNewUser(){
+  const name=document.getElementById('au-name').value.trim();
+  const email=document.getElementById('au-email').value.trim();
+  const pass=document.getElementById('au-pass').value;
+  const role=document.getElementById('au-role').value;
+  const errEl=document.getElementById('au-err');
+  if(!name||!email||!pass||!role){errEl.textContent='⚠️ All fields are required.';errEl.style.display='flex';return;}
+  if(pass.length<4){errEl.textContent='⚠️ Password must be at least 4 characters.';errEl.style.display='flex';return;}
+  const btn=document.getElementById('au-btn');btn.disabled=true;btn.textContent='Creating…';
+  const r=await api('/users','POST',{name,email,password:pass,role});
+  btn.disabled=false;btn.textContent='Create User';
+  if(r.error){errEl.textContent=`❌ ${r.error}`;errEl.style.display='flex';return;}
+  closeModal('m-add-user');toast(`✅ User "${name}" created`,'#16a34a');await pageAdminUsers();
+}
+function openAdminResetPw(id,name){
+  document.getElementById('apw-id').value=id;
+  document.getElementById('apw-label').textContent=`New password for ${name}`;
+  document.getElementById('apw-pass').value='';
+  document.getElementById('apw-err').style.display='none';
+  const btn=document.getElementById('apw-btn');if(btn){btn.disabled=false;btn.textContent='Reset Password';}
+  openModal('m-admin-pw');
+}
+async function saveAdminPw(){
+  const id=document.getElementById('apw-id').value;
+  const pass=document.getElementById('apw-pass').value;
+  const errEl=document.getElementById('apw-err');
+  if(!pass||pass.length<4){errEl.textContent='⚠️ Min 4 characters.';errEl.style.display='flex';return;}
+  const btn=document.getElementById('apw-btn');btn.disabled=true;btn.textContent='Resetting…';
+  const r=await api(`/users/${id}/reset-password`,'PUT',{password:pass});
+  btn.disabled=false;btn.textContent='Reset Password';
+  if(r.error){errEl.textContent=`❌ ${r.error}`;errEl.style.display='flex';return;}
+  closeModal('m-admin-pw');toast('✅ Password reset successfully');
+}
+async function deleteUser(id,name){
+  if(!confirm(`Remove user "${name}"? This cannot be undone.`)) return;
+  const r=await api(`/users/${id}`,'DELETE');
+  if(r.error){toast(`❌ ${r.error}`,'#B71C1C');return;}
+  toast(`✅ User "${name}" removed`);await pageAdminUsers();
 }
 
 // ══ UTILS ════════════════════════════════════════
@@ -1918,7 +2033,7 @@ async function loadProductsForOrderForm() {
       sel.innerHTML = nestleProducts.map(p =>
         `<option value="${p.id}">${escapeHtml(p.name)}</option>`
       ).join('');
-      toast('ℹ️ Showing default product list — stock data unavailable', '#1565C0');
+      // products loaded silently from fallback list
     }
   } catch {
     toast('❌ Failed to load products for dropdown', '#dc2626');
