@@ -277,7 +277,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
     <div class="lh">Welcome back</div>
     <div class="ls">Sign in to access your role-based workspace</div>
     <div class="lerr" id="lerr">Incorrect email or password.</div>
-    <div class="fi"><label>Email</label><input id="lemail" type="text" placeholder="you@nestle.lk"/></div>
+    <div class="fi"><label>Email</label><input id="lemail" type="email" placeholder="you@nestle.lk"/></div>
     <div class="fi"><label>Password</label><input id="lpass" type="password" placeholder="••••••••"/></div>
     <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In →</button>
     <div class="quick">
@@ -516,7 +516,6 @@ function quick(e,p) { document.getElementById('lemail').value=e; document.getEle
 function showErr(m) { const el=document.getElementById('lerr'); el.textContent=m; el.style.display='block'; }
 function setBtnLoading(on) { const b=document.getElementById('lbtn'); b.disabled=on; b.textContent=on?'Signing in…':'Sign In →'; }
 document.getElementById('lpass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-document.getElementById('lemail').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lpass').focus(); });
 
 function doLogout() {
   stopPoll(); user=null; panelOpen=false;
@@ -1078,8 +1077,15 @@ async function openRouteBuilder() {
   }
 
   // Populate driver + vehicle dropdowns
-  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
-  document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type}</option>`).join('');
+  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' +
+    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — delivery in progress)' : ''}</option>`).join('');
+  document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' +
+    vehicles.map(v => {
+      const cap = parseFloat(v.cap) || 0;
+      const loaded = parseFloat(v.loadedKg) || 0;
+      const remaining = cap > 0 ? ` · ${loaded}/${cap}kg used` : '';
+      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${remaining}${v.busy ? ' (in use)' : ''}</option>`;
+    }).join('');
 
   // Set default date to today
   document.getElementById('rb-date').value = new Date().toISOString().split('T')[0];
@@ -1193,7 +1199,10 @@ async function publishRoute() {
     stops: filledStops, distKm, durMins, cities
   });
 
-  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+  if (r.error) {
+    toast(`❌ ${r.error}`, '#B71C1C');
+    return; // Keep modal open so planner can choose a different driver/vehicle
+  }
 
   closeModal('m-route-builder');
   toast(`✅ Route published — ${filledStops.length} stops — Driver, Warehouse &amp; Retailers notified 🔔`);
@@ -1205,8 +1214,15 @@ function openAssign(id, retailer, city, isReassign=false) {
   document.getElementById('a-id').value    = id;
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
   document.querySelector('#m-assign .modal-title').textContent = isReassign ? '🔄 Reassign Driver & Vehicle' : '🚚 Quick Assign Driver & Vehicle';
-  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' + drivers.map(d=>`<option value="${d.id}|${d.name}">${d.name}</option>`).join('');
-  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' + vehicles.map(v=>`<option value="${v.id}|${v.plate}">${v.id} — ${v.plate} · ${v.type} · ${v.cap}</option>`).join('');
+  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' +
+    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — delivery in progress)' : ''}</option>`).join('');
+  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' +
+    vehicles.map(v => {
+      const cap = parseFloat(v.cap) || 0;
+      const loaded = parseFloat(v.loadedKg) || 0;
+      const remaining = cap > 0 ? ` · ${loaded}/${cap}kg` : (v.cap ? ` · ${v.cap}` : '');
+      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${remaining}${v.busy ? ' (in use)' : ''}</option>`;
+    }).join('');
   document.getElementById('a-eta').value   = '';
   document.getElementById('a-notes').value = '';
   const note = document.getElementById('a-reassign-note');
@@ -1747,7 +1763,7 @@ async function loadProductsForOrderForm() {
       sel.innerHTML = nestleProducts.map(p =>
         `<option value="${p.id}">${escapeHtml(p.name)}</option>`
       ).join('');
-      // products loaded silently from fallback list
+      toast('ℹ️ Showing default product list — stock data unavailable', '#1565C0');
     }
   } catch {
     toast('❌ Failed to load products for dropdown', '#dc2626');
