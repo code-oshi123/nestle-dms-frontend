@@ -139,7 +139,8 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .main{padding:28px;max-width:1180px;margin:0 auto}
 .card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:24px;margin-bottom:18px;border:1px solid var(--cream-dk)}
 .card-title{font-size:15px;font-weight:600;color:var(--brown);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px}
+.sec-hdr-logo{width:34px;height:34px;object-fit:contain;opacity:0.5;flex-shrink:0;border-radius:6px;padding:2px;background:var(--white);border:1px solid var(--cream-dk)}
 .sec-title{font-size:24px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
 .sec-sub{font-size:13px;color:var(--brown-m);margin-top:4px;font-weight:400}
 
@@ -489,6 +490,20 @@ tr:hover td{background:rgba(139,105,20,.03)}
 
 <script>
 const API = 'https://nestle-dms-backend.onrender.com/api';
+
+// Inject Nestlé logo into every page section header
+function injectSecLogos() {
+  const logoSrc = document.querySelector('.tlogo-img')?.src;
+  if (!logoSrc) return;
+  document.querySelectorAll('.sec-hdr').forEach(hdr => {
+    if (hdr.querySelector('.sec-hdr-logo')) return; // already added
+    const img = document.createElement('img');
+    img.className = 'sec-hdr-logo';
+    img.src = logoSrc;
+    img.alt = 'Nestlé';
+    hdr.insertBefore(img, hdr.firstChild);
+  });
+}
 let user = null, drivers = [], vehicles = [], pollTimer = null, panelOpen = false;
 
 setInterval(() => fetch('https://nestle-dms-backend.onrender.com/').catch(()=>{}), 10 * 60 * 1000);
@@ -646,6 +661,7 @@ function nav(id) {
 
 async function render(id) {
   setContent('<div class="empty"><div class="empty-icon">⏳</div><div>Loading…</div></div>');
+  setTimeout(injectSecLogos, 80);
   if (id==='my-orders')   await pageMyOrders();
   if (id==='req-order')   await pageReqOrder();
   if (id==='all-orders')  await pageAllOrders();
