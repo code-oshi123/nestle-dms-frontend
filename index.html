@@ -659,8 +659,9 @@ async function render(id) {
 async function pageMyOrders() {
   const data = await api(`/orders?role=retailer&userId=${user.id}`);
 
-  // ── FIX: Show rejection notice + retry hint for rejected orders ──
   const rejected = data.filter(o=>o.status==='rejected');
+  const awaitingReceipt = data.filter(o=>o.deliveryStatus==='delivered' && !o.receiptConfirmed);
+
   const rejectionBanner = rejected.length ? `
     <div class="rejection-notice">
       <div class="rn-title">⚠️ You have ${rejected.length} rejected order(s)</div>
@@ -670,14 +671,21 @@ async function pageMyOrders() {
       <div class="rn-hint">You can correct and resubmit a new order by clicking "New Request" below.</div>
     </div>` : '';
 
+  const receiptBanner = awaitingReceipt.length ? `
+    <div class="alert-banner alert-success" style="margin-bottom:18px">
+      📦 <strong>${awaitingReceipt.length} delivery pending your confirmation.</strong>
+      Please confirm receipt below to complete the delivery process.
+    </div>` : '';
+
   setContent(`
     <div class="sec-hdr">
-      <div><div class="sec-title">My Orders</div><div class="sec-sub">Track your submitted orders and their status</div></div>
+      <div><div class="sec-title">My Orders</div><div class="sec-sub">Track your submitted orders and confirm deliveries</div></div>
       <button class="btn btn-tan" onclick="nav('req-order')">+ New Request</button>
     </div>
     ${rejectionBanner}
+    ${receiptBanner}
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Rejection Reason</th><th>Submitted</th></tr></thead>
+      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
       <tbody>${data.length ? data.map(o=>`
         <tr>
           <td><span class="mono">${o.id}</span></td>
@@ -685,12 +693,76 @@ async function pageMyOrders() {
           <td>${o.items} items · ${o.kg}kg</td>
           <td>${prioBadge(o.prio)}</td>
           <td>${orderBadge(o.status)}</td>
-          <td style="font-size:12px;color:${o.status==='rejected'?'var(--red)':'var(--brown-l)'};max-width:220px">
-            ${o.status==='rejected' && o.rejectReason ? `<strong>${o.rejectReason}</strong>` : '—'}
+          <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
+            ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
+          </td>
+          <td>
+            ${o.receiptConfirmed
+              ? `<div style="display:flex;flex-direction:column;gap:3px">
+                   <span class="badge b-green">✅ Receipt Confirmed</span>
+                   <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.receiptAt||''}</span>
+                   ${o.receiptNote ? `<span style="font-size:11px;color:var(--brown-m);font-style:italic">"${escapeHtml(o.receiptNote)}"</span>` : ''}
+                 </div>`
+              : o.deliveryStatus === 'delivered'
+              ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">
+                   📦 Confirm Receipt
+                 </button>`
+              : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
           </td>
           <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
-        </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
-    </table></div></div>`);
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
+    </table></div></div>
+
+  <!-- Confirm Receipt Modal -->
+  <div class="modal-bg" id="m-confirm-receipt" style="z-index:400">
+    <div class="modal" style="max-width:460px">
+      <div class="modal-title">📦 Confirm Delivery Receipt</div>
+      <div class="modal-body">
+        <input type="hidden" id="cr-delivery-id"/>
+        <input type="hidden" id="cr-order-id"/>
+        <div style="background:var(--green-bg);border:1px solid #A5D6A7;border-radius:var(--r-sm);padding:14px 16px;margin-bottom:16px">
+          <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px">✅ Confirming delivery to <span id="cr-city"></span></div>
+          <div style="font-size:12px;color:var(--brown-m)">Order <span id="cr-order-label" style="font-family:'DM Mono',monospace;color:var(--tan)"></span></div>
+        </div>
+        <div class="fg">
+          <label>Note <span style="color:var(--brown-l);font-weight:400;text-transform:none">(optional)</span></label>
+          <input id="cr-note" placeholder="e.g. Goods received in good condition, signed by manager…"/>
+        </div>
+        <div class="alert-banner alert-info" style="margin-bottom:0">
+          ℹ️ This confirmation is your digital proof of receipt. Driver and Order Team will be notified.
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal('m-confirm-receipt')">Cancel</button>
+          <button class="btn btn-green" onclick="saveConfirmReceipt()" id="cr-btn">✅ Confirm Receipt & Notify</button>
+        </div>
+      </div>
+    </div>
+  </div>`);
+}
+
+function openConfirmReceipt(deliveryId, orderId, city) {
+  document.getElementById('cr-delivery-id').value = deliveryId;
+  document.getElementById('cr-order-id').value    = orderId;
+  document.getElementById('cr-city').textContent  = city;
+  document.getElementById('cr-order-label').textContent = orderId;
+  document.getElementById('cr-note').value = '';
+  const btn = document.getElementById('cr-btn');
+  if (btn) { btn.disabled=false; btn.textContent='✅ Confirm Receipt & Notify'; }
+  openModal('m-confirm-receipt');
+}
+
+async function saveConfirmReceipt() {
+  const deliveryId = document.getElementById('cr-delivery-id').value;
+  const note       = document.getElementById('cr-note').value.trim();
+  const btn        = document.getElementById('cr-btn');
+  btn.disabled = true; btn.textContent = 'Confirming…';
+  const r = await api(`/deliveries/${deliveryId}/confirm-receipt`, 'PUT', { note });
+  btn.disabled = false; btn.textContent = '✅ Confirm Receipt & Notify';
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+  closeModal('m-confirm-receipt');
+  toast('✅ Receipt confirmed — Driver & Order Team notified 🔔', '#16a34a');
+  pollBadge();
+  await pageMyOrders();
 }
 
 async function pageReqOrder() {
@@ -935,7 +1007,7 @@ async function pageDeliveries() {
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">All Deliveries</div><div class="sec-sub">Live delivery status across all roles</div></div></div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th></tr></thead>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Receipt Proof</th></tr></thead>
       <tbody>${data.length ? data.map(d=>`
         <tr>
           <td><span class="mono">${d.id}</span></td>
@@ -945,6 +1017,15 @@ async function pageDeliveries() {
           <td>${delBadge(d.status)}</td>
           <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'<span style="color:var(--brown-l);font-size:12px">—</span>'}</td>
           <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+          <td>${d.receiptConfirmed
+            ? `<div style="display:flex;flex-direction:column;gap:2px">
+                 <span class="badge b-green">✅ Confirmed</span>
+                 <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${d.receiptAt||''}</span>
+               </div>`
+            : d.status==='delivered'
+            ? '<span class="badge b-orange">⏳ Awaiting</span>'
+            : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
+          </td>
         </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
 }
@@ -1085,7 +1166,7 @@ async function openRouteBuilder() {
 
   // Populate driver + vehicle dropdowns
   document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' +
-    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (in transit — complete delivery first)' : ''}</option>`).join('');
+    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — has incomplete delivery)' : ''}</option>`).join('');
   document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' +
     vehicles.map(v => {
       const cap = parseFloat(v.cap) || 0;
@@ -1219,7 +1300,7 @@ function openAssign(id, retailer, city, isReassign=false) {
   document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
   document.querySelector('#m-assign .modal-title').textContent = isReassign ? '🔄 Reassign Driver & Vehicle' : '🚚 Quick Assign Driver & Vehicle';
   document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' +
-    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (in transit — complete delivery first)' : ''}</option>`).join('');
+    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — has incomplete delivery)' : ''}</option>`).join('');
   document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' +
     vehicles.map(v => {
       const cap = parseFloat(v.cap) || 0;
