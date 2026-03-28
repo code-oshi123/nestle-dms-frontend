@@ -68,9 +68,9 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
   height:64px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;
   position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.35),0 1px 0 rgba(217,200,154,.1)}
 .tl{display:flex;align-items:center;gap:16px}
-.tlogo-wrap{width:42px;height:42px;border-radius:10px;background:rgba(255,253,248,.12);
-  border:1px solid rgba(217,200,154,.25);display:flex;align-items:center;justify-content:center;padding:5px;flex-shrink:0}
-.tlogo-img{width:100%;height:100%;object-fit:contain;filter:brightness(0) invert(1) sepia(1) saturate(0.4) brightness(1.8)}
+.tlogo-wrap{width:42px;height:42px;border-radius:10px;background:rgba(255,253,248,.95);
+  border:1px solid rgba(217,200,154,.4);display:flex;align-items:center;justify-content:center;padding:5px;flex-shrink:0}
+.tlogo-img{width:100%;height:100%;object-fit:contain;border-radius:6px}
 .tdivider{width:1px;height:32px;background:rgba(217,200,154,.2)}
 .ttitle{font-size:16px;font-weight:600;color:var(--cream);font-family:'Cormorant Garamond',serif;letter-spacing:.3px;line-height:1.1}
 .tsub{font-size:10px;color:rgba(245,237,214,.45);letter-spacing:.6px;font-weight:400;margin-top:2px}
@@ -493,19 +493,7 @@ const API = 'https://nestle-dms-backend.onrender.com/api';
 
 // Inject Nestlé logo into every page section header
 function injectSecLogos() {
-  const logoSrc = document.querySelector('.tlogo-img')?.src;
-  if (!logoSrc) return;
-  const mc = document.getElementById('main-content');
-  if (!mc) return;
-  // Remove any existing banner
-  const existing = mc.querySelector('.page-logo-banner');
-  if (existing) existing.remove();
-  // Only inject if there's a sec-hdr on this page
-  if (!mc.querySelector('.sec-hdr')) return;
-  const banner = document.createElement('div');
-  banner.className = 'page-logo-banner';
-  banner.innerHTML = `<img src="${logoSrc}" alt="Nestlé" class="page-logo-img"/><span class="page-logo-text">Nestlé Smart DMS</span>`;
-  mc.insertBefore(banner, mc.firstChild);
+  // Logo is shown in topbar - no page injection needed
 }
 let user = null, drivers = [], vehicles = [], pollTimer = null, panelOpen = false;
 
