@@ -495,8 +495,8 @@ const API = 'https://nestle-dms-backend.onrender.com/api';
 function injectSecLogos() {
   const logoSrc = document.querySelector('.tlogo-img')?.src;
   if (!logoSrc) return;
-  document.querySelectorAll('.sec-hdr').forEach(hdr => {
-    if (hdr.querySelector('.sec-hdr-logo')) return; // already added
+  document.querySelectorAll('#main-content .sec-hdr').forEach(hdr => {
+    if (hdr.querySelector('.sec-hdr-logo')) return;
     const img = document.createElement('img');
     img.className = 'sec-hdr-logo';
     img.src = logoSrc;
@@ -661,7 +661,6 @@ function nav(id) {
 
 async function render(id) {
   setContent('<div class="empty"><div class="empty-icon">⏳</div><div>Loading…</div></div>');
-  setTimeout(injectSecLogos, 80);
   if (id==='my-orders')   await pageMyOrders();
   if (id==='req-order')   await pageReqOrder();
   if (id==='all-orders')  await pageAllOrders();
@@ -2174,7 +2173,10 @@ async function loadProductsForOrderForm() {
   }
 }
 
-function setContent(html) { document.getElementById('main-content').innerHTML = html; }
+function setContent(html) {
+  document.getElementById('main-content').innerHTML = html;
+  injectSecLogos();
+}
 function openModal(id)    { document.getElementById(id).classList.add('open'); }
 function closeModal(id)   { document.getElementById(id).classList.remove('open'); }
 
