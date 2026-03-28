@@ -1184,7 +1184,7 @@ async function openRouteBuilder() {
   // Set default date to today
   document.getElementById('rb-date').value = new Date().toISOString().split('T')[0];
 
-  rbOsrmDist = null; rbOsrmDur = null;
+  rbOsrmDist = null; rbOsrmDur = null; rbSelectedWarehouse = null;
   const optInfo = document.getElementById('rb-optimize-info');
   if (optInfo) optInfo.style.display = 'none';
   const optBtn = document.getElementById('rb-optimize-btn');
@@ -1242,7 +1242,6 @@ function rbDrop(e, idx) {
 
 // ── Sri Lanka city coordinates (depot = Nestlé Colombo warehouse) ──
 const CITY_COORDS = {
-  'Depot':         { lat:  6.9271, lng: 79.8612 },
   'Colombo':       { lat:  6.9271, lng: 79.8612 },
   'Dehiwala':      { lat:  6.8519, lng: 79.8674 },
   'Nugegoda':      { lat:  6.8728, lng: 79.8880 },
@@ -1257,7 +1256,13 @@ const CITY_COORDS = {
   'Kurunegala':    { lat:  7.4875, lng: 80.3647 },
 };
 
-const DEPOT_COORD = CITY_COORDS['Depot'];
+// ── 4 Nestlé warehouses ──────────────────────────────────────
+const WAREHOUSES = {
+  'Colombo':   { lat: 6.9271, lng: 79.8612 },
+  'Galle':     { lat: 6.0535, lng: 80.2210 },
+  'Kandy':     { lat: 7.2906, lng: 80.6337 },
+  'Kurunegala':{ lat: 7.4875, lng: 80.3647 },
+};
 
 // Haversine distance in km between two lat/lng points
 function haversineDist(a, b) {
@@ -1269,8 +1274,20 @@ function haversineDist(a, b) {
   return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
 }
 
+// Find the nearest warehouse to a given coordinate
+function nearestWarehouse(coord) {
+  let bestName = 'Colombo', bestDist = Infinity;
+  Object.entries(WAREHOUSES).forEach(([name, wCoord]) => {
+    const dist = haversineDist(coord, wCoord);
+    if (dist < bestDist) { bestDist = dist; bestName = name; }
+  });
+  return { name: bestName, coord: WAREHOUSES[bestName], dist: Math.round(bestDist) };
+}
+
 // Priority sort weight
 function priWeight(p) { return p==='urgent'?0:p==='high'?1:2; }
+
+let rbOsrmDist = null, rbOsrmDur = null, rbSelectedWarehouse = null;
 
 async function optimizeRoute() {
   if (!rbDeliveries.length) { toast('⚠️ No stops to optimize', '#ea580c'); return; }
@@ -1287,14 +1304,13 @@ async function optimizeRoute() {
     (groups[p] || groups.normal).push(d);
   });
 
-  // Step 2 — within each priority group, nearest-neighbour from depot
+  // Step 2 — within each priority group, nearest-neighbour from current position
   function nearestNeighbour(stops, startCoord) {
     const remaining = [...stops];
     const ordered = [];
     let current = startCoord;
     while (remaining.length) {
-      let bestIdx = 0;
-      let bestDist = Infinity;
+      let bestIdx = 0, bestDist = Infinity;
       remaining.forEach((d, i) => {
         const coord = CITY_COORDS[d.city] || CITY_COORDS['Colombo'];
         const dist = haversineDist(current, coord);
@@ -1307,24 +1323,44 @@ async function optimizeRoute() {
     return ordered;
   }
 
-  let optimized = [];
-  let lastCoord = DEPOT_COORD;
-
-  // Process urgent first, then high, then normal — nearest neighbour within each group
+  // Step 3 — do a first pass with Colombo as start to find the first stop
+  let tempOptimized = [];
+  let tempLast = WAREHOUSES['Colombo'];
   for (const grp of ['urgent', 'high', 'normal']) {
     if (!groups[grp].length) continue;
-    const ordered = nearestNeighbour(groups[grp], lastCoord);
+    const ordered = nearestNeighbour(groups[grp], tempLast);
+    tempOptimized = tempOptimized.concat(ordered);
+    if (ordered.length) tempLast = CITY_COORDS[ordered[ordered.length-1].city] || WAREHOUSES['Colombo'];
+  }
+
+  // Step 4 — find nearest warehouse to the FIRST stop
+  const firstStopCity = tempOptimized[0]?.city || 'Colombo';
+  const firstStopCoord = CITY_COORDS[firstStopCity] || CITY_COORDS['Colombo'];
+  const bestWH = nearestWarehouse(firstStopCoord);
+  rbSelectedWarehouse = bestWH;
+
+  // Step 5 — re-run nearest-neighbour starting from the selected warehouse
+  // Reset groups (were consumed by splice above)
+  const groups2 = { urgent:[], high:[], normal:[] };
+  rbDeliveries.forEach(d => {
+    const p = d.prio || 'normal';
+    (groups2[p] || groups2.normal).push(d);
+  });
+
+  let optimized = [];
+  let lastCoord = bestWH.coord;
+  for (const grp of ['urgent', 'high', 'normal']) {
+    if (!groups2[grp].length) continue;
+    const ordered = nearestNeighbour(groups2[grp], lastCoord);
     optimized = optimized.concat(ordered);
-    if (ordered.length) {
-      lastCoord = CITY_COORDS[ordered[ordered.length-1].city] || DEPOT_COORD;
-    }
+    if (ordered.length) lastCoord = CITY_COORDS[ordered[ordered.length-1].city] || bestWH.coord;
   }
 
   rbDeliveries = optimized;
 
-  // Step 3 — try OSRM for real road distance/duration
+  // Step 6 — OSRM real road distance starting from chosen warehouse
   try {
-    const coords = [DEPOT_COORD, ...optimized.map(d => CITY_COORDS[d.city] || CITY_COORDS['Colombo'])];
+    const coords = [bestWH.coord, ...optimized.map(d => CITY_COORDS[d.city] || CITY_COORDS['Colombo'])];
     const coordStr = coords.map(c => `${c.lng},${c.lat}`).join(';');
     const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=false`;
     const resp = await fetch(osrmUrl, { signal: AbortSignal.timeout(6000) });
@@ -1336,51 +1372,43 @@ async function optimizeRoute() {
       const realMin = Math.round(route.duration / 60);
       const realHrs = Math.floor(realMin / 60);
       const remMins = realMin % 60;
-
-      // Store for summary
-      rbOsrmDist = realKm;
-      rbOsrmDur  = realMin;
+      rbOsrmDist = realKm; rbOsrmDur = realMin;
 
       info.style.display = 'block';
-      info.innerHTML = `✅ <strong>Route optimized</strong> — Priority ordered + shortest road path · <strong>${realKm} km</strong> · <strong>${realHrs}h ${remMins}m</strong> real drive time (OSRM)`;
+      info.innerHTML = `✅ <strong>Route optimized</strong> — Starting from <strong>${bestWH.name} Warehouse</strong> (nearest to first stop, ${bestWH.dist} km away) · Priority ordered + shortest road path · <strong>${realKm} km</strong> · <strong>${realHrs}h ${remMins}m</strong> real drive time (OSRM)`;
     } else {
       throw new Error('OSRM no route');
     }
   } catch {
-    // OSRM failed — use haversine estimate
     rbOsrmDist = null; rbOsrmDur = null;
     let totalKm = 0;
-    let cur = DEPOT_COORD;
+    let cur = bestWH.coord;
     optimized.forEach(d => {
       const c = CITY_COORDS[d.city] || CITY_COORDS['Colombo'];
       totalKm += haversineDist(cur, c);
       cur = c;
     });
-    const estKm = Math.round(totalKm * 1.3); // road factor
+    const estKm  = Math.round(totalKm * 1.3);
     const estMin = Math.round(estKm * 2.5);
     rbOsrmDist = estKm; rbOsrmDur = estMin;
 
     info.style.display = 'block';
-    info.innerHTML = `🔀 <strong>Route optimized</strong> — Priority ordered + nearest neighbour · ~<strong>${estKm} km</strong> · ~<strong>${Math.floor(estMin/60)}h ${estMin%60}m</strong> estimated`;
+    info.innerHTML = `🔀 <strong>Route optimized</strong> — Starting from <strong>${bestWH.name} Warehouse</strong> (nearest, ~${bestWH.dist} km) · Priority ordered + nearest neighbour · ~<strong>${estKm} km</strong> · ~<strong>${Math.floor(estMin/60)}h ${estMin%60}m</strong> estimated`;
   }
 
   btn.disabled = false; btn.textContent = '🔀 Re-optimize';
   renderRbStops();
   updateRbSummary();
 
-  // Show what changed
   const urgentCount  = groups.urgent.length;
-  const highCount    = groups.high.length;
-  const normalCount  = groups.normal.length;
   const priorityNote = urgentCount ? `${urgentCount} urgent stop${urgentCount>1?'s':''} moved first. ` : '';
-  toast(`🔀 Route optimized — ${priorityNote}${rbDeliveries.length} stops reordered by distance`, '#1565C0');
+  toast(`🔀 Optimized from ${bestWH.name} Warehouse — ${priorityNote}${rbDeliveries.length} stops`, '#1565C0');
 }
-
-let rbOsrmDist = null, rbOsrmDur = null;
 
 function updateRbSummary() {
   const n      = rbDeliveries.length;
   const cities = rbDeliveries.map(d=>d.city).join(' → ');
+  const whLabel = rbSelectedWarehouse ? `${rbSelectedWarehouse.name} Warehouse` : 'Warehouse';
 
   let distTxt, durTxt;
   if (rbOsrmDist !== null) {
@@ -1389,15 +1417,14 @@ function updateRbSummary() {
     distTxt = `${rbOsrmDist} km`;
     durTxt  = `${hrs}h ${mins}m`;
   } else {
-    // Fallback estimate
-    const est = Math.round(n * 38 + 15);
+    const est  = Math.round(n * 38 + 15);
     const eMin = Math.round(est * 2.5);
     distTxt = `~${est} km`;
     durTxt  = `~${Math.floor(eMin/60)}h ${eMin%60}m`;
   }
 
   document.getElementById('rb-summary').innerHTML =
-    n ? `<strong>${n} stops</strong> · ${distTxt} · ${durTxt} &nbsp;|&nbsp; Depot → ${cities}` : 'No stops added yet.';
+    n ? `<strong>${n} stops</strong> · ${distTxt} · ${durTxt} &nbsp;|&nbsp; 🏭 ${whLabel} → ${cities}` : 'No stops added yet.';
 }
 
 async function publishRoute() {
@@ -1443,8 +1470,14 @@ async function publishRoute() {
   const durMins = rbOsrmDur  || Math.round(distKm * 2.5);
   const cities  = filledStops.map(s => s.city);
 
+  const warehouseNote = rbSelectedWarehouse
+    ? `Departing from ${rbSelectedWarehouse.name} Warehouse. `
+    : '';
+  const finalRouteNotes = warehouseNote + (routeNotes || '');
+
   const r = await api('/routes/publish', 'POST', {
-    driverId, driverName, vehicleId, routeDate, depart, routeNotes,
+    driverId, driverName, vehicleId, routeDate, depart,
+    routeNotes: finalRouteNotes.trim() || null,
     stops: filledStops, distKm, durMins, cities
   });
 
