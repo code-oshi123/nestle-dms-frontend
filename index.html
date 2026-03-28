@@ -139,8 +139,8 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .main{padding:28px;max-width:1180px;margin:0 auto}
 .card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:24px;margin-bottom:18px;border:1px solid var(--cream-dk)}
 .card-title{font-size:15px;font-weight:600;color:var(--brown);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px}
-.sec-hdr-logo{width:34px;height:34px;object-fit:contain;opacity:0.5;flex-shrink:0;border-radius:6px;padding:2px;background:var(--white);border:1px solid var(--cream-dk)}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.page-logo-banner{display:flex;align-items:center;gap:10px;padding:14px 0 10px 0;margin-bottom:4px;border-bottom:1px solid var(--cream-dk)}.page-logo-img{width:38px;height:38px;object-fit:contain;border-radius:8px;padding:4px;background:var(--white);border:1px solid var(--cream-dk)}.page-logo-text{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);letter-spacing:.4px;opacity:.7}
 .sec-title{font-size:24px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
 .sec-sub{font-size:13px;color:var(--brown-m);margin-top:4px;font-weight:400}
 
@@ -495,14 +495,17 @@ const API = 'https://nestle-dms-backend.onrender.com/api';
 function injectSecLogos() {
   const logoSrc = document.querySelector('.tlogo-img')?.src;
   if (!logoSrc) return;
-  document.querySelectorAll('#main-content .sec-hdr').forEach(hdr => {
-    if (hdr.querySelector('.sec-hdr-logo')) return;
-    const img = document.createElement('img');
-    img.className = 'sec-hdr-logo';
-    img.src = logoSrc;
-    img.alt = 'Nestlé';
-    hdr.insertBefore(img, hdr.firstChild);
-  });
+  const mc = document.getElementById('main-content');
+  if (!mc) return;
+  // Remove any existing banner
+  const existing = mc.querySelector('.page-logo-banner');
+  if (existing) existing.remove();
+  // Only inject if there's a sec-hdr on this page
+  if (!mc.querySelector('.sec-hdr')) return;
+  const banner = document.createElement('div');
+  banner.className = 'page-logo-banner';
+  banner.innerHTML = `<img src="${logoSrc}" alt="Nestlé" class="page-logo-img"/><span class="page-logo-text">Nestlé Smart DMS</span>`;
+  mc.insertBefore(banner, mc.firstChild);
 }
 let user = null, drivers = [], vehicles = [], pollTimer = null, panelOpen = false;
 
