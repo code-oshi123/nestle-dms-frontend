@@ -413,7 +413,13 @@ tr:hover td{background:rgba(139,105,20,.03)}
         <label>Departure Time from Depot</label>
         <input id="rb-depart" type="time" value="07:00" style="max-width:140px"/>
       </div>
-      <div style="font-size:11px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Stop Order (drag to reorder)</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.6px">Stop Order (drag to reorder)</div>
+        <button class="btn btn-blue btn-sm" onclick="optimizeRoute()" id="rb-optimize-btn" style="font-size:11px;padding:5px 12px">
+          🔀 Optimize Route
+        </button>
+      </div>
+      <div id="rb-optimize-info" style="display:none;background:var(--blue-bg);border:1px solid #90CAF9;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--blue);margin-bottom:8px"></div>
       <div id="rb-stop-list" class="rb-pool" style="margin-bottom:14px"></div>
       <div style="background:var(--cream);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--brown-m);margin-bottom:14px">
         <strong style="color:var(--brown)">Route Summary:</strong>
@@ -1178,6 +1184,11 @@ async function openRouteBuilder() {
   // Set default date to today
   document.getElementById('rb-date').value = new Date().toISOString().split('T')[0];
 
+  rbOsrmDist = null; rbOsrmDur = null;
+  const optInfo = document.getElementById('rb-optimize-info');
+  if (optInfo) optInfo.style.display = 'none';
+  const optBtn = document.getElementById('rb-optimize-btn');
+  if (optBtn) { optBtn.disabled=false; optBtn.textContent='🔀 Optimize Route'; }
   renderRbStops();
   openModal('m-route-builder');
 }
@@ -1229,14 +1240,164 @@ function rbDrop(e, idx) {
   renderRbStops();
 }
 
+// ── Sri Lanka city coordinates (depot = Nestlé Colombo warehouse) ──
+const CITY_COORDS = {
+  'Depot':         { lat:  6.9271, lng: 79.8612 },
+  'Colombo':       { lat:  6.9271, lng: 79.8612 },
+  'Dehiwala':      { lat:  6.8519, lng: 79.8674 },
+  'Nugegoda':      { lat:  6.8728, lng: 79.8880 },
+  'Negombo':       { lat:  7.2096, lng: 79.8386 },
+  'Kiribathgoda':  { lat:  7.0003, lng: 80.0170 },
+  'Kandy':         { lat:  7.2906, lng: 80.6337 },
+  'Peradeniya':    { lat:  7.2676, lng: 80.5957 },
+  'Galle':         { lat:  6.0535, lng: 80.2210 },
+  'Matara':        { lat:  5.9549, lng: 80.5550 },
+  'Jaffna':        { lat:  9.6615, lng: 80.0255 },
+  'Ratnapura':     { lat:  6.6828, lng: 80.4004 },
+  'Kurunegala':    { lat:  7.4875, lng: 80.3647 },
+};
+
+const DEPOT_COORD = CITY_COORDS['Depot'];
+
+// Haversine distance in km between two lat/lng points
+function haversineDist(a, b) {
+  const R = 6371;
+  const dLat = (b.lat - a.lat) * Math.PI / 180;
+  const dLng = (b.lng - a.lng) * Math.PI / 180;
+  const x = Math.sin(dLat/2)**2 +
+            Math.cos(a.lat * Math.PI/180) * Math.cos(b.lat * Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+}
+
+// Priority sort weight
+function priWeight(p) { return p==='urgent'?0:p==='high'?1:2; }
+
+async function optimizeRoute() {
+  if (!rbDeliveries.length) { toast('⚠️ No stops to optimize', '#ea580c'); return; }
+
+  const btn = document.getElementById('rb-optimize-btn');
+  const info = document.getElementById('rb-optimize-info');
+  btn.disabled = true; btn.textContent = '⏳ Optimizing…';
+  info.style.display = 'none';
+
+  // Step 1 — group by priority
+  const groups = { urgent:[], high:[], normal:[] };
+  rbDeliveries.forEach(d => {
+    const p = d.prio || 'normal';
+    (groups[p] || groups.normal).push(d);
+  });
+
+  // Step 2 — within each priority group, nearest-neighbour from depot
+  function nearestNeighbour(stops, startCoord) {
+    const remaining = [...stops];
+    const ordered = [];
+    let current = startCoord;
+    while (remaining.length) {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      remaining.forEach((d, i) => {
+        const coord = CITY_COORDS[d.city] || CITY_COORDS['Colombo'];
+        const dist = haversineDist(current, coord);
+        if (dist < bestDist) { bestDist = dist; bestIdx = i; }
+      });
+      const chosen = remaining.splice(bestIdx, 1)[0];
+      ordered.push(chosen);
+      current = CITY_COORDS[chosen.city] || CITY_COORDS['Colombo'];
+    }
+    return ordered;
+  }
+
+  let optimized = [];
+  let lastCoord = DEPOT_COORD;
+
+  // Process urgent first, then high, then normal — nearest neighbour within each group
+  for (const grp of ['urgent', 'high', 'normal']) {
+    if (!groups[grp].length) continue;
+    const ordered = nearestNeighbour(groups[grp], lastCoord);
+    optimized = optimized.concat(ordered);
+    if (ordered.length) {
+      lastCoord = CITY_COORDS[ordered[ordered.length-1].city] || DEPOT_COORD;
+    }
+  }
+
+  rbDeliveries = optimized;
+
+  // Step 3 — try OSRM for real road distance/duration
+  try {
+    const coords = [DEPOT_COORD, ...optimized.map(d => CITY_COORDS[d.city] || CITY_COORDS['Colombo'])];
+    const coordStr = coords.map(c => `${c.lng},${c.lat}`).join(';');
+    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=false`;
+    const resp = await fetch(osrmUrl, { signal: AbortSignal.timeout(6000) });
+    const json = await resp.json();
+
+    if (json.code === 'Ok' && json.routes?.[0]) {
+      const route = json.routes[0];
+      const realKm  = Math.round(route.distance / 1000);
+      const realMin = Math.round(route.duration / 60);
+      const realHrs = Math.floor(realMin / 60);
+      const remMins = realMin % 60;
+
+      // Store for summary
+      rbOsrmDist = realKm;
+      rbOsrmDur  = realMin;
+
+      info.style.display = 'block';
+      info.innerHTML = `✅ <strong>Route optimized</strong> — Priority ordered + shortest road path · <strong>${realKm} km</strong> · <strong>${realHrs}h ${remMins}m</strong> real drive time (OSRM)`;
+    } else {
+      throw new Error('OSRM no route');
+    }
+  } catch {
+    // OSRM failed — use haversine estimate
+    rbOsrmDist = null; rbOsrmDur = null;
+    let totalKm = 0;
+    let cur = DEPOT_COORD;
+    optimized.forEach(d => {
+      const c = CITY_COORDS[d.city] || CITY_COORDS['Colombo'];
+      totalKm += haversineDist(cur, c);
+      cur = c;
+    });
+    const estKm = Math.round(totalKm * 1.3); // road factor
+    const estMin = Math.round(estKm * 2.5);
+    rbOsrmDist = estKm; rbOsrmDur = estMin;
+
+    info.style.display = 'block';
+    info.innerHTML = `🔀 <strong>Route optimized</strong> — Priority ordered + nearest neighbour · ~<strong>${estKm} km</strong> · ~<strong>${Math.floor(estMin/60)}h ${estMin%60}m</strong> estimated`;
+  }
+
+  btn.disabled = false; btn.textContent = '🔀 Re-optimize';
+  renderRbStops();
+  updateRbSummary();
+
+  // Show what changed
+  const urgentCount  = groups.urgent.length;
+  const highCount    = groups.high.length;
+  const normalCount  = groups.normal.length;
+  const priorityNote = urgentCount ? `${urgentCount} urgent stop${urgentCount>1?'s':''} moved first. ` : '';
+  toast(`🔀 Route optimized — ${priorityNote}${rbDeliveries.length} stops reordered by distance`, '#1565C0');
+}
+
+let rbOsrmDist = null, rbOsrmDur = null;
+
 function updateRbSummary() {
   const n      = rbDeliveries.length;
-  const distKm = Math.round(n * 38 + Math.random() * 20);
-  const hrs    = Math.floor((distKm * 2.8) / 60);
-  const mins   = Math.round((distKm * 2.8) % 60);
   const cities = rbDeliveries.map(d=>d.city).join(' → ');
+
+  let distTxt, durTxt;
+  if (rbOsrmDist !== null) {
+    const hrs  = Math.floor(rbOsrmDur / 60);
+    const mins = rbOsrmDur % 60;
+    distTxt = `${rbOsrmDist} km`;
+    durTxt  = `${hrs}h ${mins}m`;
+  } else {
+    // Fallback estimate
+    const est = Math.round(n * 38 + 15);
+    const eMin = Math.round(est * 2.5);
+    distTxt = `~${est} km`;
+    durTxt  = `~${Math.floor(eMin/60)}h ${eMin%60}m`;
+  }
+
   document.getElementById('rb-summary').innerHTML =
-    n ? `<strong>${n} stops</strong> · ~${distKm} km · ~${hrs}h ${mins}m &nbsp;|&nbsp; Depot → ${cities}` : 'No stops added yet.';
+    n ? `<strong>${n} stops</strong> · ${distTxt} · ${durTxt} &nbsp;|&nbsp; Depot → ${cities}` : 'No stops added yet.';
 }
 
 async function publishRoute() {
@@ -1278,8 +1439,8 @@ async function publishRoute() {
     return s;
   });
 
-  const distKm  = Math.round(filledStops.length * 38 + 15);
-  const durMins = Math.round(distKm * 2.8);
+  const distKm  = rbOsrmDist || Math.round(filledStops.length * 38 + 15);
+  const durMins = rbOsrmDur  || Math.round(distKm * 2.5);
   const cities  = filledStops.map(s => s.city);
 
   const r = await api('/routes/publish', 'POST', {
