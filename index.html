@@ -1478,6 +1478,7 @@ async function publishRoute() {
   const r = await api('/routes/publish', 'POST', {
     driverId, driverName, vehicleId, routeDate, depart,
     routeNotes: finalRouteNotes.trim() || null,
+    warehouse: rbSelectedWarehouse ? rbSelectedWarehouse.name : null,
     stops: filledStops, distKm, durMins, cities
   });
 
@@ -1551,6 +1552,7 @@ async function pageRoutes() {
             <span class="mono" style="color:var(--tan);font-size:13px">Route #${r.id}</span>
             <span class="badge b-navy">👤 ${r.driverName||'—'}</span>
             <span class="badge b-blue">🚛 ${r.vehicleId||'—'}</span>
+            ${r.warehouse ? `<span class="badge b-teal">🏭 ${r.warehouse}</span>` : ''}
             ${r.routeDate ? `<span class="badge b-gray">📅 ${r.routeDate}</span>` : ''}
             <span class="badge ${statusCol}">${statusTxt.replace('_',' ')}</span>
           </div>
@@ -1572,7 +1574,7 @@ async function pageRoutes() {
         <div class="rt-depot">
           <div class="rt-depot-dot"></div>
           <div>
-            <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 Depot / Warehouse</div>
+            <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 ${r.warehouse ? r.warehouse + ' Warehouse' : 'Depot / Warehouse'}</div>
             ${r.depart ? `<div style="font-size:11px;color:var(--brown-l)">Departure: ${r.depart}</div>` : ''}
           </div>
         </div>
@@ -1645,7 +1647,8 @@ async function viewRouteBriefing(routeId) {
         <span class="badge b-teal">📍 ${r.stops} stops</span>
         <span class="badge b-gray">📏 ${r.distKm} km · ⏱ ${hrs}h ${mins}m</span>
       </div>
-      ${r.depart ? `<div style="font-size:12px;color:var(--brown-m)">🕖 Depart from depot: <strong>${r.depart}</strong></div>` : ''}
+      ${r.warehouse ? `<div style="font-size:13px;font-weight:600;color:var(--tan);margin-bottom:4px">🏭 Departing from: <strong>${r.warehouse} Warehouse</strong></div>` : ''}
+      ${r.depart ? `<div style="font-size:12px;color:var(--brown-m)">🕖 Departure time: <strong>${r.depart}</strong></div>` : ''}
     </div>
     <div style="font-size:11px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Stop Sequence</div>
     ${stopsHtml}
@@ -1775,6 +1778,7 @@ ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);marg
             🗺️ ${rt._synthetic ? 'My Assigned Stops' : `My Route${rt.routeDate ? ' — ' + rt.routeDate : ''}`}
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:8px">
+            ${rt.warehouse ? `<span class="badge b-teal">🏭 ${rt.warehouse} Warehouse</span>` : ''}
             <span class="badge b-blue">🚛 ${rt.vehicleId||'—'}</span>
             <span class="badge b-teal">📍 ${rt.stops} stop${rt.stops!==1?'s':''}</span>
             <span class="badge b-gray">📏 ~${rt.distKm} km · ⏱ ~${hrs}h ${mins}m</span>
@@ -1787,7 +1791,7 @@ ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);marg
         <div class="rt-depot">
           <div class="rt-depot-dot"></div>
           <div>
-            <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 Depot / Warehouse</div>
+            <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 ${rt.warehouse ? rt.warehouse + ' Warehouse' : 'Depot / Warehouse'}</div>
             ${rt.depart ? `<div style="font-size:11px;color:var(--brown-l)">Departure: ${rt.depart}</div>` : ''}
           </div>
         </div>
