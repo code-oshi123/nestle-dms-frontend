@@ -286,7 +286,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
       <div class="qbtns">
         <button class="qbtn" onclick="quick('retailer1@cargills.lk','ret123')"><div class="qav" style="background:#8B6914">CM</div><div><div class="qname">Cargills Manager</div><div class="qrole">Retailer</div></div></button>
         <button class="qbtn" onclick="quick('order@nestle.lk','order123')"><div class="qav" style="background:#1565C0">ND</div><div><div class="qname">Nuwan Dissanayake</div><div class="qrole">Order Team</div></div></button>
-        <button class="qbtn" onclick="quick('route@nestle.lk','route123')"><div class="qav" style="background:#2E7D32">CR</div><div><div class="qname">Chamodi Rupasinghe</div><div class="qrole">Route Planner</div></div></button>
+
         <button class="qbtn" onclick="quick('warehouse@nestle.lk','wh123')"><div class="qav" style="background:#6A1B9A">KB</div><div><div class="qname">Kasun Bandara</div><div class="qrole">Warehouse</div></div></button>
         <button class="qbtn" onclick="quick('driver1@nestle.lk','drv123')"><div class="qav" style="background:#D84315">KS</div><div><div class="qname">Kumara Silva</div><div class="qrole">Distributor</div></div></button>
       </div>
@@ -362,94 +362,6 @@ tr:hover td{background:rgba(139,105,20,.03)}
   </div>
 </div>
 
-<div class="modal-bg" id="m-assign">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-title">🚚 Assign Driver &amp; Vehicle</div>
-    <div class="modal-body">
-      <input type="hidden" id="a-id"/>
-      <div class="fg"><label>Delivery</label><input id="a-label" disabled/></div>
-      <div class="fg"><label>Driver *</label><select id="a-driver"><option value="">Loading…</option></select></div>
-      <div class="fg"><label>Vehicle *</label><select id="a-vehicle"><option value="">Loading…</option></select></div>
-      <div class="fg">
-        <label>ETA for this stop</label>
-        <input id="a-eta" type="time" style="max-width:160px"/>
-        <div style="font-size:11px;color:var(--brown-l);margin-top:3px">Leave blank to auto-calculate (+2 hours)</div>
-      </div>
-      <div class="fg">
-        <label>Delivery Notes for Driver</label>
-        <input id="a-notes" placeholder="e.g. Call retailer on arrival, use side entrance…"/>
-      </div>
-      <div class="alert-banner alert-warn" id="a-reassign-note" style="display:none;margin-bottom:10px">
-        ⚠️ <strong>Reassignment:</strong> The previous driver will be notified that this delivery has been removed from their route.
-      </div>
-      <div class="alert-banner alert-info" style="margin-bottom:0">
-        ℹ️ Driver receives full route briefing. Warehouse is notified to prepare cargo.
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" onclick="closeModal('m-assign')">Cancel</button>
-        <button class="btn btn-tan" onclick="saveAssign()">Assign &amp; Notify Driver 🔔</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Route Builder Modal -->
-<div class="modal-bg" id="m-route-builder">
-  <div class="modal" style="max-width:680px">
-    <div class="modal-title">🗺️ Build &amp; Publish Route Plan</div>
-    <div class="modal-body">
-      <div class="fg">
-        <label>Driver *</label>
-        <select id="rb-driver"><option value="">Select driver…</option></select>
-      </div>
-      <div class="fg">
-        <label>Vehicle *</label>
-        <select id="rb-vehicle"><option value="">Select vehicle…</option></select>
-      </div>
-      <div class="fg">
-        <label>Route Date</label>
-        <input id="rb-date" type="date"/>
-      </div>
-      <div class="fg">
-        <label>Departure Time from Depot</label>
-        <input id="rb-depart" type="time" value="07:00" style="max-width:140px"/>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="font-size:11px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.6px">Stop Order (drag to reorder)</div>
-        <button class="btn btn-blue btn-sm" onclick="optimizeRoute()" id="rb-optimize-btn" style="font-size:11px;padding:5px 12px">
-          🔀 Optimize Route
-        </button>
-      </div>
-      <div id="rb-optimize-info" style="display:none;background:var(--blue-bg);border:1px solid #90CAF9;border-radius:var(--r-sm);padding:8px 12px;font-size:12px;color:var(--blue);margin-bottom:8px"></div>
-      <div id="rb-stop-list" class="rb-pool" style="margin-bottom:14px"></div>
-      <div style="background:var(--cream);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--brown-m);margin-bottom:14px">
-        <strong style="color:var(--brown)">Route Summary:</strong>
-        <span id="rb-summary">—</span>
-      </div>
-      <div class="fg">
-        <label>Route Notes for Driver</label>
-        <textarea id="rb-route-notes" rows="2" placeholder="e.g. Avoid Galle Rd during peak hours. Call city supervisor if any stop is unresponsive." style="width:100%;padding:10px 14px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:'Jost',sans-serif;font-size:13px;color:var(--brown);outline:none;resize:vertical;background:var(--white)"></textarea>
-      </div>
-      <div class="alert-banner alert-info" style="margin-bottom:0">
-        🔔 On publish: Driver receives full sequenced route briefing · Warehouse is briefed on all stops · Retailers are notified their delivery is scheduled
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" onclick="closeModal('m-route-builder')">Cancel</button>
-        <button class="btn btn-tan" onclick="publishRoute()">📤 Publish Route &amp; Notify All</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Route Detail Modal (for driver view) -->
-<div class="modal-bg" id="m-route-detail">
-  <div class="modal" style="max-width:520px">
-    <div class="modal-title">🗺️ Route Briefing</div>
-    <div class="modal-body" id="m-route-detail-body">
-    </div>
-  </div>
-</div>
-
 <div class="modal-bg" id="m-status">
   <div class="modal" style="max-width:500px">
     <div class="modal-title">📋 Update Delivery Status</div>
@@ -475,7 +387,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
           <span class="badge b-blue">Retailer</span>
           <span class="badge b-gray">Order Team</span>
           <span class="badge b-purple">Warehouse</span>
-          <span class="badge b-teal">Route Planner</span>
+          
         </div>
       </div>
       <div class="modal-actions">
@@ -558,8 +470,8 @@ function enterApp() {
 
 function roleLabel(r) {
   return { retailer:'Retailer', order_team:'Order Processing Team',
-           route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor',
-           admin:'System Administrator' }[r] || r; // route_planner kept for backward compat
+           warehouse:'Warehouse', distributor:'Distributor',
+           admin:'System Administrator' }[r] || r;
 }
 
 // ══ NOTIFICATIONS ═══════════════════════════════
@@ -631,7 +543,7 @@ function stopPoll()  { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; 
 const ROLE_PAGES = {
   retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    }],
   order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'retailers', ico:'🏪', lbl:'Retailers'}],
-  route_planner: [{id:'assign',      ico:'🗺️', lbl:'Plan Routes'    },{id:'routes',      ico:'💾', lbl:'Saved Routes'     }],
+
   warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     }],
   distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'      },{id:'upd-status',  ico:'✅', lbl:'Update Status'    }],
 };
@@ -657,8 +569,7 @@ async function render(id) {
   if (id==='all-orders')  await pageAllOrders();
   if (id==='deliveries')  await pageDeliveries();
   // consolidate removed — auto-handled on confirm
-  if (id==='assign')      await pageAssign();
-  if (id==='routes')      await pageRoutes();
+
   if (id==='wh-incoming') await pageWhIncoming();
   if (id==='wh-prepare')  await pageWhPrepare();
   if (id==='my-routes')   await pageMyRoutes();
@@ -1052,18 +963,17 @@ function pageConsolidate() {
     <div class="card" style="max-width:600px">
       <div class="alert-banner alert-info" style="margin-bottom:20px">
         ℹ️ Takes all <strong>confirmed</strong> orders and creates a delivery record for each one.
-        Route Planner &amp; Warehouse are <strong>notified immediately</strong> 🔔
+        Warehouse is <strong>notified immediately</strong> 🔔
       </div>
       <p style="font-size:14px;line-height:1.9;color:var(--brown-m);margin-bottom:20px">
         <strong style="color:var(--brown)">Priority rule:</strong> If only <strong>1</strong> confirmed order exists,
         it is processed only when its priority is <strong style="color:var(--red)">Urgent</strong> or
         <strong style="color:var(--orange)">High</strong>.<br>
         <strong style="color:var(--brown)">Notifications sent:</strong><br>
-        🔔 <strong>Route Planner</strong> — assign drivers &amp; vehicles<br>
         🔔 <strong>Warehouse</strong> — prepare cargo for loading
       </p>
       <button class="btn btn-tan" onclick="doConsolidate()" style="font-size:14px;padding:12px 24px">
-        📊 Consolidate &amp; Notify Route Planner + Warehouse 🔔
+        📊 Consolidate &amp; Notify Warehouse 🔔
       </button>
     </div>`);
 }
@@ -1077,594 +987,9 @@ async function doConsolidate() {
     pollBadge();
   } else {
     const word = r.created === 1 ? 'delivery' : 'deliveries';
-    toast(`✅ ${r.created} ${word} created — Route Planner + Warehouse notified 🔔`, '#16a34a');
+    toast(`✅ ${r.created} ${word} created — Warehouse notified 🔔`, '#16a34a');
     pollBadge(); // ── FIX: poll badge on success
   }
-}
-
-// ══ ROUTE PLANNER PAGES ════════════════════════
-// State for the route builder
-let rbDeliveries = []; // deliveries currently in builder
-
-async function pageAssign() {
-  const data = await api('/deliveries');
-  const pending      = data.filter(d => d.status === 'pending');
-  const reassignable = data.filter(d => ['assigned','warehouse_ready','loaded'].includes(d.status));
-  const locked       = data.filter(d => ['in-transit','delivered','failed'].includes(d.status));
-
-  setContent(`
-    <div class="sec-hdr">
-      <div><div class="sec-title">Plan Routes &amp; Assign</div>
-      <div class="sec-sub">Build multi-stop routes, sequence stops, set ETAs — driver receives full route briefing 🔔</div></div>
-      <div style="display:flex;gap:10px">
-        <button class="btn btn-tan" onclick="openRouteBuilder()" ${pending.length===0?'disabled style="opacity:.5;cursor:not-allowed"':''}>
-          🗺️ Build Multi-Stop Route
-        </button>
-      </div>
-    </div>
-
-    <div class="alert-banner alert-info" style="margin-bottom:18px">
-      🤖 <strong>Batch Auto-Routing:</strong> Confirmed orders are queued automatically. Once <strong>10 orders</strong> are confirmed, the system creates one optimised multi-stop route and assigns it to an available driver — no manual planning needed.
-    </div>
-
-    <div class="card">
-      <div class="card-title">⏳ Pending Assignment <span class="badge b-orange" style="margin-left:8px">${pending.length}</span></div>
-      ${pending.length > 0 ? `
-      <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Priority</th><th>Items</th><th>Quick Assign</th></tr></thead>
-        <tbody>${pending.map(d=>`
-          <tr>
-            <td><span class="mono">${d.id}</span></td>
-            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td>${prioBadge(d.prio)}</td>
-            <td>${d.items} items</td>
-            <td><button class="btn btn-ghost btn-sm" onclick="openAssign('${d.id}','${d.retailer}','${d.city}')">Quick Assign →</button></td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>` : '<div class="empty"><div class="empty-icon">✅</div><div>All deliveries assigned. Nothing pending.</div></div>'}
-    </div>
-
-    <div class="card">
-      <div class="card-title">🔄 Active Routes — Reassignable <span class="badge b-blue" style="margin-left:8px">${reassignable.length}</span></div>
-      <div class="alert-banner alert-warn" style="margin-bottom:14px">
-        ⚠️ Reassignment allowed while status is <strong>Assigned</strong>, <strong>Warehouse Ready</strong>, or <strong>Loaded</strong>. Once <strong>In Transit</strong> the route is locked.
-      </div>
-      ${reassignable.length > 0 ? `
-      <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Driver</th><th>Vehicle</th><th>ETA</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody>${reassignable.map(d=>`
-          <tr>
-            <td><span class="mono">${d.id}</span></td>
-            <td>${d.retailer}</td><td>${d.city}</td>
-            <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
-            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
-            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-            <td>${delBadge(d.status)}</td>
-            <td style="display:flex;gap:6px">
-              <button class="btn btn-orange btn-sm" onclick="openAssign('${d.id}','${d.retailer}','${d.city}',true)">🔄 Reassign</button>
-              <button class="btn btn-ghost btn-sm" onclick="openDeliveryHistory('${d.id}','${d.retailer}','${d.city}')">📋 History</button>
-            </td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>` : '<div class="empty"><div>No reassignable deliveries.</div></div>'}
-    </div>
-
-    <div class="card">
-      <div class="card-title">🔒 In Transit / Completed — Locked <span class="badge b-gray" style="margin-left:8px">${locked.length}</span></div>
-      ${locked.length > 0 ? `
-      <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Driver</th><th>Vehicle</th><th>ETA</th><th>Status</th></tr></thead>
-        <tbody>${locked.map(d=>`
-          <tr>
-            <td><span class="mono">${d.id}</span></td>
-            <td>${d.retailer}</td><td>${d.city}</td>
-            <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
-            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
-            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-            <td>${delBadge(d.status)}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table></div>` : '<div class="empty"><div>No locked deliveries.</div></div>'}
-    </div>`);
-}
-
-// ── Route Builder ────────────────────────────────
-async function openRouteBuilder() {
-  const data   = await api('/deliveries');
-  rbDeliveries = data.filter(d => d.status === 'pending');
-
-  if (!rbDeliveries.length) {
-    toast('⚠️ No pending deliveries to build a route for', '#ea580c');
-    return;
-  }
-
-  // Populate driver + vehicle dropdowns
-  document.getElementById('rb-driver').innerHTML  = '<option value="">Select driver…</option>' +
-    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — has incomplete delivery)' : ''}</option>`).join('');
-  document.getElementById('rb-vehicle').innerHTML = '<option value="">Select vehicle…</option>' +
-    vehicles.map(v => {
-      const cap = parseFloat(v.cap) || 0;
-      const loaded = parseFloat(v.loadedKg) || 0;
-      const rem = cap > 0 ? ` · ${loaded}/${cap}kg used` : '';
-      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${rem}${v.busy ? ' (in transit)' : ''}</option>`;
-    }).join('');
-
-  // Set default date to today
-  document.getElementById('rb-date').value = new Date().toISOString().split('T')[0];
-
-  rbOsrmDist = null; rbOsrmDur = null; rbSelectedWarehouse = null;
-  const optInfo = document.getElementById('rb-optimize-info');
-  if (optInfo) optInfo.style.display = 'none';
-  const optBtn = document.getElementById('rb-optimize-btn');
-  if (optBtn) { optBtn.disabled=false; optBtn.textContent='🔀 Optimize Route'; }
-  renderRbStops();
-  openModal('m-route-builder');
-}
-
-function renderRbStops() {
-  const list = document.getElementById('rb-stop-list');
-  if (!rbDeliveries.length) {
-    list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--brown-l);font-size:13px">No pending deliveries available.</div>';
-    updateRbSummary();
-    return;
-  }
-  list.innerHTML = rbDeliveries.map((d, i) => `
-    <div class="rb-stop" draggable="true" data-idx="${i}"
-         ondragstart="rbDragStart(event,${i})"
-         ondragover="rbDragOver(event,${i})"
-         ondragleave="rbDragLeave(event)"
-         ondrop="rbDrop(event,${i})">
-      <div class="rb-stop-hdr">
-        <span class="rb-drag-handle">⠿</span>
-        <span class="rb-stop-num">${i+1}</span>
-        <div style="flex:1">
-          <div class="rb-stop-name">📍 ${d.city}</div>
-          <div style="font-size:12px;color:var(--brown-m)">${d.retailer} · ${d.items} items · ${prioBadge(d.prio)}</div>
-        </div>
-        <span class="mono" style="font-size:11px;color:var(--tan)">${d.id}</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
-        <label style="font-size:11px;color:var(--brown-l);white-space:nowrap">Stop ETA:</label>
-        <input class="rb-eta-input" type="time" id="rb-eta-${i}" placeholder="—"/>
-        <input type="text" id="rb-note-${i}" placeholder="Stop notes…"
-               style="flex:1;padding:5px 8px;border:1px solid var(--cream-dk);border-radius:6px;font-size:12px;font-family:'Jost',sans-serif;color:var(--brown);background:var(--white)"/>
-      </div>
-    </div>`).join('');
-  updateRbSummary();
-}
-
-let rbDragIdx = null;
-function rbDragStart(e, idx)  { rbDragIdx = idx; e.currentTarget.classList.add('dragging'); }
-function rbDragOver(e, idx)   { e.preventDefault(); if (idx !== rbDragIdx) e.currentTarget.classList.add('drag-over'); }
-function rbDragLeave(e)       { e.currentTarget.classList.remove('drag-over'); }
-function rbDrop(e, idx) {
-  e.preventDefault();
-  e.currentTarget.classList.remove('drag-over');
-  document.querySelectorAll('.rb-stop').forEach(el=>el.classList.remove('dragging'));
-  if (rbDragIdx === null || rbDragIdx === idx) return;
-  const moved = rbDeliveries.splice(rbDragIdx, 1)[0];
-  rbDeliveries.splice(idx, 0, moved);
-  rbDragIdx = null;
-  renderRbStops();
-}
-
-// ── Sri Lanka city coordinates (depot = Nestlé Colombo warehouse) ──
-const CITY_COORDS = {
-  'Colombo':       { lat:  6.9271, lng: 79.8612 },
-  'Dehiwala':      { lat:  6.8519, lng: 79.8674 },
-  'Nugegoda':      { lat:  6.8728, lng: 79.8880 },
-  'Negombo':       { lat:  7.2096, lng: 79.8386 },
-  'Kiribathgoda':  { lat:  7.0003, lng: 80.0170 },
-  'Kandy':         { lat:  7.2906, lng: 80.6337 },
-  'Peradeniya':    { lat:  7.2676, lng: 80.5957 },
-  'Galle':         { lat:  6.0535, lng: 80.2210 },
-  'Matara':        { lat:  5.9549, lng: 80.5550 },
-  'Jaffna':        { lat:  9.6615, lng: 80.0255 },
-  'Ratnapura':     { lat:  6.6828, lng: 80.4004 },
-  'Kurunegala':    { lat:  7.4875, lng: 80.3647 },
-};
-
-// ── 4 Nestlé warehouses ──────────────────────────────────────
-const WAREHOUSES = {
-  'Colombo':   { lat: 6.9271, lng: 79.8612 },
-  'Galle':     { lat: 6.0535, lng: 80.2210 },
-  'Kandy':     { lat: 7.2906, lng: 80.6337 },
-  'Kurunegala':{ lat: 7.4875, lng: 80.3647 },
-};
-
-// Haversine distance in km between two lat/lng points
-function haversineDist(a, b) {
-  const R = 6371;
-  const dLat = (b.lat - a.lat) * Math.PI / 180;
-  const dLng = (b.lng - a.lng) * Math.PI / 180;
-  const x = Math.sin(dLat/2)**2 +
-            Math.cos(a.lat * Math.PI/180) * Math.cos(b.lat * Math.PI/180) * Math.sin(dLng/2)**2;
-  return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
-}
-
-// Find the nearest warehouse to a given coordinate
-function nearestWarehouse(coord) {
-  let bestName = 'Colombo', bestDist = Infinity;
-  Object.entries(WAREHOUSES).forEach(([name, wCoord]) => {
-    const dist = haversineDist(coord, wCoord);
-    if (dist < bestDist) { bestDist = dist; bestName = name; }
-  });
-  return { name: bestName, coord: WAREHOUSES[bestName], dist: Math.round(bestDist) };
-}
-
-// Priority sort weight
-function priWeight(p) { return p==='urgent'?0:p==='high'?1:2; }
-
-let rbOsrmDist = null, rbOsrmDur = null, rbSelectedWarehouse = null;
-
-async function optimizeRoute() {
-  if (!rbDeliveries.length) { toast('⚠️ No stops to optimize', '#ea580c'); return; }
-
-  const btn = document.getElementById('rb-optimize-btn');
-  const info = document.getElementById('rb-optimize-info');
-  btn.disabled = true; btn.textContent = '⏳ Optimizing…';
-  info.style.display = 'none';
-
-  // Step 1 — group by priority
-  const groups = { urgent:[], high:[], normal:[] };
-  rbDeliveries.forEach(d => {
-    const p = d.prio || 'normal';
-    (groups[p] || groups.normal).push(d);
-  });
-
-  // Step 2 — within each priority group, nearest-neighbour from current position
-  function nearestNeighbour(stops, startCoord) {
-    const remaining = [...stops];
-    const ordered = [];
-    let current = startCoord;
-    while (remaining.length) {
-      let bestIdx = 0, bestDist = Infinity;
-      remaining.forEach((d, i) => {
-        const coord = CITY_COORDS[d.city] || CITY_COORDS['Colombo'];
-        const dist = haversineDist(current, coord);
-        if (dist < bestDist) { bestDist = dist; bestIdx = i; }
-      });
-      const chosen = remaining.splice(bestIdx, 1)[0];
-      ordered.push(chosen);
-      current = CITY_COORDS[chosen.city] || CITY_COORDS['Colombo'];
-    }
-    return ordered;
-  }
-
-  // Step 3 — do a first pass with Colombo as start to find the first stop
-  let tempOptimized = [];
-  let tempLast = WAREHOUSES['Colombo'];
-  for (const grp of ['urgent', 'high', 'normal']) {
-    if (!groups[grp].length) continue;
-    const ordered = nearestNeighbour(groups[grp], tempLast);
-    tempOptimized = tempOptimized.concat(ordered);
-    if (ordered.length) tempLast = CITY_COORDS[ordered[ordered.length-1].city] || WAREHOUSES['Colombo'];
-  }
-
-  // Step 4 — find nearest warehouse to the FIRST stop
-  const firstStopCity = tempOptimized[0]?.city || 'Colombo';
-  const firstStopCoord = CITY_COORDS[firstStopCity] || CITY_COORDS['Colombo'];
-  const bestWH = nearestWarehouse(firstStopCoord);
-  rbSelectedWarehouse = bestWH;
-
-  // Step 5 — re-run nearest-neighbour starting from the selected warehouse
-  // Reset groups (were consumed by splice above)
-  const groups2 = { urgent:[], high:[], normal:[] };
-  rbDeliveries.forEach(d => {
-    const p = d.prio || 'normal';
-    (groups2[p] || groups2.normal).push(d);
-  });
-
-  let optimized = [];
-  let lastCoord = bestWH.coord;
-  for (const grp of ['urgent', 'high', 'normal']) {
-    if (!groups2[grp].length) continue;
-    const ordered = nearestNeighbour(groups2[grp], lastCoord);
-    optimized = optimized.concat(ordered);
-    if (ordered.length) lastCoord = CITY_COORDS[ordered[ordered.length-1].city] || bestWH.coord;
-  }
-
-  rbDeliveries = optimized;
-
-  // Step 6 — OSRM real road distance starting from chosen warehouse
-  try {
-    const coords = [bestWH.coord, ...optimized.map(d => CITY_COORDS[d.city] || CITY_COORDS['Colombo'])];
-    const coordStr = coords.map(c => `${c.lng},${c.lat}`).join(';');
-    const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=false`;
-    const resp = await fetch(osrmUrl, { signal: AbortSignal.timeout(6000) });
-    const json = await resp.json();
-
-    if (json.code === 'Ok' && json.routes?.[0]) {
-      const route = json.routes[0];
-      const realKm  = Math.round(route.distance / 1000);
-      const realMin = Math.round(route.duration / 60);
-      const realHrs = Math.floor(realMin / 60);
-      const remMins = realMin % 60;
-      rbOsrmDist = realKm; rbOsrmDur = realMin;
-
-      info.style.display = 'block';
-      info.innerHTML = `✅ <strong>Route optimized</strong> — Starting from <strong>${bestWH.name} Warehouse</strong> (nearest to first stop, ${bestWH.dist} km away) · Priority ordered + shortest road path · <strong>${realKm} km</strong> · <strong>${realHrs}h ${remMins}m</strong> real drive time (OSRM)`;
-    } else {
-      throw new Error('OSRM no route');
-    }
-  } catch {
-    rbOsrmDist = null; rbOsrmDur = null;
-    let totalKm = 0;
-    let cur = bestWH.coord;
-    optimized.forEach(d => {
-      const c = CITY_COORDS[d.city] || CITY_COORDS['Colombo'];
-      totalKm += haversineDist(cur, c);
-      cur = c;
-    });
-    const estKm  = Math.round(totalKm * 1.3);
-    const estMin = Math.round(estKm * 2.5);
-    rbOsrmDist = estKm; rbOsrmDur = estMin;
-
-    info.style.display = 'block';
-    info.innerHTML = `🔀 <strong>Route optimized</strong> — Starting from <strong>${bestWH.name} Warehouse</strong> (nearest, ~${bestWH.dist} km) · Priority ordered + nearest neighbour · ~<strong>${estKm} km</strong> · ~<strong>${Math.floor(estMin/60)}h ${estMin%60}m</strong> estimated`;
-  }
-
-  btn.disabled = false; btn.textContent = '🔀 Re-optimize';
-  renderRbStops();
-  updateRbSummary();
-
-  const urgentCount  = groups.urgent.length;
-  const priorityNote = urgentCount ? `${urgentCount} urgent stop${urgentCount>1?'s':''} moved first. ` : '';
-  toast(`🔀 Optimized from ${bestWH.name} Warehouse — ${priorityNote}${rbDeliveries.length} stops`, '#1565C0');
-}
-
-function updateRbSummary() {
-  const n      = rbDeliveries.length;
-  const cities = rbDeliveries.map(d=>d.city).join(' → ');
-  const whLabel = rbSelectedWarehouse ? `${rbSelectedWarehouse.name} Warehouse` : 'Warehouse';
-
-  let distTxt, durTxt;
-  if (rbOsrmDist !== null) {
-    const hrs  = Math.floor(rbOsrmDur / 60);
-    const mins = rbOsrmDur % 60;
-    distTxt = `${rbOsrmDist} km`;
-    durTxt  = `${hrs}h ${mins}m`;
-  } else {
-    const est  = Math.round(n * 38 + 15);
-    const eMin = Math.round(est * 2.5);
-    distTxt = `~${est} km`;
-    durTxt  = `~${Math.floor(eMin/60)}h ${eMin%60}m`;
-  }
-
-  document.getElementById('rb-summary').innerHTML =
-    n ? `<strong>${n} stops</strong> · ${distTxt} · ${durTxt} &nbsp;|&nbsp; 🏭 ${whLabel} → ${cities}` : 'No stops added yet.';
-}
-
-async function publishRoute() {
-  const drvVal  = document.getElementById('rb-driver').value;
-  const vehVal  = document.getElementById('rb-vehicle').value;
-  const depart  = document.getElementById('rb-depart').value;
-  const routeDate = document.getElementById('rb-date').value;
-  const routeNotes = document.getElementById('rb-route-notes').value.trim();
-
-  if (!drvVal)  { toast('⚠️ Please select a driver',  '#ea580c'); return; }
-  if (!vehVal)  { toast('⚠️ Please select a vehicle', '#ea580c'); return; }
-  if (!rbDeliveries.length) { toast('⚠️ No deliveries to publish', '#ea580c'); return; }
-
-  const [driverId, driverName] = drvVal.split('|');
-  const [vehicleId]            = vehVal.split('|');
-
-  // Collect per-stop ETAs and notes
-  const stops = rbDeliveries.map((d, i) => ({
-    deliveryId: d.id,
-    retailer:   d.retailer,
-    city:       d.city,
-    items:      d.items,
-    priority:   d.prio,
-    eta:        document.getElementById(`rb-eta-${i}`)?.value || '',
-    stopNote:   document.getElementById(`rb-note-${i}`)?.value || ''
-  }));
-
-  // Auto-fill ETAs if blank, starting from depart time
-  let [dH, dM] = (depart || '07:00').split(':').map(Number);
-  const filledStops = stops.map((s, i) => {
-    if (!s.eta) {
-      dH += Math.floor((dM + 45) / 60);
-      dM  = (dM + 45) % 60;
-      s.eta = `${String(dH % 24).padStart(2,'0')}:${String(dM).padStart(2,'0')}`;
-    } else {
-      const [h, m] = s.eta.split(':').map(Number);
-      dH = h; dM = m;
-    }
-    return s;
-  });
-
-  const distKm  = rbOsrmDist || Math.round(filledStops.length * 38 + 15);
-  const durMins = rbOsrmDur  || Math.round(distKm * 2.5);
-  const cities  = filledStops.map(s => s.city);
-
-  const warehouseNote = rbSelectedWarehouse
-    ? `Departing from ${rbSelectedWarehouse.name} Warehouse. `
-    : '';
-  const finalRouteNotes = warehouseNote + (routeNotes || '');
-
-  const r = await api('/routes/publish', 'POST', {
-    driverId, driverName, vehicleId, routeDate, depart,
-    routeNotes: finalRouteNotes.trim() || null,
-    warehouse: rbSelectedWarehouse ? rbSelectedWarehouse.name : null,
-    stops: filledStops, distKm, durMins, cities
-  });
-
-  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; } // Keep modal open
-
-  closeModal('m-route-builder');
-  toast(`✅ Route published — ${filledStops.length} stops — Driver, Warehouse &amp; Retailers notified 🔔`);
-  pollBadge();
-  nav('routes');
-}
-
-function openAssign(id, retailer, city, isReassign=false) {
-  document.getElementById('a-id').value    = id;
-  document.getElementById('a-label').value = `${id} — ${retailer}, ${city}`;
-  document.querySelector('#m-assign .modal-title').textContent = isReassign ? '🔄 Reassign Driver & Vehicle' : '🚚 Quick Assign Driver & Vehicle';
-  document.getElementById('a-driver').innerHTML  = '<option value="">Choose driver…</option>' +
-    drivers.map(d => `<option value="${d.id}|${d.name}" ${d.busy ? 'disabled style="color:#aaa"' : ''}>${d.name}${d.busy ? ' (busy — has incomplete delivery)' : ''}</option>`).join('');
-  document.getElementById('a-vehicle').innerHTML = '<option value="">Choose vehicle…</option>' +
-    vehicles.map(v => {
-      const cap = parseFloat(v.cap) || 0;
-      const loaded = parseFloat(v.loadedKg) || 0;
-      const rem = cap > 0 ? ` · ${loaded}/${cap}kg` : (v.cap ? ` · ${v.cap}` : '');
-      return `<option value="${v.id}|${v.plate}" ${v.busy ? 'disabled style="color:#aaa"' : ''}>${v.id} — ${v.plate} · ${v.type}${rem}${v.busy ? ' (in transit)' : ''}</option>`;
-    }).join('');
-  document.getElementById('a-eta').value   = '';
-  document.getElementById('a-notes').value = '';
-  const note = document.getElementById('a-reassign-note');
-  if (note) note.style.display = isReassign ? 'flex' : 'none';
-  openModal('m-assign');
-}
-
-async function saveAssign() {
-  const id     = document.getElementById('a-id').value;
-  const drv    = document.getElementById('a-driver').value;
-  const veh    = document.getElementById('a-vehicle').value;
-  const etaVal = document.getElementById('a-eta').value;
-  const notes  = document.getElementById('a-notes').value.trim();
-  if (!drv || !veh) { toast('⚠️ Select both driver and vehicle', '#ea580c'); return; }
-  const [driverId, driverName] = drv.split('|');
-  const [vehicleId]            = veh.split('|');
-  const btn = document.querySelector('#m-assign .btn-tan');
-  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
-  const r = await api(`/deliveries/${id}/assign`, 'PUT', { driverId, driverName, vehicleId, etaOverride: etaVal || null, deliveryNotes: notes || null });
-  if (btn) { btn.disabled = false; btn.textContent = 'Assign & Notify Driver 🔔'; }
-  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
-  closeModal('m-assign');
-  toast(`✅ ${driverName} assigned to ${id} — Route briefing sent to driver 🔔 ETA: ${r.eta}`);
-  pollBadge();
-  await pageAssign();
-}
-
-async function pageRoutes() {
-  const data = await api('/routes');
-  const routes = Array.isArray(data) ? data : [];
-
-  const routeCards = routes.length ? routes.map(r => {
-    const cities    = r.cities ? JSON.parse(r.cities) : [];
-    const stopsData = r.stops_data ? JSON.parse(r.stops_data) : [];
-    const isLocked  = ['in-transit','delivered','failed'].includes(r.deliveryStatus) || !r.deliveryStatus || r.deliveryStatus === 'no delivery';
-    const hrs       = Math.floor(r.durMins / 60);
-    const mins      = r.durMins % 60;
-    const statusCol = r.deliveryStatus
-      ? (isLocked ? 'b-red' : 'b-green') : 'b-gray';
-    const statusTxt = r.deliveryStatus || 'no delivery';
-
-    return `
-    <div class="route-card ${r.deliveryStatus==='in-transit'?'active':r.deliveryStatus==='delivered'?'completed':''}">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-            <span class="mono" style="color:var(--tan);font-size:13px">Route #${r.id}</span>
-            <span class="badge b-navy">👤 ${r.driverName||'—'}</span>
-            <span class="badge b-blue">🚛 ${r.vehicleId||'—'}</span>
-            ${r.warehouse ? `<span class="badge b-teal">🏭 ${r.warehouse}</span>` : ''}
-            ${r.routeDate ? `<span class="badge b-gray">📅 ${r.routeDate}</span>` : ''}
-            <span class="badge ${statusCol}">${statusTxt.replace('_',' ')}</span>
-          </div>
-          <div style="display:flex;gap:10px;font-size:12px;color:var(--brown-m)">
-            <span>📍 ${r.stops} stop${r.stops!==1?'s':''}</span>
-            <span>📏 ${r.distKm} km</span>
-            <span>⏱ ${hrs}h ${mins}m</span>
-            ${r.depart ? `<span>🕖 Depart ${r.depart}</span>` : ''}
-          </div>
-        </div>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-ghost btn-sm" onclick="viewRouteBriefing(${r.id})">📋 Briefing</button>
-          ${!isLocked ? `<button class="btn btn-orange btn-sm" onclick="openAssign('${r.deliveryId||''}','${r.driverName||''}','${cities[0]||''}',true)">🔄 Reassign</button>` : ''}
-        </div>
-      </div>
-
-      <!-- Stop timeline -->
-      <div class="route-timeline">
-        <div class="rt-depot">
-          <div class="rt-depot-dot"></div>
-          <div>
-            <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 ${r.warehouse ? r.warehouse + ' Warehouse' : 'Depot / Warehouse'}</div>
-            ${r.depart ? `<div style="font-size:11px;color:var(--brown-l)">Departure: ${r.depart}</div>` : ''}
-          </div>
-        </div>
-        ${cities.map((city, i) => {
-          const sd = stopsData[i] || {};
-          const dotClass = r.deliveryStatus === 'delivered' ? 'done'
-                         : r.deliveryStatus === 'in-transit' && i === 0 ? 'active' : '';
-          return `<div class="rt-line"></div>
-          <div class="rt-stop">
-            <div class="rt-stop-dot ${dotClass}"></div>
-            <div class="rt-content">
-              <div class="rt-city">${i+1}. ${city}
-                ${sd.eta ? `<span class="rt-eta-badge" style="margin-left:8px">${sd.eta}</span>` : ''}
-              </div>
-              <div class="rt-detail">
-                ${sd.retailer ? `${sd.retailer} · ` : ''}${sd.items ? `${sd.items} items` : ''}
-                ${sd.priority ? ` · ${sd.priority}` : ''}
-                ${sd.stopNote ? ` · <em>${sd.stopNote}</em>` : ''}
-              </div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-      ${r.routeNotes ? `<div style="margin-top:12px;padding:10px 14px;background:var(--cream);border-radius:6px;font-size:12px;color:var(--brown-m)">📝 <strong>Route Notes:</strong> ${r.routeNotes}</div>` : ''}
-    </div>`;
-  }).join('') : '<div class="empty"><div class="empty-icon">🗺️</div><div>No routes published yet. Use <strong>Plan Routes</strong> to build and publish a route.</div></div>';
-
-  setContent(`
-    <div class="sec-hdr">
-      <div><div class="sec-title">Published Routes</div>
-      <div class="sec-sub">Full route plans with stop sequences, ETAs, driver briefings, and live status</div></div>
-      <button class="btn btn-tan" onclick="nav('assign')">← Back to Planning</button>
-    </div>
-    <div class="card">${routeCards}</div>`);
-}
-
-async function viewRouteBriefing(routeId) {
-  const data   = await api('/routes');
-  const routes = Array.isArray(data) ? data : [];
-  const r      = routes.find(x => x.id === routeId || String(x.id) === String(routeId));
-  if (!r) { toast('Route not found', '#ea580c'); return; }
-
-  const cities    = r.cities    ? JSON.parse(r.cities)     : [];
-  const stopsData = r.stops_data ? JSON.parse(r.stops_data) : [];
-  const hrs  = Math.floor(r.durMins / 60);
-  const mins = r.durMins % 60;
-
-  const stopsHtml = cities.map((city, i) => {
-    const sd = stopsData[i] || {};
-    return `
-    <div style="display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--cream-dk)">
-      <div style="width:28px;height:28px;border-radius:50%;background:var(--tan);color:var(--cream);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
-      <div style="flex:1">
-        <div style="font-size:13px;font-weight:600;color:var(--brown)">${city}
-          ${sd.eta ? `<span style="font-family:'DM Mono',monospace;font-size:11px;background:var(--blue-bg);color:var(--blue);padding:2px 8px;border-radius:10px;margin-left:8px">${sd.eta}</span>` : ''}
-        </div>
-        ${sd.retailer ? `<div style="font-size:12px;color:var(--brown-m)">${sd.retailer}${sd.items ? ` · ${sd.items} items` : ''}${sd.priority ? ` · Priority: ${sd.priority}` : ''}</div>` : ''}
-        ${sd.stopNote ? `<div style="font-size:12px;color:var(--brown-l);font-style:italic;margin-top:2px">📌 ${sd.stopNote}</div>` : ''}
-        <div style="font-size:11px;font-family:'DM Mono',monospace;color:var(--tan);margin-top:2px">${sd.deliveryId || ''}</div>
-      </div>
-    </div>`;
-  }).join('');
-
-  document.getElementById('m-route-detail-body').innerHTML = `
-    <div style="margin-bottom:18px">
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-        <span class="badge b-navy">👤 ${r.driverName||'—'}</span>
-        <span class="badge b-blue">🚛 ${r.vehicleId||'—'}</span>
-        ${r.routeDate ? `<span class="badge b-gray">📅 ${r.routeDate}</span>` : ''}
-        <span class="badge b-teal">📍 ${r.stops} stops</span>
-        <span class="badge b-gray">📏 ${r.distKm} km · ⏱ ${hrs}h ${mins}m</span>
-      </div>
-      ${r.warehouse ? `<div style="font-size:13px;font-weight:600;color:var(--tan);margin-bottom:4px">🏭 Departing from: <strong>${r.warehouse} Warehouse</strong></div>` : ''}
-      ${r.depart ? `<div style="font-size:12px;color:var(--brown-m)">🕖 Departure time: <strong>${r.depart}</strong></div>` : ''}
-    </div>
-    <div style="font-size:11px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Stop Sequence</div>
-    ${stopsHtml}
-    ${r.routeNotes ? `<div style="margin-top:14px;padding:12px;background:var(--cream);border-radius:8px;font-size:13px;color:var(--brown-m)">📝 <strong>Route Notes:</strong> ${r.routeNotes}</div>` : ''}
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal('m-route-detail')">Close</button>
-    </div>`;
-  openModal('m-route-detail');
 }
 
 // ══ WAREHOUSE PAGES ═════════════════════════════
@@ -1774,7 +1099,7 @@ ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);marg
     // Only show synthetic banner if route is actually synthetic
     const syntheticBanner = rt._synthetic ? `
       <div class="alert-banner alert-info" style="margin-bottom:14px">
-        ℹ️ This route was reconstructed from your assigned deliveries. Your planner can publish a full route plan with sequenced ETAs and notes.
+        ℹ️ This route was automatically generated from your assigned deliveries.
       </div>` : '';
 
     return `
@@ -1821,7 +1146,7 @@ ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);marg
 
   const noRouteMsg = deliveries.length === 0 ? `
     <div class="alert-banner alert-info" style="margin-bottom:18px">
-      ℹ️ No deliveries assigned yet. Your planner will publish a full route briefing — you will be notified immediately.
+      ℹ️ No deliveries assigned yet. You will be notified automatically once a route is created for you.
     </div>` : '';
 
   setContent(`
@@ -1881,7 +1206,7 @@ async function pageUpdStatus() {
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Update Delivery Status</div>
-      <div class="sec-sub">Updates instantly notify Retailer, Order Team, Warehouse &amp; Route Planner 🔔</div></div>
+      <div class="sec-sub">Updates instantly notify Retailer, Order Team &amp; Warehouse 🔔</div></div>
     </div>
     ${progressBar}
     <div class="card">
@@ -1990,7 +1315,7 @@ async function saveStatus() {
 
   closeModal('m-status');
   const labels = {
-    'in-transit': '🚛 In Transit — Retailer, Order Team, Warehouse & Route Planner notified 🔔',
+    'in-transit': '🚛 In Transit — Retailer, Order Team & Warehouse notified 🔔',
     'delivered':  '✅ Delivered — All 4 parties notified 🔔',
     'failed':     '❌ Failed — All 4 parties notified 🔔'
   };
@@ -2094,7 +1419,7 @@ async function saveRetailerPw(){const id=document.getElementById('rpw-id').value
 async function deleteRetailer(id,name){if(!confirm(`Remove retailer "${name}"?`)) return;const r=await api(`/retailers/${id}`,'DELETE');if(r.error){toast(`❌ ${r.error}`,'#B71C1C');return;}toast(`✅ Retailer "${name}" removed`);await pageRetailers();}
 
 // ══ ADMIN — USER MANAGEMENT ══════════════════════
-async function pageAdminUsers(){const users=await api('/users');if(users.error){setContent(`<div class="alert-banner alert-error">❌ ${users.error}</div>`);return;}const RL={retailer:'Retailer',order_team:'Order Team',route_planner:'Route Planner',warehouse:'Warehouse',distributor:'Distributor'};const RC={retailer:'b-teal',order_team:'b-blue',route_planner:'b-purple',warehouse:'b-navy',distributor:'b-orange'};setContent(`<div class="sec-hdr"><div><div class="sec-title">User Management</div><div class="sec-sub">Add, view and remove system users</div></div><button class="btn btn-tan" onclick="openAddUser()">+ Add User</button></div><div class="card"><div class="card-title">👥 All Users <span class="badge b-gray" style="margin-left:8px">${users.length}</span></div><div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead><tbody>${users.length?users.map(u=>`<tr><td><strong>${escapeHtml(u.name)}</strong></td><td style="font-family:'DM Mono',monospace;font-size:12px">${escapeHtml(u.Email)}</td><td><span class="badge ${RC[u.role]||'b-gray'}">${RL[u.role]||u.role}</span></td><td style="font-size:12px;color:var(--brown-l)">${u.createdAt||'—'}</td><td style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="openAdminResetPw(${u.id},'${escapeHtml(u.name)}')">🔑 Reset PW</button>${u.id!==user.id?`<button class="btn btn-red btn-sm" onclick="deleteUser(${u.id},'${escapeHtml(u.name)}')">✕ Remove</button>`:'<span style="font-size:11px;color:var(--brown-l);padding:4px 8px">(you)</span>'}</td></tr>`).join(''):'<tr><td colspan="5"><div class="empty"><div>No users found.</div></div></td></tr>'}</tbody></table></div></div><div class="modal-bg" id="m-add-user" style="z-index:400"><div class="modal" style="max-width:460px"><div class="modal-title">👤 Add New User</div><div class="modal-body"><div class="fg"><label>Full Name *</label><input id="au-name" placeholder="e.g. Kamal Perera"/></div><div class="fg"><label>Email *</label><input id="au-email" type="text" placeholder="kamal@nestle.lk"/></div><div class="fg"><label>Password *</label><input id="au-pass" type="password" placeholder="Min 4 characters"/></div><div class="fg"><label>Role *</label><select id="au-role"><option value="">Select role…</option><option value="retailer">Retailer</option><option value="order_team">Order Processing Team</option><option value="route_planner">Route Planner</option><option value="warehouse">Warehouse</option><option value="distributor">Distributor / Driver</option></select></div><div id="au-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-add-user')">Cancel</button><button class="btn btn-tan" onclick="saveNewUser()" id="au-btn">Create User</button></div></div></div></div><div class="modal-bg" id="m-admin-pw" style="z-index:400"><div class="modal" style="max-width:380px"><div class="modal-title">🔑 Reset Password</div><div class="modal-body"><input type="hidden" id="apw-id"/><div class="fg"><label id="apw-label">New password</label><input id="apw-pass" type="password" placeholder="Min 4 characters"/></div><div id="apw-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-admin-pw')">Cancel</button><button class="btn btn-tan" onclick="saveAdminPw()" id="apw-btn">Reset Password</button></div></div></div></div>`);}
+async function pageAdminUsers(){const users=await api('/users');if(users.error){setContent(`<div class="alert-banner alert-error">❌ ${users.error}</div>`);return;}const RL={retailer:'Retailer',order_team:'Order Team',warehouse:'Warehouse',distributor:'Distributor'};const RC={retailer:'b-teal',order_team:'b-blue',warehouse:'b-navy',distributor:'b-orange'};setContent(`<div class="sec-hdr"><div><div class="sec-title">User Management</div><div class="sec-sub">Add, view and remove system users</div></div><button class="btn btn-tan" onclick="openAddUser()">+ Add User</button></div><div class="card"><div class="card-title">👥 All Users <span class="badge b-gray" style="margin-left:8px">${users.length}</span></div><div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead><tbody>${users.length?users.map(u=>`<tr><td><strong>${escapeHtml(u.name)}</strong></td><td style="font-family:'DM Mono',monospace;font-size:12px">${escapeHtml(u.Email)}</td><td><span class="badge ${RC[u.role]||'b-gray'}">${RL[u.role]||u.role}</span></td><td style="font-size:12px;color:var(--brown-l)">${u.createdAt||'—'}</td><td style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="openAdminResetPw(${u.id},'${escapeHtml(u.name)}')">🔑 Reset PW</button>${u.id!==user.id?`<button class="btn btn-red btn-sm" onclick="deleteUser(${u.id},'${escapeHtml(u.name)}')">✕ Remove</button>`:'<span style="font-size:11px;color:var(--brown-l);padding:4px 8px">(you)</span>'}</td></tr>`).join(''):'<tr><td colspan="5"><div class="empty"><div>No users found.</div></div></td></tr>'}</tbody></table></div></div><div class="modal-bg" id="m-add-user" style="z-index:400"><div class="modal" style="max-width:460px"><div class="modal-title">👤 Add New User</div><div class="modal-body"><div class="fg"><label>Full Name *</label><input id="au-name" placeholder="e.g. Kamal Perera"/></div><div class="fg"><label>Email *</label><input id="au-email" type="text" placeholder="kamal@nestle.lk"/></div><div class="fg"><label>Password *</label><input id="au-pass" type="password" placeholder="Min 4 characters"/></div><div class="fg"><label>Role *</label><select id="au-role"><option value="">Select role…</option><option value="retailer">Retailer</option><option value="order_team">Order Processing Team</option><option value="warehouse">Warehouse</option><option value="distributor">Distributor / Driver</option></select></div><div id="au-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-add-user')">Cancel</button><button class="btn btn-tan" onclick="saveNewUser()" id="au-btn">Create User</button></div></div></div></div><div class="modal-bg" id="m-admin-pw" style="z-index:400"><div class="modal" style="max-width:380px"><div class="modal-title">🔑 Reset Password</div><div class="modal-body"><input type="hidden" id="apw-id"/><div class="fg"><label id="apw-label">New password</label><input id="apw-pass" type="password" placeholder="Min 4 characters"/></div><div id="apw-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-admin-pw')">Cancel</button><button class="btn btn-tan" onclick="saveAdminPw()" id="apw-btn">Reset Password</button></div></div></div></div>`);}
 function openAddUser(){['au-name','au-email','au-pass'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('au-role').value='';document.getElementById('au-err').style.display='none';const btn=document.getElementById('au-btn');if(btn){btn.disabled=false;btn.textContent='Create User';}openModal('m-add-user');}
 async function saveNewUser(){const name=document.getElementById('au-name').value.trim();const email=document.getElementById('au-email').value.trim();const pass=document.getElementById('au-pass').value;const role=document.getElementById('au-role').value;const errEl=document.getElementById('au-err');if(!name||!email||!pass||!role){errEl.textContent='⚠️ All fields are required.';errEl.style.display='flex';return;}if(pass.length<4){errEl.textContent='⚠️ Password must be at least 4 characters.';errEl.style.display='flex';return;}const btn=document.getElementById('au-btn');btn.disabled=true;btn.textContent='Creating…';const r=await api('/users','POST',{name,email,password:pass,role});btn.disabled=false;btn.textContent='Create User';if(r.error){errEl.textContent=`❌ ${r.error}`;errEl.style.display='flex';return;}closeModal('m-add-user');toast(`✅ User "${name}" created`,'#16a34a');await pageAdminUsers();}
 function openAdminResetPw(id,name){document.getElementById('apw-id').value=id;document.getElementById('apw-label').textContent=`New password for ${name}`;document.getElementById('apw-pass').value='';document.getElementById('apw-err').style.display='none';const btn=document.getElementById('apw-btn');if(btn){btn.disabled=false;btn.textContent='Reset Password';}openModal('m-admin-pw');}
