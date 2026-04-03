@@ -559,7 +559,7 @@ function enterApp() {
 function roleLabel(r) {
   return { retailer:'Retailer', order_team:'Order Processing Team',
            route_planner:'Route Planner', warehouse:'Warehouse', distributor:'Distributor',
-           admin:'System Administrator' }[r] || r;
+           admin:'System Administrator' }[r] || r; // route_planner kept for backward compat
 }
 
 // ══ NOTIFICATIONS ═══════════════════════════════
@@ -630,7 +630,7 @@ function stopPoll()  { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; 
 // ══ NAV ═════════════════════════════════════════
 const ROLE_PAGES = {
   retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    }],
-  order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'consolidate', ico:'📊', lbl:'Consolidate'     },{id:'retailers', ico:'🏪', lbl:'Retailers'}],
+  order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'retailers', ico:'🏪', lbl:'Retailers'}],
   route_planner: [{id:'assign',      ico:'🗺️', lbl:'Plan Routes'    },{id:'routes',      ico:'💾', lbl:'Saved Routes'     }],
   warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     }],
   distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'      },{id:'upd-status',  ico:'✅', lbl:'Update Status'    }],
@@ -656,7 +656,7 @@ async function render(id) {
   if (id==='req-order')   await pageReqOrder();
   if (id==='all-orders')  await pageAllOrders();
   if (id==='deliveries')  await pageDeliveries();
-  if (id==='consolidate') pageConsolidate();
+  // consolidate removed — auto-handled on confirm
   if (id==='assign')      await pageAssign();
   if (id==='routes')      await pageRoutes();
   if (id==='wh-incoming') await pageWhIncoming();
@@ -1008,7 +1008,7 @@ async function confirmOrder(action) {
 
   closeModal('m-confirm');
   toast(action === 'confirm'
-    ? `✅ Order ${id} confirmed — Retailer + Route Planner + Warehouse notified 🔔`
+    ? `✅ Order ${id} confirmed — Added to dispatch queue 🔔`
     : `❌ Order ${id} rejected — Retailer notified with reason 🔔`);
   pollBadge();
   pageAllOrders();
@@ -1017,7 +1017,10 @@ async function confirmOrder(action) {
 async function pageDeliveries() {
   const data = await api('/deliveries');
   setContent(`
-    <div class="sec-hdr"><div><div class="sec-title">All Deliveries</div><div class="sec-sub">Live delivery status across all roles</div></div></div>
+    <div class="sec-hdr"><div><div class="sec-title">All Deliveries</div><div class="sec-sub">Auto-assigned when order is confirmed — live status across all roles</div></div></div>
+    <div class="alert-banner alert-success" style="margin-bottom:18px">
+      ✅ <strong>Automatic system:</strong> When an order is confirmed, a delivery is instantly created and auto-assigned to the next available driver and vehicle. No manual route planning needed.
+    </div>
     <div class="card"><div class="tw"><table>
       <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Receipt Proof</th></tr></thead>
       <tbody>${data.length ? data.map(d=>`
@@ -1100,10 +1103,9 @@ async function pageAssign() {
       </div>
     </div>
 
-    ${pending.length > 0 ? `
     <div class="alert-banner alert-info" style="margin-bottom:18px">
-      💡 <strong>Tip:</strong> Use <strong>Build Multi-Stop Route</strong> to create a full sequenced plan for multiple deliveries in one go — or use <em>Quick Assign</em> below for a single delivery.
-    </div>` : ''}
+      🤖 <strong>Batch Auto-Routing:</strong> Confirmed orders are queued automatically. Once <strong>10 orders</strong> are confirmed, the system creates one optimised multi-stop route and assigns it to an available driver — no manual planning needed.
+    </div>
 
     <div class="card">
       <div class="card-title">⏳ Pending Assignment <span class="badge b-orange" style="margin-left:8px">${pending.length}</span></div>
