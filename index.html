@@ -146,20 +146,92 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .track-badge{display:inline-flex;align-items:center;gap:4px;background:#E8F5E9;color:#2E7D32;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;animation:pulse-green 2s infinite}
 @keyframes pulse-green{0%,100%{opacity:1}50%{opacity:0.6}}
 @media(max-width:768px){
-  .topbar{padding:10px 14px}
-  .ttitle{font-size:13px}.tsub{font-size:11px}
-  .nav-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .nav-tabs::-webkit-scrollbar{display:none}
-  .tab-btn{white-space:nowrap;font-size:12px;padding:8px 12px}
-  .main{padding:14px}
-  .card{padding:14px}
-  .sec-title{font-size:18px}
-  .tw{overflow-x:auto}
-  table{min-width:600px}
-  .btn{font-size:12px;padding:8px 12px}
-  .modal{width:95vw;max-width:95vw;margin:10px}
-  .fg input,.fg select,.fg textarea{font-size:16px}
-  .map-container{height:320px}
+  /* Topbar */
+  .topbar{padding:0 12px;height:54px}
+  .tlogo-wrap{width:34px;height:34px;padding:4px}
+  .ttitle{font-size:13px;letter-spacing:0}.tsub{display:none}
+  .tdivider{display:none}
+  .tuser-name{display:none}
+  .tuser-role{display:none}
+  .tuser-info{display:none}
+  .tbadge{width:28px;height:28px;font-size:11px}
+
+  /* Tabs */
+  .tabs{padding:0 8px;gap:0;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{padding:10px 12px;font-size:10px;letter-spacing:.3px;gap:4px}
+
+  /* Main content */
+  .main{padding:12px}
+  .card{padding:14px;border-radius:10px;margin-bottom:12px}
+  .card-title{font-size:13px;margin-bottom:12px}
+
+  /* Section headers */
+  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:14px}
+  .sec-title{font-size:20px}
+  .sec-sub{font-size:12px}
+  .sec-hdr .btn{width:100%;justify-content:center}
+
+  /* KPI grid */
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px}
+  .kpi{padding:14px 16px}
+  .kpi-v{font-size:22px}
+  .kpi-l{font-size:10px}
+
+  /* Tables — horizontal scroll */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -14px;padding:0 14px}
+  table{min-width:560px}
+  th{padding:8px 10px;font-size:9px}
+  td{padding:10px 10px;font-size:12px}
+  .btn-sm{padding:4px 8px;font-size:11px}
+
+  /* Forms */
+  .form-grid{grid-template-columns:1fr}
+  .fg{margin-bottom:10px}
+  .fg input,.fg select,.fg textarea{font-size:16px;padding:10px 12px}
+  .fg label{font-size:10px}
+
+  /* Modals */
+  .modal-bg{padding:8px;align-items:flex-end}
+  .modal{max-width:100%;width:100%;border-radius:16px 16px 0 0;max-height:92vh}
+  .modal-title{padding:16px 18px;font-size:16px}
+  .modal .modal-body{padding:16px 18px}
+  .modal-actions{flex-direction:column-reverse}
+  .modal-actions .btn{width:100%;justify-content:center}
+
+  /* Map */
+  .map-container{height:280px;border-radius:8px}
+
+  /* Notifications panel */
+  .np{width:100%;right:0;left:0;border-left:none;border-top:1px solid var(--cream-dk)}
+
+  /* Buttons */
+  .btn{font-size:12px;padding:8px 14px}
+
+  /* Login card */
+  .lcard{padding:28px 20px;border-radius:16px}
+  .lh{font-size:22px}
+  .qbtn{padding:10px 12px;gap:10px}
+  .qbtns{grid-template-columns:1fr}
+  .qav{width:36px;height:36px;font-size:13px}
+
+  /* Route builder */
+  .rb-stop{padding:10px 12px}
+  .rp-two-col{grid-template-columns:1fr}
+
+  /* Alert banners */
+  .alert-banner{font-size:12px;padding:10px 12px}
+
+  /* Toast bottom safe area */
+  .toast{bottom:16px;right:12px;left:12px;max-width:100%;font-size:12px}
+}
+
+/* Extra small phones */
+@media(max-width:380px){
+  .main{padding:8px}
+  .card{padding:10px}
+  .tab{padding:8px 10px;font-size:9px}
+  .kpi-row{grid-template-columns:1fr}
 }
 .page-logo-banner{display:flex;align-items:center;gap:10px;padding:14px 0 10px 0;margin-bottom:4px;border-bottom:1px solid var(--cream-dk)}.page-logo-img{width:38px;height:38px;object-fit:contain;border-radius:8px;padding:4px;background:var(--white);border:1px solid var(--cream-dk)}.page-logo-text{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);letter-spacing:.4px;opacity:.7}
 .sec-title{font-size:24px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
@@ -282,35 +354,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
 .builder-drop-zone{min-height:80px;border:2px dashed var(--cream-dk);border-radius:var(--r-sm);padding:16px;text-align:center;color:var(--brown-l);font-size:13px;transition:all .2s;margin-bottom:12px}
 .builder-drop-zone.active{border-color:var(--tan);background:rgba(139,105,20,.05);color:var(--tan)}
 
-@media(max-width:768px){.kpi-row{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.main{padding:14px}.np{width:100%}.topbar{padding:0 16px}.tuser-info{display:none}}
 
-/* ══ SPRINT 2 — MOBILE RESPONSIVE ═══════════════════ */
-@media(max-width:768px){
-  .topbar{padding:0 12px;gap:8px}
-  .ttitle{font-size:13px}
-  .tsub{display:none}
-  .tright{gap:8px}
-  .tname{display:none}
-  .trole{display:none}
-  .tnav{gap:0;overflow-x:auto;padding:0 8px}
-  .tnav-btn{padding:10px 10px;font-size:12px;white-space:nowrap}
-  .main{padding:16px 12px}
-  .card{padding:16px}
-  .form-grid{grid-template-columns:1fr}
-  .tw{overflow-x:auto}
-  table{min-width:520px}
-  .sec-hdr{flex-direction:column;align-items:flex-start;gap:8px}
-  .btn{padding:10px 16px;font-size:13px}
-  .modal{width:95vw;max-width:95vw;margin:8px}
-  .stat-grid{grid-template-columns:1fr 1fr}
-  .map-container{height:320px}
-}
-@media(max-width:480px){
-  .tnav-btn .nav-lbl{display:none}
-  .tnav-btn{min-width:40px;justify-content:center}
-  .stat-grid{grid-template-columns:1fr}
-  .map-container{height:280px}
-}
 /* Map container */
 .map-container{width:100%;height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--cream-dk)}
 .map-info-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--navy);border-radius:8px;margin-bottom:10px;flex-wrap:wrap}
@@ -347,7 +391,6 @@ tr:hover td{background:rgba(139,105,20,.03)}
 
         <button class="qbtn" onclick="quick('warehouse@nestle.lk','wh123')"><div class="qav" style="background:#6A1B9A">KB</div><div><div class="qname">Kasun Bandara</div><div class="qrole">Warehouse</div></div></button>
         <button class="qbtn" onclick="quick('driver1@nestle.lk','drv123')"><div class="qav" style="background:#D84315">KS</div><div><div class="qname">Kumara Silva</div><div class="qrole">Distributor</div></div></button>
-        <button class="qbtn" onclick="quick('ajith@nestle.lk','drv123')"><div class="qav" style="background:#E65100">AB</div><div><div class="qname">Ajith Bandara</div><div class="qrole">Distributor</div></div></button>
       </div>
     </div>
   </div>
