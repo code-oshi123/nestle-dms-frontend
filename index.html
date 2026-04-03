@@ -1253,11 +1253,15 @@ ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);marg
 
   const delivered = deliveries.filter(d=>d.status==='delivered').length;
   const inTransit = deliveries.filter(d=>d.status==='in-transit').length;
-  const ready     = deliveries.filter(d=>['warehouse_ready','loaded'].includes(d.status)).length;
+  const ready     = deliveries.filter(d=>d.status==='loaded').length;
+  const waiting   = deliveries.filter(d=>['assigned','warehouse_ready'].includes(d.status)).length;
 
   const noRouteMsg = deliveries.length === 0 ? `
     <div class="alert-banner alert-info" style="margin-bottom:18px">
       ℹ️ No deliveries assigned yet. You will be notified automatically once a route is created for you.
+    </div>` : waiting > 0 && ready === 0 && inTransit === 0 ? `
+    <div class="alert-banner alert-warn" style="margin-bottom:18px">
+      ⏳ <strong>Waiting for warehouse.</strong> Your ${waiting} delivery${waiting>1?'s are':' is'} assigned but the warehouse has not finished loading yet. You will be notified when the vehicle is ready for pickup.
     </div>` : '';
 
   setContent(`
@@ -1267,8 +1271,9 @@ ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);marg
       <div class="kpi"><div class="kpi-v">${deliveries.length}</div><div class="kpi-l">Total Stops</div></div>
       <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${delivered}</div><div class="kpi-l">Delivered</div></div>
       <div class="kpi" style="border-top-color:var(--orange)"><div class="kpi-v">${inTransit}</div><div class="kpi-l">In Transit</div></div>
-      <div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-v">${ready}</div><div class="kpi-l">Ready for Pickup</div></div>
+      <div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-v">${ready}</div><div class="kpi-l">Vehicle Loaded ✅</div></div>
     </div>
+    ${waiting > 0 ? `<div class="alert-banner alert-warn" style="margin-bottom:18px">⏳ <strong>${waiting} stop${waiting>1?'s':''} awaiting warehouse loading</strong> — you will be notified when the vehicle is ready.</div>` : ''}
 
     ${myRoutes.length ? routeCards : noRouteMsg}
 
@@ -1291,7 +1296,8 @@ ${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);marg
 
 async function pageUpdStatus() {
   const data      = await api(`/deliveries?role=distributor&userId=${user.id}`);
-  const active    = data.filter(d => !['delivered','failed'].includes(d.status));
+  const active    = data.filter(d => ['loaded','in-transit'].includes(d.status));
+  const waiting   = data.filter(d => ['assigned','warehouse_ready'].includes(d.status));
   const completed = data.filter(d => ['delivered','failed'].includes(d.status));
   const total     = data.length;
   const deliveredCount = data.filter(d => d.status === 'delivered').length;
@@ -1308,7 +1314,8 @@ async function pageUpdStatus() {
       </div>
       <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
         ${data.filter(d=>d.status==='in-transit').length ? `<span class="badge b-orange">🚛 ${data.filter(d=>d.status==='in-transit').length} In Transit</span>` : ''}
-        ${data.filter(d=>['assigned','loaded','warehouse_ready'].includes(d.status)).length ? `<span class="badge b-blue">📦 ${data.filter(d=>['assigned','loaded','warehouse_ready'].includes(d.status)).length} Pending Departure</span>` : ''}
+        ${data.filter(d=>d.status==='loaded').length ? `<span class="badge b-blue">📦 ${data.filter(d=>d.status==='loaded').length} Vehicle Loaded — Ready</span>` : ''}
+        ${data.filter(d=>['assigned','warehouse_ready'].includes(d.status)).length ? `<span class="badge b-gray">⏳ ${data.filter(d=>['assigned','warehouse_ready'].includes(d.status)).length} Awaiting Warehouse</span>` : ''}
         ${deliveredCount ? `<span class="badge b-green">✅ ${deliveredCount} Delivered</span>` : ''}
         ${data.filter(d=>d.status==='failed').length ? `<span class="badge b-red">❌ ${data.filter(d=>d.status==='failed').length} Failed</span>` : ''}
       </div>
@@ -1320,6 +1327,25 @@ async function pageUpdStatus() {
       <div class="sec-sub">Updates instantly notify Retailer, Order Team &amp; Warehouse 🔔</div></div>
     </div>
     ${progressBar}
+    ${waiting.length ? `
+    <div class="card" style="border-top:3px solid var(--orange)">
+      <div class="card-title">⏳ Awaiting Warehouse Loading <span class="badge b-orange" style="margin-left:8px">${waiting.length}</span></div>
+      <div class="alert-banner alert-warn" style="margin-bottom:12px">
+        These deliveries are assigned to you but the warehouse has not finished loading yet. You cannot update status until the vehicle is loaded.
+      </div>
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th></tr></thead>
+        <tbody>${waiting.map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+            <td style="font-size:12px">${d.items} items</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+            <td>${delBadge(d.status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>` : ''}
     <div class="card">
       <div class="card-title">Active Stops <span class="badge b-orange" style="margin-left:8px">${active.length}</span></div>
       <div class="tw"><table>
