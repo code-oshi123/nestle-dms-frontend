@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <title>Nestlé — Smart Delivery Management System</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
@@ -140,6 +141,26 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:24px;margin-bottom:18px;border:1px solid var(--cream-dk)}
 .card-title{font-size:15px;font-weight:600;color:var(--brown);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
 .sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.map-container{width:100%;height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--cream-dk)}
+#live-map{width:100%;height:100%}
+.track-badge{display:inline-flex;align-items:center;gap:4px;background:#E8F5E9;color:#2E7D32;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;animation:pulse-green 2s infinite}
+@keyframes pulse-green{0%,100%{opacity:1}50%{opacity:0.6}}
+@media(max-width:768px){
+  .topbar{padding:10px 14px}
+  .ttitle{font-size:13px}.tsub{font-size:11px}
+  .nav-tabs{overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .nav-tabs::-webkit-scrollbar{display:none}
+  .tab-btn{white-space:nowrap;font-size:12px;padding:8px 12px}
+  .main{padding:14px}
+  .card{padding:14px}
+  .sec-title{font-size:18px}
+  .tw{overflow-x:auto}
+  table{min-width:600px}
+  .btn{font-size:12px;padding:8px 12px}
+  .modal{width:95vw;max-width:95vw;margin:10px}
+  .fg input,.fg select,.fg textarea{font-size:16px}
+  .map-container{height:320px}
+}
 .page-logo-banner{display:flex;align-items:center;gap:10px;padding:14px 0 10px 0;margin-bottom:4px;border-bottom:1px solid var(--cream-dk)}.page-logo-img{width:38px;height:38px;object-fit:contain;border-radius:8px;padding:4px;background:var(--white);border:1px solid var(--cream-dk)}.page-logo-text{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);letter-spacing:.4px;opacity:.7}
 .sec-title{font-size:24px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
 .sec-sub{font-size:13px;color:var(--brown-m);margin-top:4px;font-weight:400}
@@ -262,6 +283,43 @@ tr:hover td{background:rgba(139,105,20,.03)}
 .builder-drop-zone.active{border-color:var(--tan);background:rgba(139,105,20,.05);color:var(--tan)}
 
 @media(max-width:768px){.kpi-row{grid-template-columns:1fr 1fr}.form-grid{grid-template-columns:1fr}.main{padding:14px}.np{width:100%}.topbar{padding:0 16px}.tuser-info{display:none}}
+
+/* ══ SPRINT 2 — MOBILE RESPONSIVE ═══════════════════ */
+@media(max-width:768px){
+  .topbar{padding:0 12px;gap:8px}
+  .ttitle{font-size:13px}
+  .tsub{display:none}
+  .tright{gap:8px}
+  .tname{display:none}
+  .trole{display:none}
+  .tnav{gap:0;overflow-x:auto;padding:0 8px}
+  .tnav-btn{padding:10px 10px;font-size:12px;white-space:nowrap}
+  .main{padding:16px 12px}
+  .card{padding:16px}
+  .form-grid{grid-template-columns:1fr}
+  .tw{overflow-x:auto}
+  table{min-width:520px}
+  .sec-hdr{flex-direction:column;align-items:flex-start;gap:8px}
+  .btn{padding:10px 16px;font-size:13px}
+  .modal{width:95vw;max-width:95vw;margin:8px}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .map-container{height:320px}
+}
+@media(max-width:480px){
+  .tnav-btn .nav-lbl{display:none}
+  .tnav-btn{min-width:40px;justify-content:center}
+  .stat-grid{grid-template-columns:1fr}
+  .map-container{height:280px}
+}
+/* Map container */
+.map-container{width:100%;height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--cream-dk)}
+.map-info-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--navy);border-radius:8px;margin-bottom:10px;flex-wrap:wrap}
+.map-info-bar span{color:var(--white);font-size:12px}
+.map-pulse{display:inline-block;width:8px;height:8px;background:#4CAF50;border-radius:50%;animation:mapPulse 1.5s infinite}
+@keyframes mapPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+/* kg auto-calc badge */
+.kg-badge{display:inline-flex;align-items:center;gap:6px;background:var(--cream-dk);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--brown);margin-top:6px;font-weight:500}
+.kg-badge strong{color:var(--navy)}
 </style>
 </head>
 <body>
@@ -289,6 +347,7 @@ tr:hover td{background:rgba(139,105,20,.03)}
 
         <button class="qbtn" onclick="quick('warehouse@nestle.lk','wh123')"><div class="qav" style="background:#6A1B9A">KB</div><div><div class="qname">Kasun Bandara</div><div class="qrole">Warehouse</div></div></button>
         <button class="qbtn" onclick="quick('driver1@nestle.lk','drv123')"><div class="qav" style="background:#D84315">KS</div><div><div class="qname">Kumara Silva</div><div class="qrole">Distributor</div></div></button>
+        <button class="qbtn" onclick="quick('ajith@nestle.lk','drv123')"><div class="qav" style="background:#E65100">AB</div><div><div class="qname">Ajith Bandara</div><div class="qrole">Distributor</div></div></button>
       </div>
     </div>
   </div>
@@ -541,11 +600,10 @@ function stopPoll()  { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; 
 
 // ══ NAV ═════════════════════════════════════════
 const ROLE_PAGES = {
-  retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    }],
-  order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'retailers', ico:'🏪', lbl:'Retailers'}],
-
-  warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     }],
-  distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'      },{id:'upd-status',  ico:'✅', lbl:'Update Status'    }],
+  retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
+  order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'retailers', ico:'🏪', lbl:'Retailers'     },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
+  warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
+  distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'      },{id:'upd-status',  ico:'✅', lbl:'Update Status'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
 };
 
 function buildNav() {
@@ -574,6 +632,7 @@ async function render(id) {
   if (id==='wh-prepare')  await pageWhPrepare();
   if (id==='my-routes')   await pageMyRoutes();
   if (id==='upd-status')  await pageUpdStatus();
+  if (id==='live-map')    await pageLiveMap();
   if (id==='retailers')   await pageRetailers();
   if (id==='admin-users') await pageAdminUsers();
 }
@@ -614,6 +673,7 @@ async function pageMyOrders() {
           <td><span class="mono">${o.id}</span></td>
           <td>${o.city}</td>
           <td>${o.items} items · ${o.kg}kg</td>
+            <td>${['consolidated','assigned','warehouse_ready','loaded','in-transit'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${o.id},'${o.city||''}','${o.retailerName||o.retailer||''}')">🗺️ Track</button>` : '—'}</td>
           <td>${prioBadge(o.prio)}</td>
           <td>${orderBadge(o.status)}</td>
           <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
@@ -708,15 +768,16 @@ async function pageReqOrder() {
         </div>
         <div class="fg">
           <label>Product <span style="color:var(--red)">*</span></label>
-          <select id="i-product">
+          <select id="i-product" onchange="calcKg()">
             <option value="">Select product…</option>
           </select>
           <div class="field-err" id="err-product">Please select a product.</div>
         </div>
         <div class="fg">
           <label>Items (whole number) <span style="color:var(--red)">*</span></label>
-          <input id="i-items" type="number" min="1" step="1" placeholder="e.g. 24" oninput="validateItems(this)"/>
+          <input id="i-items" type="number" min="1" step="1" placeholder="e.g. 24" oninput="validateItems(this);calcKg()"/>
           <div class="field-err" id="err-items">Items must be a positive whole number (no decimals or negatives).</div>
+          <div id="kg-badge" class="kg-badge" style="display:none">⚖️ Total weight: <strong id="kg-val">0</strong> kg</div>
         </div>
         <div class="fg">
           <label>Priority</label>
@@ -809,6 +870,11 @@ async function submitOrder() {
     productName,
     specifics,
     items:        itemsNum,
+    kg:           (() => {
+      const pid = document.getElementById('i-product')?.value;
+      const wt = productWeights[pid] || 0;
+      return wt > 0 ? parseFloat((wt * itemsNum).toFixed(2)) : 0;
+    })(),
     priority:     prio,
     notes
   });
@@ -933,7 +999,7 @@ async function pageDeliveries() {
       ✅ <strong>Automatic system:</strong> When an order is confirmed, a delivery is instantly created and auto-assigned to the next available driver and vehicle. No manual route planning needed.
     </div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Receipt Proof</th></tr></thead>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Track</th><th>Receipt Proof</th></tr></thead>
       <tbody>${data.length ? data.map(d=>`
         <tr>
           <td><span class="mono">${d.id}</span></td>
@@ -943,6 +1009,7 @@ async function pageDeliveries() {
           <td>${delBadge(d.status)}</td>
           <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'<span style="color:var(--brown-l);font-size:12px">—</span>'}</td>
           <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+          <td>${['assigned','warehouse_ready','loaded','in-transit'].includes(d.status)?`<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')">🗺️ Track</button>`:'—'}</td>
           <td>${d.receiptConfirmed
             ? `<div style="display:flex;flex-direction:column;gap:2px">
                  <span class="badge b-green">✅ Confirmed</span>
@@ -1018,6 +1085,7 @@ async function pageWhIncoming() {
               ? `<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Vehicle Loaded</button>` : ''}
             ${d.status==='loaded'
               ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')" style="margin-left:auto">🗺️ Track</button>
           </td>
         </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
@@ -1304,6 +1372,10 @@ async function saveStatus() {
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
+  // Auto GPS control based on status
+  if (newStatus === 'in-transit') startGps(id);
+  if (newStatus === 'delivered' || newStatus === 'failed') stopGps();
+
   const result = await api(`/deliveries/${id}/status`, 'PUT', { newStatus, note, updatedBy: user.id });
   btn.disabled = false;
   onStatusChange(); // reset button text
@@ -1353,6 +1425,143 @@ async function openDeliveryHistory(deliveryId, retailer, city) {
 }
 
 // ══ RETAILER MANAGEMENT (Order Team) ════════════
+// ══════════════════════════════════════════════
+// GPS TRACKING — Driver sends location
+// ══════════════════════════════════════════════
+let gpsDeliveryId = null;
+
+// GPS handled by startGps/stopGps below
+
+// ══════════════════════════════════════════════
+// LIVE MAP PAGE — all roles
+// ══════════════════════════════════════════════
+let mapInstance = null;
+let mapMarkers = {};
+let mapPollInterval = null;
+
+async function pageLiveMap() {
+  setContent(`
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-title">🗺️ Live Vehicle Tracking</div>
+        <div class="sec-sub">Real-time location of all active deliveries · updates every 10 seconds</div>
+      </div>
+      <span class="track-badge">● LIVE</span>
+    </div>
+    <div class="map-container">
+      <div id="live-map"></div>
+    </div>
+    <div id="map-info" style="margin-top:16px"></div>
+  `);
+
+  // Clear any previous poll
+  if (mapPollInterval) clearInterval(mapPollInterval);
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
+
+  // Load Leaflet JS dynamically
+  await loadLeaflet();
+
+  // Init map centred on Sri Lanka
+  mapInstance = L.map('live-map').setView([7.8731, 80.7718], 8);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors', maxZoom: 18
+  }).addTo(mapInstance);
+
+  // Custom truck icon
+  const truckIcon = L.divIcon({
+    html: '<div style="background:#1B2A4A;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #A67C1E;box-shadow:0 2px 8px rgba(0,0,0,0.3)">🚛</div>',
+    className: '', iconSize: [36, 36], iconAnchor: [18, 18]
+  });
+
+  async function refreshMap() {
+    const data = await api('/tracking');
+    if (!data || data.error) {
+      document.getElementById('map-info').innerHTML =
+        '<div class="alert-banner alert-info">No active deliveries being tracked right now. Tracking starts automatically when a driver marks their status as <strong>In Transit</strong>.</div>';
+      return;
+    }
+
+    // Update or add markers
+    const activeIds = new Set();
+    data.forEach(d => {
+      activeIds.add(d.deliveryId);
+      const lat = parseFloat(d.lat), lng = parseFloat(d.lng);
+      if (mapMarkers[d.deliveryId]) {
+        mapMarkers[d.deliveryId].setLatLng([lat, lng]);
+        mapMarkers[d.deliveryId].getPopup().setContent(popupHtml(d));
+      } else {
+        const m = L.marker([lat, lng], { icon: truckIcon })
+          .addTo(mapInstance)
+          .bindPopup(popupHtml(d));
+        mapMarkers[d.deliveryId] = m;
+      }
+    });
+
+    // Remove markers for completed deliveries
+    Object.keys(mapMarkers).forEach(id => {
+      if (!activeIds.has(parseInt(id))) {
+        mapInstance.removeLayer(mapMarkers[id]);
+        delete mapMarkers[id];
+      }
+    });
+
+    // Info panel
+    if (data.length === 0) {
+      document.getElementById('map-info').innerHTML =
+        '<div class="alert-banner alert-info">No active deliveries being tracked right now.</div>';
+    } else {
+      document.getElementById('map-info').innerHTML = `
+        <div class="card">
+          <div class="card-title">🚛 Active Deliveries (${data.length})</div>
+          <div class="tw"><table><thead><tr>
+            <th>Driver</th><th>Vehicle</th><th>Destination</th><th>Retailer</th><th>ETA</th><th>Last Update</th>
+          </tr></thead><tbody>
+          ${data.map(d => `<tr>
+            <td><strong>${escapeHtml(d.driverName||'—')}</strong></td>
+            <td><span class="badge b-navy">${escapeHtml(d.vehicleId||'—')}</span></td>
+            <td>${escapeHtml(d.city||'—')}</td>
+            <td>${escapeHtml(d.retailerName||'—')}</td>
+            <td>${escapeHtml(d.eta||'—')}</td>
+            <td style="font-size:11px;color:var(--brown-l)">${escapeHtml(d.recordedAt||'—')}</td>
+          </tr>`).join('')}
+          </tbody></table></div>
+        </div>`;
+    }
+  }
+
+  await refreshMap();
+  mapPollInterval = setInterval(refreshMap, 10000);
+}
+
+function popupHtml(d) {
+  return `<div style="min-width:180px;font-family:sans-serif">
+    <strong style="font-size:13px">${escapeHtml(d.driverName||'Driver')}</strong><br>
+    <span style="font-size:11px;color:#666">${escapeHtml(d.vehicleId||'')} · ${escapeHtml(d.city||'')}</span><br>
+    <span style="font-size:11px">Retailer: ${escapeHtml(d.retailerName||'—')}</span><br>
+    <span style="font-size:11px">ETA: <strong>${escapeHtml(d.eta||'—')}</strong></span><br>
+    <span style="font-size:10px;color:#999">Updated: ${escapeHtml(d.recordedAt||'—')}</span>
+  </div>`;
+}
+
+function loadLeaflet() {
+  return new Promise((resolve) => {
+    if (window.L) return resolve();
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = resolve;
+    document.head.appendChild(script);
+  });
+}
+
+// Stop map polling when navigating away
+const _origNav = window.nav;
+window.nav = function(id) {
+  if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
+  if (mapInstance && id !== 'live-map') { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
+  return render(id);
+};
+
+
 async function pageRetailers() {
   const retailers = await api('/retailers');
   if (retailers.error) { setContent(`<div class="alert-banner alert-error">❌ ${retailers.error}</div>`); return; }
@@ -1446,6 +1655,7 @@ async function loadRef() {
   [drivers, vehicles] = await Promise.all([ api('/drivers'), api('/vehicles') ]);
 }
 
+let productWeights = {};
 async function loadProductsForOrderForm() {
   const sel = document.getElementById('i-product');
   if (!sel) return;
@@ -1454,8 +1664,10 @@ async function loadProductsForOrderForm() {
   if (errEl) errEl.classList.remove('show');
 
   try {
-    const products = await api('/products');
+    const products = await api('/products/weights').catch(() => api('/products'));
+    productWeights = {};
     if (Array.isArray(products) && products.length) {
+      products.forEach(p => { if (p.weightPerUnit) productWeights[p.id] = parseFloat(p.weightPerUnit); });
       sel.innerHTML = products.map(p => {
         const id = p.id;
         const name = (p.productName || `Product ${id}`);
@@ -1494,6 +1706,161 @@ async function loadProductsForOrderForm() {
 function setContent(html) {
   document.getElementById('main-content').innerHTML = html;
   injectSecLogos();
+  stopGps(); // stop GPS sending if we navigate away from driver page
+}
+
+// ── KG AUTO-CALC ──
+function calcKg() {
+  const productId = document.getElementById('i-product')?.value;
+  const items = parseInt(document.getElementById('i-items')?.value) || 0;
+  const badge = document.getElementById('kg-badge');
+  const val = document.getElementById('kg-val');
+  if (!badge || !val) return;
+  if (productId && productWeights[productId] && items > 0) {
+    const kg = (productWeights[productId] * items).toFixed(2);
+    val.textContent = kg;
+    badge.style.display = 'inline-flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ── GPS TRACKING ──
+let gpsWatcher = null;
+let gpsInterval = null;
+let activeDeliveryId = null;
+
+function startGps(deliveryId) {
+  activeDeliveryId = deliveryId;
+  if (!navigator.geolocation) return;
+  // Send immediately on start
+  navigator.geolocation.getCurrentPosition(pos => sendLocation(deliveryId, pos));
+  // Then every 10 seconds
+  gpsInterval = setInterval(() => {
+    navigator.geolocation.getCurrentPosition(
+      pos => sendLocation(deliveryId, pos),
+      null, { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }, 10000);
+}
+
+function stopGps() {
+  if (gpsInterval) { clearInterval(gpsInterval); gpsInterval = null; }
+  if (gpsWatcher) { navigator.geolocation.clearWatch(gpsWatcher); gpsWatcher = null; }
+  activeDeliveryId = null;
+}
+
+async function sendLocation(deliveryId, pos) {
+  try {
+    await api('/tracking/update', 'POST', {
+      deliveryId,
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude
+    });
+  } catch(e) { console.warn('[GPS]', e.message); }
+}
+
+// ── TRACK MAP MODAL ──
+let mapMarker = null;
+
+function openTrackMap(deliveryId, city, retailer) {
+  // Remove existing modal if any
+  document.getElementById('track-modal-bg')?.remove();
+  if (mapPollInterval) clearInterval(mapPollInterval);
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+
+  const modalHtml = `
+    <div id="track-modal-bg" class="modal-bg" style="z-index:500">
+      <div class="modal" style="max-width:700px;width:95vw">
+        <div class="modal-title">🗺️ Live Tracking — ${escapeHtml(retailer)} · ${escapeHtml(city)}</div>
+        <div class="modal-body">
+          <div class="map-info-bar">
+            <span><span class="map-pulse"></span> Live</span>
+            <span id="map-driver-name">Locating driver…</span>
+            <span id="map-last-update"></span>
+          </div>
+          <div class="map-container" id="track-map"></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeTrackMap()">Close</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+  document.getElementById('track-modal-bg').style.display = 'flex';
+
+  // Load Leaflet and init map
+  if (!window.L) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(link);
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.onload = () => initMap(deliveryId, city);
+    document.head.appendChild(script);
+  } else {
+    initMap(deliveryId, city);
+  }
+}
+
+function initMap(deliveryId, city) {
+  const CITY_COORDS = {
+    'Colombo':[6.9271,79.8612],'Galle':[6.0535,80.2210],'Kandy':[7.2906,80.6337],
+    'Kurunegala':[7.4875,80.3647],'Matara':[5.9549,80.5550],'Negombo':[7.2096,79.8386],
+    'Ratnapura':[6.6828,80.4004],'Jaffna':[9.6615,80.0255],'Peradeniya':[7.2676,80.5957],
+    'Dehiwala':[6.8519,79.8674],'Nugegoda':[6.8728,79.8880],'Kiribathgoda':[7.0003,80.0170],
+  };
+  const destCoord = CITY_COORDS[city] || [7.8731, 80.7718]; // Sri Lanka centre fallback
+
+  mapInstance = L.map('track-map').setView([7.8731, 80.7718], 8);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(mapInstance);
+
+  // Destination marker (pin)
+  const destIcon = L.divIcon({ html:'<div style="font-size:24px">📍</div>', iconSize:[24,24], iconAnchor:[12,24], className:'' });
+  L.marker(destCoord, { icon: destIcon }).addTo(mapInstance)
+    .bindPopup(`<strong>Destination</strong><br>${city}`);
+
+  // Driver marker (truck)
+  const truckIcon = L.divIcon({ html:'<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))">🚚</div>', iconSize:[28,28], iconAnchor:[14,14], className:'' });
+  mapMarker = L.marker([7.8731, 80.7718], { icon: truckIcon }).addTo(mapInstance);
+
+  // Start polling
+  pollLocation(deliveryId, destCoord);
+  mapPollInterval = setInterval(() => pollLocation(deliveryId, destCoord), 10000);
+}
+
+async function pollLocation(deliveryId, destCoord) {
+  const r = await api('/tracking/' + deliveryId).catch(() => null);
+  if (!r || !r.found) {
+    document.getElementById('map-driver-name').textContent = 'Waiting for driver location…';
+    return;
+  }
+  const lat = parseFloat(r.lat), lng = parseFloat(r.lng);
+  if (mapMarker) {
+    mapMarker.setLatLng([lat, lng]);
+    if (mapInstance) {
+      // Draw route line if not exists
+      if (!mapInstance._routeLine) {
+        mapInstance._routeLine = L.polyline([[lat, lng], destCoord], {
+          color:'#1B2A4A', weight:2, dashArray:'6,6', opacity:0.6
+        }).addTo(mapInstance);
+      } else {
+        mapInstance._routeLine.setLatLngs([[lat, lng], destCoord]);
+      }
+      mapInstance.fitBounds([[lat, lng], destCoord], { padding: [40, 40] });
+    }
+  }
+  if (r.driverName) document.getElementById('map-driver-name').textContent = '🚚 ' + r.driverName;
+  if (r.timeStr)   document.getElementById('map-last-update').textContent = 'Last update: ' + r.timeStr;
+}
+
+function closeTrackMap() {
+  if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; mapMarker = null; }
+  document.getElementById('track-modal-bg')?.remove();
 }
 function openModal(id)    { document.getElementById(id).classList.add('open'); }
 function closeModal(id)   { document.getElementById(id).classList.remove('open'); }
