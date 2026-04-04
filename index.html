@@ -1052,7 +1052,7 @@ async function confirmOrder(action) {
 
   closeModal('m-confirm');
   toast(action === 'confirm'
-    ? `✅ Order ${id} confirmed — Added to dispatch queue 🔔`
+    ? `✅ Order ${id} confirmed — Added to priority dispatch queue 🔔`
     : `❌ Order ${id} rejected — Retailer notified with reason 🔔`);
   pollBadge();
   pageAllOrders();
@@ -2107,8 +2107,9 @@ function calcKg() {
   const val = document.getElementById('kg-val');
   if (!badge || !val) return;
   if (productId && productWeights[productId] && items > 0) {
-    const kg = (productWeights[productId] * items).toFixed(2);
-    val.textContent = kg;
+    const unitWt = productWeights[productId];
+    const kg = (unitWt * items).toFixed(2);
+    val.innerHTML = `${kg} kg <span style="font-size:10px;color:var(--brown-l);font-weight:400">(${unitWt}kg × ${items} units)</span>`;
     badge.style.display = 'inline-flex';
   } else {
     badge.style.display = 'none';
