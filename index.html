@@ -1214,7 +1214,52 @@ async function pageMyRoutes() {
         ${nextStop.vehicleId ? `<span style="background:rgba(255,255,255,.1);color:rgba(217,200,154,.8);border-radius:20px;padding:5px 14px;font-size:12px">🚛 ${nextStop.vehicleId}</span>` : ''}
         ${nextStop.delivStatus==='in-transit' ? `<span style="background:rgba(21,101,192,.4);color:#90CAF9;border-radius:20px;padding:5px 14px;font-size:12px">● In Transit</span>` : `<span style="background:rgba(46,125,50,.3);color:#A5D6A7;border-radius:20px;padding:5px 14px;font-size:12px">✓ Vehicle Loaded</span>`}
       </div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nextStop.city+',+Sri+Lanka')}"
+           target="_blank" rel="noopener"
+           style="flex:1;background:rgba(255,255,255,.13);color:var(--cream);border-radius:10px;padding:11px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px">
+          🗺️ Navigate to ${nextStop.city}
+        </a>
+      </div>
     </div>` : '';
+
+  // ── Full Route Map
+  const routeMapCard = myRoutes.length ? (() => {
+    const rt = myRoutes[0];
+    const stopsData = rt.stops_data ? JSON.parse(rt.stops_data) : [];
+    const cities = stopsData.map(sd => sd.city).filter(Boolean);
+    const CITY_COORDS = {
+      'Colombo':[6.9271,79.8612],'Galle':[6.0535,80.2210],'Kandy':[7.2906,80.6337],
+      'Kurunegala':[7.4875,80.3647],'Matara':[5.9549,80.5550],'Negombo':[7.2096,79.8386],
+      'Ratnapura':[6.6828,80.4004],'Jaffna':[9.6615,80.0255],'Peradeniya':[7.2676,80.5957],
+      'Dehiwala':[6.8519,79.8674],'Nugegoda':[6.8728,79.8880],'Kiribathgoda':[7.0003,80.0170],
+    };
+    const WH_COORDS = {
+      'Colombo':[6.9271,79.8612],'Galle':[6.0535,80.2210],
+      'Kandy':[7.2906,80.6337],'Kurunegala':[7.4875,80.3647],
+    };
+    // Build Google Maps multi-stop URL
+    const whCoord = WH_COORDS[rt.warehouse] || [6.9271,79.8612];
+    const origin = `${whCoord[0]},${whCoord[1]}`;
+    const waypoints = cities.slice(0, -1).map(c => encodeURIComponent(c + ', Sri Lanka')).join('|');
+    const destination = encodeURIComponent((cities[cities.length-1]||'Colombo') + ', Sri Lanka');
+    const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent((rt.warehouse||'Colombo')+' Warehouse, Sri Lanka')}&destination=${destination}${waypoints ? '&waypoints='+waypoints : ''}&travelmode=driving`;
+
+    return `
+    <div class="card" style="margin-bottom:18px;padding:0;overflow:hidden">
+      <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--cream-dk)">
+        <div>
+          <div class="card-title" style="margin-bottom:4px">🗺️ Full Route Map</div>
+          <div style="font-size:12px;color:var(--brown-l)">${rt.warehouse||'Warehouse'} → ${cities.join(' → ')} · ~${rt.distKm}km</div>
+        </div>
+        <a href="${mapsUrl}" target="_blank" rel="noopener"
+           style="background:var(--navy);color:var(--cream);border-radius:8px;padding:8px 16px;font-size:12px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;white-space:nowrap">
+          🧭 Open in Google Maps
+        </a>
+      </div>
+      <div id="route-full-map" style="height:280px;width:100%"></div>
+    </div>`;
+  })() : '';
 
   // ── Progress bar
   const progressCard = total > 0 ? `
@@ -1315,10 +1360,71 @@ async function pageMyRoutes() {
       <div class="sec-sub">Your stops, ETAs, and real-time progress</div>
     </div></div>
     ${nextStopCard}
+    ${routeMapCard}
     ${progressCard}
     ${waiting > 0 ? `<div class="alert-banner alert-warn" style="margin-bottom:14px">⏳ <strong>${waiting} stop${waiting>1?'s':''} awaiting warehouse loading</strong> — you will be notified when ready.</div>` : ''}
     ${timelineCard}
   `);
+
+  // ── Init Leaflet route map after content renders
+  if (myRoutes.length && document.getElementById('route-full-map')) {
+    await loadLeaflet();
+    const rt = myRoutes[0];
+    const stopsData = rt.stops_data ? JSON.parse(rt.stops_data) : [];
+    const CITY_COORDS = {
+      'Colombo':[6.9271,79.8612],'Galle':[6.0535,80.2210],'Kandy':[7.2906,80.6337],
+      'Kurunegala':[7.4875,80.3647],'Matara':[5.9549,80.5550],'Negombo':[7.2096,79.8386],
+      'Ratnapura':[6.6828,80.4004],'Jaffna':[9.6615,80.0255],'Peradeniya':[7.2676,80.5957],
+      'Dehiwala':[6.8519,79.8674],'Nugegoda':[6.8728,79.8880],'Kiribathgoda':[7.0003,80.0170],
+    };
+    const WH_COORDS = {
+      'Colombo':[6.9271,79.8612],'Galle':[6.0535,80.2210],
+      'Kandy':[7.2906,80.6337],'Kurunegala':[7.4875,80.3647],
+    };
+    const whCoord = WH_COORDS[rt.warehouse] || [6.9271,79.8612];
+    const routeMap = L.map('route-full-map', { zoomControl:true, scrollWheelZoom:false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap', maxZoom:18
+    }).addTo(routeMap);
+
+    // Warehouse marker
+    const whIcon = L.divIcon({
+      html:`<div style="background:#8B6914;color:white;border-radius:8px;padding:4px 8px;font-size:11px;font-weight:700;white-space:nowrap;border:2px solid #D4A832">🏭 ${rt.warehouse||'WH'}</div>`,
+      className:'', iconAnchor:[20,20]
+    });
+    L.marker(whCoord, { icon:whIcon }).addTo(routeMap);
+
+    const allPoints = [whCoord];
+
+    // Stop markers
+    stopsData.forEach((sd, i) => {
+      const coord = CITY_COORDS[sd.city];
+      if (!coord) return;
+      allPoints.push(coord);
+      const del = sd.deliveryId ? deliveryMap[sd.deliveryId] : null;
+      const st  = del ? del.status : '';
+      const isDone   = st === 'delivered';
+      const isActive = ['loaded','in-transit'].includes(st);
+      const bg = isDone ? '#2E7D32' : isActive ? '#1565C0' : '#8B6914';
+      const stopIcon = L.divIcon({
+        html:`<div style="background:${bg};color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)">${i+1}</div>`,
+        className:'', iconSize:[28,28], iconAnchor:[14,14]
+      });
+      L.marker(coord, { icon:stopIcon })
+       .addTo(routeMap)
+       .bindPopup(`<strong>Stop ${i+1}: ${sd.city}</strong><br>${escapeHtml(sd.retailer||'')}<br>${sd.items||0} items · ETA ${sd.eta||'—'}`);
+    });
+
+    // Route polyline
+    if (allPoints.length > 1) {
+      L.polyline(allPoints, { color:'#1B2A4A', weight:3, dashArray:'8,6', opacity:.8 }).addTo(routeMap);
+    }
+
+    // Fit map to all points
+    if (allPoints.length > 0) {
+      routeMap.fitBounds(L.latLngBounds(allPoints), { padding:[24,24] });
+    }
+  }
 }
 
 async function pageUpdStatus() {
