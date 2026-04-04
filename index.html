@@ -1173,125 +1173,152 @@ async function pageMyRoutes() {
     api(`/routes/my?driverId=${user.id}`)
   ]);
 
-  const myRoutes = Array.isArray(routes) ? routes : [];
+  const myRoutes  = Array.isArray(routes) ? routes : [];
+  const delivered = deliveries.filter(d=>d.status==='delivered').length;
+  const inTransit = deliveries.filter(d=>d.status==='in-transit').length;
+  const ready     = deliveries.filter(d=>d.status==='loaded').length;
+  const waiting   = deliveries.filter(d=>['assigned','warehouse_ready'].includes(d.status)).length;
+  const total     = deliveries.length;
+  const pct       = total > 0 ? Math.round((delivered / total) * 100) : 0;
 
-  const routeCards = myRoutes.length ? myRoutes.map(rt => {
+  // ── Find next active stop (first loaded or in-transit delivery)
+  const deliveryMap = {};
+  deliveries.forEach(d => { deliveryMap[d.id] = d; });
+
+  let nextStop = null;
+  let nextStopIdx = -1;
+  if (myRoutes.length) {
+    const rt = myRoutes[0];
+    const stopsData = rt.stops_data ? JSON.parse(rt.stops_data) : [];
+    for (let i = 0; i < stopsData.length; i++) {
+      const sd = stopsData[i];
+      const del = sd.deliveryId ? deliveryMap[sd.deliveryId] : null;
+      if (del && ['loaded','in-transit'].includes(del.status)) {
+        nextStop = { ...sd, delivStatus: del.status, warehouseLabel: rt.warehouse, vehicleId: rt.vehicleId };
+        nextStopIdx = i;
+        break;
+      }
+    }
+  }
+
+  // ── Next Stop Hero Card
+  const nextStopCard = nextStop ? `
+    <div style="background:var(--navy);border-radius:14px;padding:20px 22px;margin-bottom:18px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:rgba(166,124,30,.12);border-radius:50%"></div>
+      <div style="font-size:10px;font-weight:600;color:rgba(217,200,154,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Next stop</div>
+      <div style="font-size:28px;font-weight:700;color:var(--cream);font-family:'Cormorant Garamond',serif;margin-bottom:4px">${nextStop.city}</div>
+      <div style="font-size:14px;color:rgba(217,200,154,.85);margin-bottom:14px">${escapeHtml(nextStop.retailer||'—')} · ${nextStop.items||0} items ${nextStop.priority ? '· '+nextStop.priority : ''}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        ${nextStop.eta ? `<span style="background:rgba(166,124,30,.25);color:var(--goldL,#D4A832);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600">ETA ${nextStop.eta}</span>` : ''}
+        ${nextStop.warehouseLabel ? `<span style="background:rgba(255,255,255,.1);color:rgba(217,200,154,.8);border-radius:20px;padding:5px 14px;font-size:12px">🏭 From ${nextStop.warehouseLabel}</span>` : ''}
+        ${nextStop.vehicleId ? `<span style="background:rgba(255,255,255,.1);color:rgba(217,200,154,.8);border-radius:20px;padding:5px 14px;font-size:12px">🚛 ${nextStop.vehicleId}</span>` : ''}
+        ${nextStop.delivStatus==='in-transit' ? `<span style="background:rgba(21,101,192,.4);color:#90CAF9;border-radius:20px;padding:5px 14px;font-size:12px">● In Transit</span>` : `<span style="background:rgba(46,125,50,.3);color:#A5D6A7;border-radius:20px;padding:5px 14px;font-size:12px">✓ Vehicle Loaded</span>`}
+      </div>
+    </div>` : '';
+
+  // ── Progress bar
+  const progressCard = total > 0 ? `
+    <div class="card" style="margin-bottom:18px;padding:16px 20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:600;color:var(--brown)">Today's progress</div>
+        <div style="font-size:13px;font-weight:700;color:var(--tan)">${delivered} / ${total} delivered</div>
+      </div>
+      <div style="height:8px;background:var(--cream-dk);border-radius:8px;overflow:hidden;margin-bottom:10px">
+        <div style="height:100%;width:${pct}%;background:var(--green);border-radius:8px;transition:width .4s"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${inTransit ? `<span class="badge b-orange">🚛 ${inTransit} In Transit</span>` : ''}
+        ${ready ? `<span class="badge b-blue">📦 ${ready} Ready</span>` : ''}
+        ${waiting ? `<span class="badge b-gray">⏳ ${waiting} Waiting</span>` : ''}
+        ${delivered ? `<span class="badge b-green">✅ ${delivered} Done</span>` : ''}
+      </div>
+    </div>` : '';
+
+  // ── Visual stop timeline
+  const timelineCard = myRoutes.length ? (() => {
+    const rt = myRoutes[0];
     const cities    = rt.cities     ? JSON.parse(rt.cities)     : [];
     const stopsData = rt.stops_data ? JSON.parse(rt.stops_data) : [];
     const hrs  = Math.floor((rt.durMins||0) / 60);
     const mins = (rt.durMins||0) % 60;
 
-    const deliveryMap = {};
-    deliveries.forEach(d => { deliveryMap[d.id] = d; });
-
-    const stopsHtml = cities.map((city, i) => {
-      const sd  = stopsData[i] || {};
+    const timelineStops = stopsData.map((sd, i) => {
       const del = sd.deliveryId ? deliveryMap[sd.deliveryId] : null;
-      const delivStatus = del ? del.status : null;
-      const dotClass = delivStatus === 'delivered' ? 'done'
-                     : delivStatus === 'in-transit' ? 'active' : '';
+      const st  = del ? del.status : 'pending';
+      const isDone    = st === 'delivered';
+      const isActive  = ['loaded','in-transit'].includes(st);
+      const isWaiting = ['assigned','warehouse_ready'].includes(st);
+      const isNext    = i === nextStopIdx;
+
+      const dotBg   = isDone ? 'var(--green)' : isActive ? 'var(--navy)' : isWaiting ? 'var(--cream-dk)' : 'var(--cream-dk)';
+      const dotBorder = isNext ? '3px solid var(--tan)' : 'none';
+      const rowBg   = isNext ? 'background:rgba(139,105,20,.06);border:1.5px solid var(--tan)' : isDone ? 'background:var(--green-bg);border:1px solid #A5D6A7' : isWaiting ? 'opacity:.6' : '';
+      const checkmark = isDone ? '✅' : isActive ? '🚛' : isWaiting ? '⏳' : '⬜';
+
       return `
-      ${i > 0 ? '<div class="rt-line"></div>' : ''}
-      <div class="rt-stop">
-        <div class="rt-stop-dot ${dotClass}"></div>
-        <div class="rt-content">
-          <div class="rt-city">${i+1}. ${city}
-            ${sd.eta ? `<span class="rt-eta-badge" style="margin-left:8px">${sd.eta}</span>` : ''}
-            ${delivStatus ? delBadge(delivStatus) : ''}
+        <div style="display:flex;align-items:stretch;gap:0;margin-bottom:0">
+          <div style="display:flex;flex-direction:column;align-items:center;width:32px;flex-shrink:0">
+            <div style="width:14px;height:14px;border-radius:50%;background:${dotBg};border:${dotBorder};flex-shrink:0;margin-top:14px"></div>
+            ${i < stopsData.length-1 ? `<div style="width:2px;flex:1;background:var(--cream-dk);margin-top:2px"></div>` : ''}
           </div>
-          <div class="rt-detail">
-            ${sd.retailer ? `<strong>${sd.retailer}</strong>` : ''}${sd.items ? ` · ${sd.items} items` : ''}${sd.priority ? ` · ${prioBadge(sd.priority)}` : ''}
+          <div style="flex:1;padding:10px 12px 12px;border-radius:10px;margin:4px 0 0 6px;${rowBg}">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:15px">${checkmark}</span>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--brown)">${i+1}. ${sd.city||cities[i]||'—'}</div>
+                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(sd.retailer||'—')} · ${sd.items||0} items ${sd.priority ? '· '+sd.priority : ''}</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                ${sd.eta ? `<span style="font-family:'DM Mono',monospace;font-size:12px;color:var(--tan);font-weight:600">${sd.eta}</span>` : ''}
+                ${isNext ? `<span class="badge b-orange" style="font-size:10px">Next →</span>` : ''}
+                ${isDone ? `<span class="badge b-green" style="font-size:10px">Delivered</span>` : ''}
+                ${isWaiting ? `<span class="badge b-gray" style="font-size:10px">Awaiting</span>` : ''}
+              </div>
+            </div>
+            ${isNext && !isDone ? `
+              <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%" onclick="openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}','${del ? del.status : ''}')">
+                ${del && del.status==='in-transit' ? '✅ Mark Delivered' : '🚛 Mark In Transit'}
+              </button>` : ''}
           </div>
-          ${sd.stopNote ? `<div style="font-size:12px;color:var(--brown-l);font-style:italic;margin-top:3px">📌 ${sd.stopNote}</div>` : ''}
-${sd.deliveryId ? `<div class="mono" style="font-size:11px;color:var(--tan);margin-top:2px">${sd.deliveryId}</div>` : ''}        </div>
-      </div>`;
+        </div>`;
     }).join('');
 
-    // Only show synthetic banner if route is actually synthetic
-    const syntheticBanner = rt._synthetic ? `
-      <div class="alert-banner alert-info" style="margin-bottom:14px">
-        ℹ️ This route was automatically generated from your assigned deliveries.
-      </div>` : '';
-
     return `
-    <div class="card" style="margin-bottom:18px">
-      ${syntheticBanner}
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-        <div>
-          <div style="font-size:16px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif;margin-bottom:6px">
-            🗺️ ${rt._synthetic ? 'My Assigned Stops' : `My Route${rt.routeDate ? ' — ' + rt.routeDate : ''}`}
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
-            ${rt.warehouse ? `<span class="badge b-teal">🏭 ${rt.warehouse} Warehouse</span>` : ''}
+      <div class="card" style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin-bottom:0">🗺️ Stop Sequence</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${rt.warehouse ? `<span class="badge b-teal">🏭 ${rt.warehouse}</span>` : ''}
             <span class="badge b-blue">🚛 ${rt.vehicleId||'—'}</span>
-            <span class="badge b-teal">📍 ${rt.stops} stop${rt.stops!==1?'s':''}</span>
-            <span class="badge b-gray">📏 ~${rt.distKm} km · ⏱ ~${hrs}h ${mins}m</span>
-            ${rt.depart ? `<span class="badge b-gray">🕖 Depart ${rt.depart}</span>` : ''}
+            <span class="badge b-gray">~${rt.distKm}km · ${hrs}h ${mins}m</span>
           </div>
         </div>
-      </div>
-
-      <div class="route-timeline">
-        <div class="rt-depot">
-          <div class="rt-depot-dot"></div>
-          <div>
-            <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 ${rt.warehouse ? rt.warehouse + ' Warehouse' : 'Depot / Warehouse'}</div>
-            ${rt.depart ? `<div style="font-size:11px;color:var(--brown-l)">Departure: ${rt.depart}</div>` : ''}
-          </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--cream);border-radius:8px;margin-bottom:14px">
+          <div style="width:12px;height:12px;border-radius:50%;background:var(--tan);flex-shrink:0"></div>
+          <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 ${rt.warehouse ? rt.warehouse + ' Warehouse' : 'Depot'} ${rt.depart ? '· Depart ' + rt.depart : ''}</div>
         </div>
-        <div class="rt-line"></div>
-        ${stopsHtml}
-      </div>
-
-      ${rt.routeNotes ? `
-      <div style="margin-top:14px;padding:12px 14px;background:var(--cream);border-radius:8px;border-left:3px solid var(--tan)">
-        <div style="font-size:11px;font-weight:600;color:var(--tan);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Route Notes from Planner</div>
-        <div style="font-size:13px;color:var(--brown-m)">${rt.routeNotes}</div>
-      </div>` : ''}
-    </div>`;
-  }).join('') : '';
-
-  const delivered = deliveries.filter(d=>d.status==='delivered').length;
-  const inTransit = deliveries.filter(d=>d.status==='in-transit').length;
-  const ready     = deliveries.filter(d=>d.status==='loaded').length;
-  const waiting   = deliveries.filter(d=>['assigned','warehouse_ready'].includes(d.status)).length;
-
-  const noRouteMsg = deliveries.length === 0 ? `
-    <div class="alert-banner alert-info" style="margin-bottom:18px">
+        ${timelineStops}
+      </div>`;
+  })() : (deliveries.length === 0 ? `
+    <div class="alert-banner alert-info">
       ℹ️ No deliveries assigned yet. You will be notified automatically once a route is created for you.
     </div>` : waiting > 0 && ready === 0 && inTransit === 0 ? `
-    <div class="alert-banner alert-warn" style="margin-bottom:18px">
-      ⏳ <strong>Waiting for warehouse.</strong> Your ${waiting} delivery${waiting>1?'s are':' is'} assigned but the warehouse has not finished loading yet. You will be notified when the vehicle is ready for pickup.
-    </div>` : '';
+    <div class="alert-banner alert-warn">
+      ⏳ <strong>Waiting for warehouse.</strong> ${waiting} delivery${waiting>1?'s':''} assigned — warehouse is preparing your cargo. You will be notified when the vehicle is loaded.
+    </div>` : '');
 
   setContent(`
-    <div class="sec-hdr"><div><div class="sec-title">My Route Briefing</div>
-    <div class="sec-sub">Your assigned route plan, stop sequence, ETAs, and delivery notes</div></div></div>
-    <div class="kpi-row">
-      <div class="kpi"><div class="kpi-v">${deliveries.length}</div><div class="kpi-l">Total Stops</div></div>
-      <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${delivered}</div><div class="kpi-l">Delivered</div></div>
-      <div class="kpi" style="border-top-color:var(--orange)"><div class="kpi-v">${inTransit}</div><div class="kpi-l">In Transit</div></div>
-      <div class="kpi" style="border-top-color:var(--purple)"><div class="kpi-v">${ready}</div><div class="kpi-l">Vehicle Loaded ✅</div></div>
-    </div>
-    ${waiting > 0 ? `<div class="alert-banner alert-warn" style="margin-bottom:18px">⏳ <strong>${waiting} stop${waiting>1?'s':''} awaiting warehouse loading</strong> — you will be notified when the vehicle is ready.</div>` : ''}
-
-    ${myRoutes.length ? routeCards : noRouteMsg}
-
-    <div class="card">
-      <div class="card-title">📦 All My Assigned Deliveries</div>
-      <div class="tw"><table>
-        <thead><tr><th>#</th><th>Retailer</th><th>City</th><th>Items</th><th>Vehicle</th><th>ETA</th><th>Status</th></tr></thead>
-        <tbody>${deliveries.length ? deliveries.map((d,i)=>`
-          <tr>
-            <td><span class="mono" style="color:var(--red)">${i+1}</span></td>
-            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td>${d.items} items</td>
-            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
-            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-            <td>${delBadge(d.status)}</td>
-          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🛣️</div><div>No deliveries assigned to you yet.</div></div></td></tr>'}</tbody>
-      </table></div>
-    </div>`);
+    <div class="sec-hdr"><div>
+      <div class="sec-title">My Route</div>
+      <div class="sec-sub">Your stops, ETAs, and real-time progress</div>
+    </div></div>
+    ${nextStopCard}
+    ${progressCard}
+    ${waiting > 0 ? `<div class="alert-banner alert-warn" style="margin-bottom:14px">⏳ <strong>${waiting} stop${waiting>1?'s':''} awaiting warehouse loading</strong> — you will be notified when ready.</div>` : ''}
+    ${timelineCard}
+  `);
 }
 
 async function pageUpdStatus() {
