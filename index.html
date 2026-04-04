@@ -1646,102 +1646,223 @@ async function pageLiveMap() {
     <div class="sec-hdr">
       <div>
         <div class="sec-title">🗺️ Live Vehicle Tracking</div>
-        <div class="sec-sub">Real-time location of all active deliveries · updates every 10 seconds</div>
+        <div class="sec-sub">GPS position of all active drivers · auto-updates every 10 seconds</div>
       </div>
-      <span class="track-badge">● LIVE</span>
+      <span class="track-badge" id="live-badge">● LIVE</span>
     </div>
-    <div class="map-container">
+    <div id="map-info-top" style="margin-bottom:10px"></div>
+    <div class="map-container" style="height:480px">
       <div id="live-map"></div>
     </div>
     <div id="map-info" style="margin-top:16px"></div>
   `);
 
-  // Clear any previous poll
   if (mapPollInterval) clearInterval(mapPollInterval);
   if (mapInstance) { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
 
-  // Load Leaflet JS dynamically
   await loadLeaflet();
 
-  // Init map centred on Sri Lanka
+  // Inject pulse animation CSS
+  if (!document.getElementById('pulse-style')) {
+    const st = document.createElement('style');
+    st.id = 'pulse-style';
+    st.textContent = `
+      @keyframes truckPulse {
+        0%   { box-shadow: 0 0 0 0 rgba(27,42,74,.5), 0 2px 8px rgba(0,0,0,.3); }
+        70%  { box-shadow: 0 0 0 14px rgba(27,42,74,0), 0 2px 8px rgba(0,0,0,.3); }
+        100% { box-shadow: 0 0 0 0 rgba(27,42,74,0), 0 2px 8px rgba(0,0,0,.3); }
+      }
+      .truck-pin { animation: truckPulse 2s infinite; }
+    `;
+    document.head.appendChild(st);
+  }
+
+  const CITY_COORDS = {
+    'Colombo':[6.9271,79.8612],'Galle':[6.0535,80.2210],'Kandy':[7.2906,80.6337],
+    'Kurunegala':[7.4875,80.3647],'Matara':[5.9549,80.5550],'Negombo':[7.2096,79.8386],
+    'Ratnapura':[6.6828,80.4004],'Jaffna':[9.6615,80.0255],'Peradeniya':[7.2676,80.5957],
+    'Dehiwala':[6.8519,79.8674],'Nugegoda':[6.8728,79.8880],'Kiribathgoda':[7.0003,80.0170],
+  };
+
   mapInstance = L.map('live-map').setView([7.8731, 80.7718], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors', maxZoom: 18
+    attribution:'© OpenStreetMap contributors', maxZoom:18
   }).addTo(mapInstance);
 
-  // Custom truck icon
-  const truckIcon = L.divIcon({
-    html: '<div style="background:#1B2A4A;color:white;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;border:3px solid #A67C1E;box-shadow:0 2px 8px rgba(0,0,0,0.3)">🚛</div>',
-    className: '', iconSize: [36, 36], iconAnchor: [18, 18]
-  });
+  // Accuracy circles & destination markers stored separately
+  const accuracyCircles = {};
+  const destMarkers     = {};
+  const routeLines      = {};
+  let lastUpdateTime    = {};
+
+  function makeTruckIcon(driverName) {
+    const initials = (driverName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return L.divIcon({
+      html: `<div class="truck-pin" style="background:#1B2A4A;color:white;border-radius:50%;width:40px;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #A67C1E;font-size:9px;font-weight:700;line-height:1.1">
+               <span style="font-size:16px;line-height:1">🚛</span>
+               <span style="font-size:8px;opacity:.85">${initials}</span>
+             </div>`,
+      className:'', iconSize:[40,40], iconAnchor:[20,20]
+    });
+  }
+
+  function makeDestIcon(stopNum) {
+    return L.divIcon({
+      html:`<div style="background:#B71C1C;color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3)">${stopNum}</div>`,
+      className:'', iconSize:[26,26], iconAnchor:[13,13]
+    });
+  }
+
+  // Seconds-ago ticker
+  let tickInterval = null;
+  function startTicker() {
+    if (tickInterval) clearInterval(tickInterval);
+    tickInterval = setInterval(() => {
+      Object.entries(lastUpdateTime).forEach(([id, ts]) => {
+        const el = document.getElementById('last-update-' + id);
+        if (el) {
+          const secs = Math.round((Date.now() - ts) / 1000);
+          el.textContent = secs < 60 ? secs + 's ago' : Math.floor(secs/60) + 'm ago';
+        }
+      });
+    }, 1000);
+  }
 
   async function refreshMap() {
     const data = await api('/tracking');
-    if (!data || data.error) {
-      document.getElementById('map-info').innerHTML =
-        '<div class="alert-banner alert-info">No active deliveries being tracked right now. Tracking starts automatically when a driver marks their status as <strong>In Transit</strong>.</div>';
+    const badge = document.getElementById('live-badge');
+
+    if (!data || data.error || !Array.isArray(data)) {
+      if (badge) badge.style.background = '#FBE9E7';
+      document.getElementById('map-info-top').innerHTML =
+        '<div class="alert-banner alert-info">No active deliveries being tracked right now. GPS tracking starts automatically when a driver marks <strong>In Transit</strong>.</div>';
+      document.getElementById('map-info').innerHTML = '';
       return;
     }
 
-    // Update or add markers
+    if (data.length === 0) {
+      document.getElementById('map-info-top').innerHTML =
+        '<div class="alert-banner alert-info">No drivers currently in transit. GPS tracking starts automatically when a driver marks <strong>In Transit</strong>.</div>';
+      document.getElementById('map-info').innerHTML = '';
+      return;
+    }
+
+    document.getElementById('map-info-top').innerHTML = '';
     const activeIds = new Set();
+
     data.forEach(d => {
-      activeIds.add(d.deliveryId);
-      const lat = parseFloat(d.lat), lng = parseFloat(d.lng);
-      if (mapMarkers[d.deliveryId]) {
-        mapMarkers[d.deliveryId].setLatLng([lat, lng]);
-        mapMarkers[d.deliveryId].getPopup().setContent(popupHtml(d));
+      const id  = d.deliveryId;
+      const lat = parseFloat(d.lat);
+      const lng = parseFloat(d.lng);
+      if (isNaN(lat) || isNaN(lng)) return;
+      activeIds.add(id);
+      lastUpdateTime[id] = Date.now();
+
+      // ── Truck marker
+      if (mapMarkers[id]) {
+        mapMarkers[id].setLatLng([lat, lng]);
+        mapMarkers[id].setIcon(makeTruckIcon(d.driverName));
+        mapMarkers[id].getPopup().setContent(popupHtml(d));
       } else {
-        const m = L.marker([lat, lng], { icon: truckIcon })
+        mapMarkers[id] = L.marker([lat, lng], { icon: makeTruckIcon(d.driverName), zIndexOffset:1000 })
           .addTo(mapInstance)
-          .bindPopup(popupHtml(d));
-        mapMarkers[d.deliveryId] = m;
+          .bindPopup(popupHtml(d), { maxWidth:220 });
+      }
+
+      // ── Accuracy circle (50m radius visual)
+      if (accuracyCircles[id]) {
+        accuracyCircles[id].setLatLng([lat, lng]);
+      } else {
+        accuracyCircles[id] = L.circle([lat, lng], {
+          radius:500, color:'#1B2A4A', fillColor:'#1B2A4A',
+          fillOpacity:.08, weight:1, dashArray:'4,4'
+        }).addTo(mapInstance);
+      }
+
+      // ── Destination pin
+      const destCoord = CITY_COORDS[d.city];
+      if (destCoord) {
+        if (!destMarkers[id]) {
+          destMarkers[id] = L.marker(destCoord, { icon: makeDestIcon('📍') })
+            .addTo(mapInstance)
+            .bindPopup(`<strong>Destination</strong><br>${escapeHtml(d.city)}<br>${escapeHtml(d.retailerName||'')}<br>ETA: ${escapeHtml(d.eta||'—')}`);
+        }
+        // ── Route line: truck → destination
+        if (routeLines[id]) {
+          routeLines[id].setLatLngs([[lat,lng], destCoord]);
+        } else {
+          routeLines[id] = L.polyline([[lat,lng], destCoord], {
+            color:'#1B2A4A', weight:2.5, dashArray:'8,6', opacity:.6
+          }).addTo(mapInstance);
+        }
       }
     });
 
-    // Remove markers for completed deliveries
+    // Remove stale markers
     Object.keys(mapMarkers).forEach(id => {
       if (!activeIds.has(parseInt(id))) {
-        mapInstance.removeLayer(mapMarkers[id]);
-        delete mapMarkers[id];
+        mapInstance.removeLayer(mapMarkers[id]);  delete mapMarkers[id];
+        if (accuracyCircles[id]) { mapInstance.removeLayer(accuracyCircles[id]); delete accuracyCircles[id]; }
+        if (destMarkers[id])     { mapInstance.removeLayer(destMarkers[id]);     delete destMarkers[id]; }
+        if (routeLines[id])      { mapInstance.removeLayer(routeLines[id]);      delete routeLines[id]; }
+        delete lastUpdateTime[id];
       }
     });
 
-    // Info panel
-    if (data.length === 0) {
-      document.getElementById('map-info').innerHTML =
-        '<div class="alert-banner alert-info">No active deliveries being tracked right now.</div>';
-    } else {
-      document.getElementById('map-info').innerHTML = `
-        <div class="card">
-          <div class="card-title">🚛 Active Deliveries (${data.length})</div>
-          <div class="tw"><table><thead><tr>
-            <th>Driver</th><th>Vehicle</th><th>Destination</th><th>Retailer</th><th>ETA</th><th>Last Update</th>
-          </tr></thead><tbody>
-          ${data.map(d => `<tr>
-            <td><strong>${escapeHtml(d.driverName||'—')}</strong></td>
-            <td><span class="badge b-navy">${escapeHtml(d.vehicleId||'—')}</span></td>
-            <td>${escapeHtml(d.city||'—')}</td>
-            <td>${escapeHtml(d.retailerName||'—')}</td>
-            <td>${escapeHtml(d.eta||'—')}</td>
-            <td style="font-size:11px;color:var(--brown-l)">${escapeHtml(d.recordedAt||'—')}</td>
-          </tr>`).join('')}
-          </tbody></table></div>
-        </div>`;
+    // Auto-fit map to show all active trucks
+    if (Object.keys(mapMarkers).length > 0) {
+      const group = L.featureGroup(Object.values(mapMarkers));
+      mapInstance.fitBounds(group.getBounds().pad(0.3));
     }
+
+    // Info panel
+    document.getElementById('map-info').innerHTML = `
+      <div class="card">
+        <div class="card-title">🚛 Active Drivers (${data.length})</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+          ${data.map(d => `
+            <div style="background:var(--cream);border-radius:10px;padding:14px;border:1px solid var(--cream-dk)">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+                <div style="width:36px;height:36px;border-radius:50%;background:var(--navy);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">
+                  ${(d.driverName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
+                </div>
+                <div>
+                  <div style="font-size:14px;font-weight:600;color:var(--brown)">${escapeHtml(d.driverName||'Driver')}</div>
+                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(d.vehicleId||'—')}</div>
+                </div>
+                <span class="badge b-orange" style="margin-left:auto">In Transit</span>
+              </div>
+              <div style="font-size:12px;color:var(--brown-m);margin-bottom:4px">📍 Heading to <strong>${escapeHtml(d.city||'—')}</strong> — ${escapeHtml(d.retailerName||'—')}</div>
+              <div style="font-size:12px;color:var(--brown-m);margin-bottom:8px">⏰ ETA: <strong>${escapeHtml(d.eta||'—')}</strong></div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div style="font-size:11px;color:var(--brown-l)">GPS updated: <span id="last-update-${d.deliveryId}">just now</span></div>
+                <button class="btn btn-ghost btn-sm" onclick="focusTruck(${d.deliveryId})">🎯 Focus</button>
+              </div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+
+    startTicker();
   }
+
+  window.focusTruck = function(deliveryId) {
+    const m = mapMarkers[deliveryId];
+    if (m) { mapInstance.setView(m.getLatLng(), 14); m.openPopup(); }
+  };
 
   await refreshMap();
   mapPollInterval = setInterval(refreshMap, 10000);
 }
 
 function popupHtml(d) {
-  return `<div style="min-width:180px;font-family:sans-serif">
-    <strong style="font-size:13px">${escapeHtml(d.driverName||'Driver')}</strong><br>
-    <span style="font-size:11px;color:#666">${escapeHtml(d.vehicleId||'')} · ${escapeHtml(d.city||'')}</span><br>
-    <span style="font-size:11px">Retailer: ${escapeHtml(d.retailerName||'—')}</span><br>
-    <span style="font-size:11px">ETA: <strong>${escapeHtml(d.eta||'—')}</strong></span><br>
-    <span style="font-size:10px;color:#999">Updated: ${escapeHtml(d.recordedAt||'—')}</span>
+  return `<div style="min-width:200px;font-family:sans-serif;padding:4px">
+    <div style="font-size:14px;font-weight:700;color:#1B2A4A;margin-bottom:4px">🚛 ${escapeHtml(d.driverName||'Driver')}</div>
+    <div style="font-size:12px;color:#555;margin-bottom:2px">${escapeHtml(d.vehicleId||'')} · In Transit</div>
+    <hr style="border:none;border-top:1px solid #eee;margin:6px 0"/>
+    <div style="font-size:12px;margin-bottom:2px">📍 <strong>Heading to:</strong> ${escapeHtml(d.city||'—')}</div>
+    <div style="font-size:12px;margin-bottom:2px">🏪 ${escapeHtml(d.retailerName||'—')}</div>
+    <div style="font-size:12px;margin-bottom:6px">⏰ ETA: <strong>${escapeHtml(d.eta||'—')}</strong></div>
+    <div style="font-size:10px;color:#999">GPS updated: ${escapeHtml(d.recordedAt||'—')}</div>
   </div>`;
 }
 
@@ -1759,6 +1880,7 @@ function loadLeaflet() {
 const _origNav = window.nav;
 window.nav = function(id) {
   if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
+  if (typeof tickInterval !== 'undefined' && tickInterval) { clearInterval(tickInterval); tickInterval = null; }
   if (mapInstance && id !== 'live-map') { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
   return render(id);
 };
