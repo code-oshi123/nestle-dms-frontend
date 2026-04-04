@@ -146,92 +146,115 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .track-badge{display:inline-flex;align-items:center;gap:4px;background:#E8F5E9;color:#2E7D32;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;animation:pulse-green 2s infinite}
 @keyframes pulse-green{0%,100%{opacity:1}50%{opacity:0.6}}
 @media(max-width:768px){
-  /* Topbar */
-  .topbar{padding:0 12px;height:54px}
-  .tlogo-wrap{width:34px;height:34px;padding:4px}
-  .ttitle{font-size:13px;letter-spacing:0}.tsub{display:none}
-  .tdivider{display:none}
-  .tuser-name{display:none}
-  .tuser-role{display:none}
-  .tuser-info{display:none}
-  .tbadge{width:28px;height:28px;font-size:11px}
+  /* ── Topbar ── */
+  .topbar{padding:0 14px;height:56px}
+  .tlogo-wrap{width:36px;height:36px;padding:4px;border-radius:8px}
+  .ttitle{font-size:14px;letter-spacing:0;font-weight:700}
+  .tsub,.tdivider,.tuser-name,.tuser-role,.tuser-info{display:none}
+  .tbadge{width:30px;height:30px;font-size:12px;border-width:2px}
+  .tright{gap:10px}
 
-  /* Tabs */
-  .tabs{padding:0 8px;gap:0;overflow-x:auto;scrollbar-width:none}
+  /* ── Tabs ── */
+  .tabs{padding:0;gap:0;overflow-x:auto;scrollbar-width:none;border-bottom:2px solid var(--cream-dk)}
   .tabs::-webkit-scrollbar{display:none}
-  .tab{padding:10px 12px;font-size:10px;letter-spacing:.3px;gap:4px}
+  .tab{padding:12px 14px;font-size:11px;letter-spacing:.2px;gap:5px;font-weight:700}
+  .tab.active{border-bottom-width:3px}
 
-  /* Main content */
-  .main{padding:12px}
-  .card{padding:14px;border-radius:10px;margin-bottom:12px}
-  .card-title{font-size:13px;margin-bottom:12px}
+  /* ── Main ── */
+  .main{padding:14px 12px;padding-bottom:100px}
+  .card{padding:16px;border-radius:12px;margin-bottom:14px;border-width:1.5px}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:14px}
 
-  /* Section headers */
-  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:14px}
-  .sec-title{font-size:20px}
-  .sec-sub{font-size:12px}
-  .sec-hdr .btn{width:100%;justify-content:center}
+  /* ── Section header ── */
+  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:16px}
+  .sec-title{font-size:22px;font-weight:700}
+  .sec-sub{font-size:13px}
+  .sec-hdr .btn{width:100%;justify-content:center;padding:12px;font-size:14px}
 
-  /* KPI grid */
-  .kpi-row{grid-template-columns:1fr 1fr;gap:10px}
-  .kpi{padding:14px 16px}
-  .kpi-v{font-size:22px}
-  .kpi-l{font-size:10px}
+  /* ── KPI cards ── */
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .kpi{padding:14px;border-top-width:4px}
+  .kpi-v{font-size:26px;font-weight:700}
+  .kpi-l{font-size:11px;margin-top:4px;font-weight:600}
 
-  /* Tables — horizontal scroll */
-  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -14px;padding:0 14px}
-  table{min-width:560px}
-  th{padding:8px 10px;font-size:9px}
-  td{padding:10px 10px;font-size:12px}
-  .btn-sm{padding:4px 8px;font-size:11px}
+  /* ── Tables ── */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}
+  table{min-width:520px}
+  th{padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:.5px}
+  td{padding:12px 12px;font-size:13px}
+  .btn-sm{padding:7px 12px;font-size:12px;font-weight:600;border-radius:8px}
 
-  /* Forms */
+  /* ── Forms ── */
   .form-grid{grid-template-columns:1fr}
-  .fg{margin-bottom:10px}
-  .fg input,.fg select,.fg textarea{font-size:16px;padding:10px 12px}
-  .fg label{font-size:10px}
+  .fg{margin-bottom:14px}
+  .fg input,.fg select,.fg textarea{font-size:16px;padding:12px 14px;border-width:2px;border-radius:10px}
+  .fg label{font-size:11px;font-weight:700;margin-bottom:6px}
+  .fg input:focus,.fg select:focus{border-color:var(--tan);box-shadow:0 0 0 4px rgba(139,105,20,.15)}
 
-  /* Modals */
-  .modal-bg{padding:8px;align-items:flex-end}
-  .modal{max-width:100%;width:100%;border-radius:16px 16px 0 0;max-height:92vh}
-  .modal-title{padding:16px 18px;font-size:16px}
-  .modal .modal-body{padding:16px 18px}
-  .modal-actions{flex-direction:column-reverse}
-  .modal-actions .btn{width:100%;justify-content:center}
+  /* ── Modals ── */
+  .modal-bg{padding:0;align-items:flex-end;background:rgba(0,0,0,.7)}
+  .modal{max-width:100%;width:100%;border-radius:20px 20px 0 0;max-height:94vh;border:none;border-top:3px solid var(--tan)}
+  .modal-title{padding:18px 20px;font-size:17px;font-weight:700}
+  .modal .modal-body{padding:16px 20px}
+  .modal-actions{flex-direction:column-reverse;gap:8px;padding:0 20px 20px}
+  .modal-actions .btn{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700;border-radius:12px}
 
-  /* Map */
-  .map-container{height:280px;border-radius:8px}
+  /* ── Buttons ── */
+  .btn{font-size:13px;padding:10px 16px;font-weight:700;border-radius:10px}
+  .btn-tan{box-shadow:0 3px 10px rgba(139,105,20,.35)}
 
-  /* Notifications panel */
-  .np{width:100%;right:0;left:0;border-left:none;border-top:1px solid var(--cream-dk)}
+  /* ── Map ── */
+  .map-container{height:300px;border-radius:10px;border-width:2px}
 
-  /* Buttons */
-  .btn{font-size:12px;padding:8px 14px}
+  /* ── Notifications ── */
+  .np{width:100%;right:0;left:0;border-left:none;border-top:2px solid var(--tan)}
 
-  /* Login card */
-  .lcard{padding:28px 20px;border-radius:16px}
-  .lh{font-size:22px}
-  .qbtn{padding:10px 12px;gap:10px}
+  /* ── Login ── */
+  .lcard{padding:28px 20px;border-radius:20px;margin:16px}
+  .lh{font-size:24px;font-weight:700}
+  .ls{font-size:14px}
+  .qbtn{padding:12px 14px;gap:10px;border-width:1.5px;border-radius:12px}
   .qbtns{grid-template-columns:1fr}
-  .qav{width:36px;height:36px;font-size:13px}
+  .qav{width:40px;height:40px;font-size:14px;font-weight:700}
+  .qname{font-size:14px;font-weight:700}
+  .qrole{font-size:12px}
 
-  /* Route builder */
-  .rb-stop{padding:10px 12px}
+  /* ── Alert banners ── */
+  .alert-banner{font-size:13px;padding:12px 14px;line-height:1.6;border-width:1.5px;border-radius:10px}
+
+  /* ── Toast ── */
+  .toast{bottom:80px;right:12px;left:12px;max-width:100%;font-size:13px;padding:14px 16px;border-radius:14px;font-weight:600}
+
+  /* ── Badges ── */
+  .badge{font-size:12px;padding:4px 12px;font-weight:700}
+
+  /* ── Route timeline ── */
+  .rb-stop{padding:12px 14px}
   .rp-two-col{grid-template-columns:1fr}
-
-  /* Alert banners */
-  .alert-banner{font-size:12px;padding:10px 12px}
-
-  /* Toast bottom safe area */
-  .toast{bottom:16px;right:12px;left:12px;max-width:100%;font-size:12px}
+  .rt-city{font-size:14px;font-weight:700}
 }
 
-/* Extra small phones */
+/* ── Extra small phones ── */
 @media(max-width:380px){
-  .main{padding:8px}
-  .card{padding:10px}
-  .tab{padding:8px 10px;font-size:9px}
-  .kpi-row{grid-template-columns:1fr}
+  .main{padding:10px 10px;padding-bottom:90px}
+  .card{padding:12px}
+  .tab{padding:10px 10px;font-size:10px}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .kpi-v{font-size:22px}
+  .sec-title{font-size:20px}
+}
+
+/* ── Desktop improvements — higher contrast ── */
+@media(min-width:769px){
+  .badge{font-size:12px;padding:4px 12px;font-weight:700}
+  .btn{font-weight:700}
+  .kpi-v{font-size:30px;font-weight:700}
+  .kpi-l{font-size:12px;font-weight:600;color:var(--brown-m)}
+  td{font-size:14px}
+  th{font-size:11px;font-weight:700;letter-spacing:.8px}
+  .card-title{font-size:16px;font-weight:700}
+  .sec-title{font-size:26px}
+  .alert-banner{font-size:14px;font-weight:500}
 }
 .page-logo-banner{display:flex;align-items:center;gap:10px;padding:14px 0 10px 0;margin-bottom:4px;border-bottom:1px solid var(--cream-dk)}.page-logo-img{width:38px;height:38px;object-fit:contain;border-radius:8px;padding:4px;background:var(--white);border:1px solid var(--cream-dk)}.page-logo-text{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);letter-spacing:.4px;opacity:.7}
 .sec-title{font-size:24px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
@@ -239,10 +262,10 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 
 /* KPI */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.kpi{background:var(--white);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow-card);border:1px solid var(--cream-dk);border-top:3px solid var(--tan);transition:transform .15s}
+.kpi{background:var(--white);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow-card);border:1.5px solid var(--cream-dk);border-top:4px solid var(--tan);transition:transform .15s}
 .kpi:hover{transform:translateY(-2px)}
-.kpi-v{font-size:28px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
-.kpi-l{font-size:11px;color:var(--brown-l);margin-top:5px;text-transform:uppercase;letter-spacing:.5px;font-weight:500}
+.kpi-v{font-size:32px;font-weight:700;color:var(--brown);font-family:'Cormorant Garamond',serif}
+.kpi-l{font-size:12px;color:var(--brown-m);margin-top:5px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
 
 /* BUTTONS */
 .btn{padding:9px 18px;border-radius:var(--r-sm);border:none;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;letter-spacing:.2px}
@@ -257,22 +280,22 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 /* TABLE */
 .tw{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:11px 14px;font-size:10px;font-weight:600;color:var(--brown-m);text-transform:uppercase;letter-spacing:.8px;border-bottom:1.5px solid var(--cream-dk);background:rgba(139,105,20,.04)}
-td{padding:13px 14px;font-size:13px;border-bottom:1px solid rgba(217,200,154,.5);vertical-align:middle;color:var(--brown);font-weight:400}
+th{text-align:left;padding:11px 14px;font-size:10px;font-weight:800;color:var(--brown);text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid var(--cream-dk);background:rgba(139,105,20,.07)}
+td{padding:13px 14px;font-size:13px;border-bottom:1px solid rgba(217,200,154,.6);vertical-align:middle;color:var(--brown);font-weight:500}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:rgba(139,105,20,.03)}
 .mono{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--tan)}
 
 /* BADGES */
-.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:capitalize;white-space:nowrap;font-family:'Jost',sans-serif}
-.b-gray{background:var(--cream-dk);color:var(--brown-m)}
-.b-blue{background:var(--blue-bg);color:var(--blue)}
-.b-green{background:var(--green-bg);color:var(--green)}
-.b-orange{background:var(--orange-bg);color:var(--orange)}
-.b-red{background:var(--red-bg);color:var(--red)}
-.b-purple{background:var(--purple-bg);color:var(--purple)}
-.b-navy{background:#E8EAF6;color:#283593}
-.b-teal{background:#E0F2F1;color:#00695C}
+.badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:capitalize;white-space:nowrap;font-family:'Jost',sans-serif;letter-spacing:.2px}
+.b-gray{background:#D9C89A;color:#3D2B0A}
+.b-blue{background:#BBDEFB;color:#0D47A1}
+.b-green{background:#C8E6C9;color:#1B5E20}
+.b-orange{background:#FFCCBC;color:#BF360C}
+.b-red{background:#FFCDD2;color:#B71C1C}
+.b-purple{background:#E1BEE7;color:#4A148C}
+.b-navy{background:#C5CAE9;color:#1A237E}
+.b-teal{background:#B2DFDB;color:#004D40}
 
 /* FORM */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
@@ -1574,27 +1597,27 @@ async function saveStatus() {
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
-  // Auto GPS control based on status
-  if (newStatus === 'in-transit') startGps(id);
-  if (newStatus === 'delivered' || newStatus === 'failed') stopGps();
-
   const result = await api(`/deliveries/${id}/status`, 'PUT', { newStatus, note, updatedBy: user.id });
   btn.disabled = false;
-  onStatusChange(); // reset button text
+  onStatusChange();
 
   if (result.error) {
     toast(`❌ ${result.error}`, '#dc2626');
     return;
   }
 
+  // Only start/stop GPS AFTER confirmed successful status update
+  if (newStatus === 'in-transit') {
+    startGps(id);
+    toast('🚛 In Transit — GPS tracking started 📍 Location is being shared live', '#1565C0');
+  } else if (newStatus === 'delivered' || newStatus === 'failed') {
+    stopGps();
+    const labels = { 'delivered':'✅ Delivered — All 4 parties notified 🔔', 'failed':'❌ Failed — All 4 parties notified 🔔' };
+    const colours = { 'delivered':'#16a34a', 'failed':'#dc2626' };
+    toast(labels[newStatus], colours[newStatus]);
+  }
+
   closeModal('m-status');
-  const labels = {
-    'in-transit': '🚛 In Transit — Retailer, Order Team & Warehouse notified 🔔',
-    'delivered':  '✅ Delivered — All 4 parties notified 🔔',
-    'failed':     '❌ Failed — All 4 parties notified 🔔'
-  };
-  const colours = { 'in-transit': '#1565C0', 'delivered': '#16a34a', 'failed': '#dc2626' };
-  toast(labels[newStatus] || `Status → "${newStatus}"`, colours[newStatus] || 'var(--tan)');
   pollBadge();
   pageUpdStatus();
 }
@@ -2056,22 +2079,52 @@ let activeDeliveryId = null;
 
 function startGps(deliveryId) {
   activeDeliveryId = deliveryId;
-  if (!navigator.geolocation) return;
-  // Send immediately on start
-  navigator.geolocation.getCurrentPosition(pos => sendLocation(deliveryId, pos));
-  // Then every 10 seconds
+  if (!navigator.geolocation) {
+    toast('⚠️ GPS not available on this device', '#ea580c');
+    return;
+  }
+  // First get an immediate fix
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      sendLocation(deliveryId, pos);
+      updateGpsIndicator(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+    },
+    err => console.warn('[GPS first fix]', err.message),
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+  // Then watch continuously — fires every time position changes
+  gpsWatcher = navigator.geolocation.watchPosition(
+    pos => {
+      sendLocation(deliveryId, pos);
+      updateGpsIndicator(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
+    },
+    err => {
+      console.warn('[GPS watch error]', err.code, err.message);
+      if (err.code === 1) toast('⚠️ GPS permission denied — please allow location in browser settings', '#dc2626');
+      else if (err.code === 2) toast('⚠️ GPS signal lost — trying to reconnect…', '#ea580c');
+    },
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+  );
+  // Fallback interval every 15s in case watchPosition stalls
   gpsInterval = setInterval(() => {
+    if (!activeDeliveryId) return;
     navigator.geolocation.getCurrentPosition(
       pos => sendLocation(deliveryId, pos),
-      null, { enableHighAccuracy: true, timeout: 8000 }
+      err => console.warn('[GPS fallback]', err.message),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
     );
-  }, 10000);
+  }, 15000);
+  showGpsIndicator();
+  toast('📍 GPS tracking started — sharing your live location', '#0f766e');
+  console.log('[GPS] Tracking started for delivery', deliveryId);
 }
 
 function stopGps() {
   if (gpsInterval) { clearInterval(gpsInterval); gpsInterval = null; }
-  if (gpsWatcher) { navigator.geolocation.clearWatch(gpsWatcher); gpsWatcher = null; }
+  if (gpsWatcher !== null) { navigator.geolocation.clearWatch(gpsWatcher); gpsWatcher = null; }
   activeDeliveryId = null;
+  hideGpsIndicator();
+  console.log('[GPS] Tracking stopped');
 }
 
 async function sendLocation(deliveryId, pos) {
@@ -2081,7 +2134,34 @@ async function sendLocation(deliveryId, pos) {
       lat: pos.coords.latitude,
       lng: pos.coords.longitude
     });
-  } catch(e) { console.warn('[GPS]', e.message); }
+    console.log('[GPS] Sent:', pos.coords.latitude.toFixed(5), pos.coords.longitude.toFixed(5));
+  } catch(e) { console.warn('[GPS send error]', e.message); }
+}
+
+function showGpsIndicator() {
+  let bar = document.getElementById('gps-indicator');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'gps-indicator';
+    bar.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#0f766e;color:#ffffff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;z-index:9998;display:flex;align-items:center;gap:10px;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap;max-width:90vw';
+    bar.innerHTML = '<span style="width:10px;height:10px;background:#4ade80;border-radius:50%;animation:truckPulse 1.2s infinite;display:inline-block;flex-shrink:0"></span><span id="gps-text">GPS Active — locating…</span>';
+    document.body.appendChild(bar);
+  }
+  bar.style.display = 'flex';
+}
+
+function updateGpsIndicator(lat, lng, accuracy) {
+  const el = document.getElementById('gps-text');
+  if (el) {
+    const acc = accuracy ? `±${Math.round(accuracy)}m` : '';
+    const accColor = accuracy < 20 ? '#4ade80' : accuracy < 100 ? '#fbbf24' : '#f87171';
+    el.innerHTML = `GPS Live &nbsp;<span style="color:${accColor};font-size:11px">${acc}</span>`;
+  }
+}
+
+function hideGpsIndicator() {
+  const bar = document.getElementById('gps-indicator');
+  if (bar) bar.style.display = 'none';
 }
 
 // ── TRACK MAP MODAL ──
