@@ -12,7 +12,7 @@
   --tan:#8B6914;--tan-d:#6b4f0f;--tan-l:#A67C1E;
   --cream:#F7F0DF;--cream-d:#EDE0C0;--cream-dk:#D9C89A;
   --parchment:#FAF5E8;--brown:#3D2B0A;--brown-m:#6B4E1A;--brown-l:#9E7A3A;
-  --white:#FFFDF8;
+  --white:#FFFDF8;--navy:#1B2A4A;--goldL:#D4A832;
   --green:#2E7D32;--green-bg:#E8F5E9;
   --orange:#D84315;--orange-bg:#FBE9E7;
   --blue:#1565C0;--blue-bg:#E3F2FD;
@@ -739,7 +739,7 @@ async function pageMyOrders() {
         <tr>
           <td><span class="mono">${o.id}</span></td>
           <td>${o.city}</td>
-          <td>${o.items} items · ${o.kg}kg</td>
+          <td>${o.items} items · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></td>
             <td>${['consolidated','assigned','warehouse_ready','loaded','in-transit'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${o.id},'${o.city||''}','${o.retailerName||o.retailer||''}')">🗺️ Track</button>` : '—'}</td>
           <td>${prioBadge(o.prio)}</td>
           <td>${orderBadge(o.status)}</td>
@@ -819,6 +819,9 @@ async function pageReqOrder() {
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">Request Delivery Order</div>
     <div class="sec-sub">Submit a new order — the Order Processing Team will be notified immediately 🔔</div></div></div>
+    <div class="alert-banner alert-info" style="max-width:580px;margin-bottom:14px">
+      ⚖️ <strong>Auto weight calculation:</strong> Select a product and enter quantity — the system automatically calculates total cargo weight and uses it to assign the best-fit vehicle when routing.
+    </div>
     <div class="card" style="max-width:580px">
       <div class="form-grid">
         <div class="fg"><label>Your Name</label><input value="${user.name}" disabled/></div>
@@ -991,7 +994,7 @@ async function pageAllOrders() {
             <td><span class="mono">${o.id}</span></td>
             <td><strong>${o.retailer}</strong></td>
             <td>${o.city}</td>
-            <td>${o.items} · ${o.kg}kg</td>
+            <td>${o.items} · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></td>
             <td>${prioBadge(o.prio)}</td>
             <td>${orderBadge(o.status)}</td>
             <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
@@ -1063,15 +1066,16 @@ async function pageDeliveries() {
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">All Deliveries</div><div class="sec-sub">Auto-assigned when order is confirmed — live status across all roles</div></div></div>
     <div class="alert-banner alert-success" style="margin-bottom:18px">
-      ✅ <strong>Automatic system:</strong> When an order is confirmed, a delivery is instantly created and auto-assigned to the next available driver and vehicle. No manual route planning needed.
+      🤖 <strong>Smart Auto-Routing:</strong> Every 3 confirmed orders triggers auto-routing. The system: <strong>(1)</strong> auto-calculates cargo weight per order, <strong>(2)</strong> sorts stops by priority (Urgent → High → Normal), <strong>(3)</strong> optimises each tier with nearest-neighbour routing, <strong>(4)</strong> selects the <em>smallest vehicle</em> that fits the total cargo weight, and <strong>(5)</strong> assigns an available driver — all automatically.
     </div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Track</th><th>Receipt Proof</th></tr></thead>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Track</th><th>Receipt</th></tr></thead>
       <tbody>${data.length ? data.map(d=>`
         <tr>
           <td><span class="mono">${d.id}</span></td>
           <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          <td>${d.items} · ${d.kg}kg</td>
+          <td>${d.items}</td>
+          <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
           <td>${prioBadge(d.prio)}</td>
           <td>${delBadge(d.status)}</td>
           <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'<span style="color:var(--brown-l);font-size:12px">—</span>'}</td>
@@ -1141,7 +1145,8 @@ async function pageWhIncoming() {
         <tr>
           <td><span class="mono">${d.id}</span></td>
           <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          <td>${d.items} · ${d.kg}kg</td>
+          <td>${d.items}</td>
+          <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
           <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
           <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
           <td>${delBadge(d.status)}</td>
@@ -1231,7 +1236,11 @@ async function pageMyRoutes() {
       <div style="position:absolute;top:-20px;right:-20px;width:130px;height:130px;background:rgba(166,124,30,.18);border-radius:50%"></div>
       <div style="font-size:11px;font-weight:800;color:#D4A832;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">📦 Next Stop</div>
       <div style="font-size:34px;font-weight:800;color:#FFFFFF;font-family:'Cormorant Garamond',serif;margin-bottom:6px;line-height:1.1">${nextStop.city}</div>
-      <div style="font-size:15px;font-weight:700;color:#FAF5E8;margin-bottom:16px">${escapeHtml(nextStop.retailer||'—')} &nbsp;·&nbsp; ${nextStop.items||0} items &nbsp;·&nbsp; <span style="color:#D4A832;text-transform:capitalize">${nextStop.priority||''}</span></div>
+      <div style="font-size:15px;font-weight:700;color:#FAF5E8;margin-bottom:16px">
+        ${escapeHtml(nextStop.retailer||'—')} &nbsp;·&nbsp; ${nextStop.items||0} items
+        ${(() => { const del = nextStop.deliveryId ? deliveryMap[nextStop.deliveryId] : null; return del&&del.kg ? `&nbsp;·&nbsp; <span style="color:#90CAF9;font-weight:800">${parseFloat(del.kg).toFixed(1)}kg</span>` : ''; })()}
+        ${nextStop.priority ? `&nbsp;·&nbsp; <span style="color:#D4A832;text-transform:capitalize;font-weight:800">${nextStop.priority}</span>` : ''}
+      </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
         ${nextStop.eta ? `<span style="background:#D4A832;color:#1B2A4A;border-radius:20px;padding:6px 16px;font-size:14px;font-weight:800">⏰ ETA ${nextStop.eta}</span>` : ''}
         ${nextStop.warehouseLabel ? `<span style="background:#243D5C;color:#FFFFFF;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;border:1px solid #4A6480">🏭 ${nextStop.warehouseLabel}</span>` : ''}
@@ -1334,7 +1343,7 @@ async function pageMyRoutes() {
                 <span style="font-size:15px">${checkmark}</span>
                 <div>
                   <div style="font-size:14px;font-weight:600;color:var(--brown)">${i+1}. ${sd.city||cities[i]||'—'}</div>
-                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(sd.retailer||'—')} · ${sd.items||0} items ${sd.priority ? '· '+sd.priority : ''}</div>
+                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(sd.retailer||'—')} · ${sd.items||0} items${del&&del.kg?' · <strong style="color:var(--blue)">'+parseFloat(del.kg).toFixed(1)+'kg</strong>':''}${sd.priority?` · <span style="color:${sd.priority==='urgent'?'var(--red)':sd.priority==='high'?'var(--orange)':'var(--brown-l)'};font-weight:600">${sd.priority}</span>`:''}</div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -1352,6 +1361,15 @@ async function pageMyRoutes() {
         </div>`;
     }).join('');
 
+    // Calculate total weight across all stops
+    const routeTotalKg = stopsData.reduce((sum, sd) => {
+      const del = sd.deliveryId ? deliveryMap[sd.deliveryId] : null;
+      return sum + (del && del.kg ? parseFloat(del.kg) : 0);
+    }, 0);
+    const urgentStops = stopsData.filter(sd => sd.priority === 'urgent').length;
+    const highStops   = stopsData.filter(sd => sd.priority === 'high').length;
+    const normalStops = stopsData.filter(sd => sd.priority === 'normal').length;
+
     return `
       <div class="card" style="margin-bottom:18px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
@@ -1360,8 +1378,15 @@ async function pageMyRoutes() {
             ${rt.warehouse ? `<span class="badge b-teal">🏭 ${rt.warehouse}</span>` : ''}
             <span class="badge b-blue">🚛 ${rt.vehicleId||'—'}</span>
             <span class="badge b-gray">~${rt.distKm}km · ${hrs}h ${mins}m</span>
+            ${routeTotalKg > 0 ? `<span class="badge b-navy">⚖️ ${routeTotalKg.toFixed(1)}kg</span>` : ''}
           </div>
         </div>
+        ${urgentStops||highStops ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+          ${urgentStops ? `<span class="badge b-red">🔴 ${urgentStops} Urgent</span>` : ''}
+          ${highStops ? `<span class="badge b-orange">🟠 ${highStops} High</span>` : ''}
+          ${normalStops ? `<span class="badge b-gray">⬜ ${normalStops} Normal</span>` : ''}
+          <span style="font-size:11px;color:var(--brown-l);align-self:center">Priority order → nearest-neighbour routing</span>
+        </div>` : ''}
         <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--cream);border-radius:8px;margin-bottom:14px">
           <div style="width:12px;height:12px;border-radius:50%;background:var(--tan);flex-shrink:0"></div>
           <div style="font-size:12px;font-weight:600;color:var(--tan)">🏭 ${rt.warehouse ? rt.warehouse + ' Warehouse' : 'Depot'} ${rt.depart ? '· Depart ' + rt.depart : ''}</div>
@@ -1534,7 +1559,7 @@ async function pageUpdStatus() {
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td style="font-size:12px">${d.items} items · ${d.kg}kg</td>
+            <td style="font-size:12px">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
             <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
@@ -2109,8 +2134,10 @@ function calcKg() {
   if (productId && productWeights[productId] && items > 0) {
     const unitWt = productWeights[productId];
     const kg = (unitWt * items).toFixed(2);
-    val.innerHTML = `${kg} kg <span style="font-size:10px;color:var(--brown-l);font-weight:400">(${unitWt}kg × ${items} units)</span>`;
+    val.innerHTML = `<strong style="color:var(--navy)">${kg} kg</strong> <span style="font-size:11px;color:var(--brown-l);font-weight:500">(${unitWt}kg × ${items} units)</span>`;
     badge.style.display = 'inline-flex';
+    badge.style.background = 'var(--blue-bg)';
+    badge.style.border = '1px solid #90CAF9';
   } else {
     badge.style.display = 'none';
   }
