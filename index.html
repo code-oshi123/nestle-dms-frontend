@@ -1450,6 +1450,14 @@ async function pageMyRoutes() {
 
 async function pageUpdStatus() {
   const data      = await api(`/deliveries?role=distributor&userId=${user.id}`);
+
+  // Auto-resume GPS if driver is already in-transit (e.g. page refresh)
+  const alreadyInTransit = data.find(d => d.status === 'in-transit');
+  if (alreadyInTransit && !gpsInterval && !gpsWatcher) {
+    console.log('[GPS] Auto-resuming for delivery', alreadyInTransit.id);
+    startGps(alreadyInTransit.id);
+  }
+
   const active    = data.filter(d => ['loaded','in-transit'].includes(d.status));
   const waiting   = data.filter(d => ['assigned','warehouse_ready'].includes(d.status));
   const completed = data.filter(d => ['delivered','failed'].includes(d.status));
@@ -1511,7 +1519,10 @@ async function pageUpdStatus() {
             <td style="font-size:12px">${d.items} items · ${d.kg}kg</td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
-            <td><button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button></td>
+            <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              ${d.status==='in-transit' ? '<span style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:3px 8px;border-radius:20px">📡 GPS On</span>' : ''}
+              <button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>
+            </td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>All stops complete! 🎉</div></div></td></tr>'}</tbody>
       </table></div>
     </div>
@@ -1743,7 +1754,12 @@ async function pageLiveMap() {
         const el = document.getElementById('last-update-' + id);
         if (el) {
           const secs = Math.round((Date.now() - ts) / 1000);
-          el.textContent = secs < 60 ? secs + 's ago' : Math.floor(secs/60) + 'm ago';
+          const label = secs < 60 ? secs + 's ago' : Math.floor(secs/60) + 'm ' + (secs%60) + 's ago';
+          el.textContent = label;
+          // Colour-code freshness
+          if (secs < 30) { el.style.color = '#0f766e'; el.style.fontWeight = '700'; }
+          else if (secs < 90) { el.style.color = '#b45309'; el.style.fontWeight = '700'; }
+          else { el.style.color = '#b91c1c'; el.style.fontWeight = '700'; }
         }
       });
     }, 1000);
@@ -1777,7 +1793,9 @@ async function pageLiveMap() {
       const lng = parseFloat(d.lng);
       if (isNaN(lat) || isNaN(lng)) return;
       activeIds.add(id);
-      lastUpdateTime[id] = Date.now();
+      // Use server-side secondsAgo if available for accurate timing
+      const secsAgo = d.secondsAgo ? parseFloat(d.secondsAgo) : 0;
+      lastUpdateTime[id] = Date.now() - (secsAgo * 1000);
 
       // ── Truck marker
       if (mapMarkers[id]) {
@@ -2130,13 +2148,20 @@ function stopGps() {
 
 async function sendLocation(deliveryId, pos) {
   try {
-    await api('/tracking/update', 'POST', {
-      deliveryId,
+    const payload = {
+      deliveryId: parseInt(deliveryId),
       lat: pos.coords.latitude,
       lng: pos.coords.longitude
-    });
-    console.log('[GPS] Sent:', pos.coords.latitude.toFixed(5), pos.coords.longitude.toFixed(5));
-  } catch(e) { console.warn('[GPS send error]', e.message); }
+    };
+    const r = await api('/tracking/update', 'POST', payload);
+    if (r && r.ok) {
+      console.log('[GPS] ✅ Sent:', pos.coords.latitude.toFixed(5), pos.coords.longitude.toFixed(5), '±' + Math.round(pos.coords.accuracy||0) + 'm');
+    } else {
+      console.warn('[GPS] ⚠️ Server response:', r);
+    }
+  } catch(e) {
+    console.warn('[GPS send error]', e.message);
+  }
 }
 
 function showGpsIndicator() {
