@@ -568,6 +568,7 @@ document.getElementById('lpass').addEventListener('keydown', e => { if(e.key==='
 document.getElementById('lemail').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('lpass').focus(); });
 
 function doLogout() {
+  stopGps(); // stop GPS tracking on logout
   stopPoll(); user=null; panelOpen=false;
   localStorage.removeItem('dms_token');
   localStorage.removeItem('dms_user');
@@ -1924,6 +1925,11 @@ window.nav = function(id) {
   if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
   if (typeof tickInterval !== 'undefined' && tickInterval) { clearInterval(tickInterval); tickInterval = null; }
   if (mapInstance && id !== 'live-map') { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
+  // Only stop GPS if navigating away completely (not between driver tabs)
+  const driverPages = ['my-routes','upd-status','live-map'];
+  if (!driverPages.includes(id) && user && user.role === 'distributor') {
+    // still keep GPS running — driver might tab back
+  }
   return render(id);
 };
 
@@ -2072,7 +2078,8 @@ async function loadProductsForOrderForm() {
 function setContent(html) {
   document.getElementById('main-content').innerHTML = html;
   injectSecLogos();
-  stopGps(); // stop GPS sending if we navigate away from driver page
+  // DO NOT stop GPS here — GPS must keep running across page changes
+  // GPS is only stopped when: driver marks Delivered/Failed, or logs out
 }
 
 // ── KG AUTO-CALC ──
