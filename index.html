@@ -1226,24 +1226,22 @@ async function pageMyRoutes() {
 
   // ── Next Stop Hero Card
   const nextStopCard = nextStop ? `
-    <div style="background:var(--navy);border-radius:14px;padding:20px 22px;margin-bottom:18px;position:relative;overflow:hidden">
-      <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;background:rgba(166,124,30,.12);border-radius:50%"></div>
-      <div style="font-size:10px;font-weight:600;color:rgba(217,200,154,.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Next stop</div>
-      <div style="font-size:28px;font-weight:700;color:var(--cream);font-family:'Cormorant Garamond',serif;margin-bottom:4px">${nextStop.city}</div>
-      <div style="font-size:14px;color:rgba(217,200,154,.85);margin-bottom:14px">${escapeHtml(nextStop.retailer||'—')} · ${nextStop.items||0} items ${nextStop.priority ? '· '+nextStop.priority : ''}</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        ${nextStop.eta ? `<span style="background:rgba(166,124,30,.25);color:var(--goldL,#D4A832);border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600">ETA ${nextStop.eta}</span>` : ''}
-        ${nextStop.warehouseLabel ? `<span style="background:rgba(255,255,255,.1);color:rgba(217,200,154,.8);border-radius:20px;padding:5px 14px;font-size:12px">🏭 From ${nextStop.warehouseLabel}</span>` : ''}
-        ${nextStop.vehicleId ? `<span style="background:rgba(255,255,255,.1);color:rgba(217,200,154,.8);border-radius:20px;padding:5px 14px;font-size:12px">🚛 ${nextStop.vehicleId}</span>` : ''}
-        ${nextStop.delivStatus==='in-transit' ? `<span style="background:rgba(21,101,192,.4);color:#90CAF9;border-radius:20px;padding:5px 14px;font-size:12px">● In Transit</span>` : `<span style="background:rgba(46,125,50,.3);color:#A5D6A7;border-radius:20px;padding:5px 14px;font-size:12px">✓ Vehicle Loaded</span>`}
+    <div style="background:#1B2A4A;border-radius:14px;padding:22px 24px;margin-bottom:18px;position:relative;overflow:hidden;border:2px solid #A67C1E">
+      <div style="position:absolute;top:-20px;right:-20px;width:130px;height:130px;background:rgba(166,124,30,.18);border-radius:50%"></div>
+      <div style="font-size:11px;font-weight:800;color:#D4A832;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px">📦 Next Stop</div>
+      <div style="font-size:34px;font-weight:800;color:#FFFFFF;font-family:'Cormorant Garamond',serif;margin-bottom:6px;line-height:1.1">${nextStop.city}</div>
+      <div style="font-size:15px;font-weight:700;color:#FAF5E8;margin-bottom:16px">${escapeHtml(nextStop.retailer||'—')} &nbsp;·&nbsp; ${nextStop.items||0} items &nbsp;·&nbsp; <span style="color:#D4A832;text-transform:capitalize">${nextStop.priority||''}</span></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
+        ${nextStop.eta ? `<span style="background:#D4A832;color:#1B2A4A;border-radius:20px;padding:6px 16px;font-size:14px;font-weight:800">⏰ ETA ${nextStop.eta}</span>` : ''}
+        ${nextStop.warehouseLabel ? `<span style="background:#243D5C;color:#FFFFFF;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;border:1px solid #4A6480">🏭 ${nextStop.warehouseLabel}</span>` : ''}
+        ${nextStop.vehicleId ? `<span style="background:#243D5C;color:#FFFFFF;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;border:1px solid #4A6480">🚛 ${nextStop.vehicleId}</span>` : ''}
+        ${nextStop.delivStatus==='in-transit' ? `<span style="background:#1565C0;color:#FFFFFF;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700">● In Transit</span>` : `<span style="background:#2E7D32;color:#FFFFFF;border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700">✓ Vehicle Loaded</span>`}
       </div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nextStop.city+',+Sri+Lanka')}"
-           target="_blank" rel="noopener"
-           style="flex:1;background:rgba(255,255,255,.13);color:var(--cream);border-radius:10px;padding:11px;text-align:center;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:6px">
-          🗺️ Navigate to ${nextStop.city}
-        </a>
-      </div>
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(nextStop.city+',+Sri+Lanka')}"
+         target="_blank" rel="noopener"
+         style="display:flex;align-items:center;justify-content:center;gap:8px;background:#D4A832;color:#1B2A4A;border-radius:12px;padding:14px;font-size:15px;font-weight:800;text-decoration:none;width:100%;box-sizing:border-box">
+        🗺️ Navigate to ${nextStop.city}
+      </a>
     </div>` : '';
 
   // ── Full Route Map
