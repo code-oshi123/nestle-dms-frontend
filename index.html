@@ -1770,14 +1770,21 @@ async function pageLiveMap() {
   const routeLines      = {};
   let lastUpdateTime    = {};
 
-  function makeTruckIcon(driverName) {
+  function makeTruckIcon(driverName, heading, speed) {
     const initials = (driverName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const kmh = speed ? Math.round(speed * 3.6) : null;
+    const speedBadge = kmh !== null && kmh > 0 ? `<div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);background:#D4A832;color:#1B2A4A;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:800;white-space:nowrap">${kmh} km/h</div>` : '';
+    const arrow = heading !== null && heading !== undefined ? `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(${heading}deg);font-size:12px;line-height:1">▲</div>` : '';
     return L.divIcon({
-      html: `<div class="truck-pin" style="background:#1B2A4A;color:white;border-radius:50%;width:40px;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #A67C1E;font-size:9px;font-weight:700;line-height:1.1">
-               <span style="font-size:16px;line-height:1">🚛</span>
-               <span style="font-size:8px;opacity:.85">${initials}</span>
+      html: `<div style="position:relative">
+               ${speedBadge}
+               ${arrow}
+               <div class="truck-pin" style="background:#1B2A4A;color:white;border-radius:50%;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #A67C1E;font-size:9px;font-weight:700;line-height:1.1;box-shadow:0 3px 12px rgba(27,42,74,.5)">
+                 <span style="font-size:18px;line-height:1">🚛</span>
+                 <span style="font-size:8px;opacity:.9">${initials}</span>
+               </div>
              </div>`,
-      className:'', iconSize:[40,40], iconAnchor:[20,20]
+      className:'', iconSize:[44,44], iconAnchor:[22,22]
     });
   }
 
@@ -1841,14 +1848,16 @@ async function pageLiveMap() {
       lastUpdateTime[id] = Date.now() - (secsAgo * 1000);
 
       // ── Truck marker
+      const heading = d.heading ? parseFloat(d.heading) : null;
+      const speed   = d.speed   ? parseFloat(d.speed)   : null;
       if (mapMarkers[id]) {
         mapMarkers[id].setLatLng([lat, lng]);
-        mapMarkers[id].setIcon(makeTruckIcon(d.driverName));
+        mapMarkers[id].setIcon(makeTruckIcon(d.driverName, heading, speed));
         mapMarkers[id].getPopup().setContent(popupHtml(d));
       } else {
-        mapMarkers[id] = L.marker([lat, lng], { icon: makeTruckIcon(d.driverName), zIndexOffset:1000 })
+        mapMarkers[id] = L.marker([lat, lng], { icon: makeTruckIcon(d.driverName, heading, speed), zIndexOffset:1000 })
           .addTo(mapInstance)
-          .bindPopup(popupHtml(d), { maxWidth:220 });
+          .bindPopup(popupHtml(d), { maxWidth:240 });
       }
 
       // ── Accuracy circle (50m radius visual)
@@ -1891,39 +1900,55 @@ async function pageLiveMap() {
       }
     });
 
-    // Auto-fit map to show all active trucks
-    if (Object.keys(mapMarkers).length > 0) {
+    // Auto-fit map only on FIRST load — don't jump while user is viewing
+    if (Object.keys(mapMarkers).length > 0 && !mapInstance._hasAutoFitted) {
       const group = L.featureGroup(Object.values(mapMarkers));
       mapInstance.fitBounds(group.getBounds().pad(0.3));
+      mapInstance._hasAutoFitted = true;
     }
 
     // Info panel
     document.getElementById('map-info').innerHTML = `
       <div class="card">
         <div class="card-title" style="font-size:17px;font-weight:800;color:#1B2A4A">🚛 Active Drivers on the Road — ${data.length}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
-          ${data.map(d => `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">
+          ${data.map(d => {
+            const kmh = d.speed ? Math.round(parseFloat(d.speed)*3.6) : null;
+            const acc = d.accuracy ? Math.round(parseFloat(d.accuracy)) : null;
+            const stops = d.stopsRemaining ? parseInt(d.stopsRemaining) : null;
+            const secs = d.secondsAgo ? Math.round(parseFloat(d.secondsAgo)) : 0;
+            const freshColor = secs<30?'#0f766e':secs<90?'#b45309':'#b91c1c';
+            const freshLabel = secs<30?'Live':secs<60?secs+'s ago':Math.floor(secs/60)+'m ago';
+            return `
             <div style="background:#FFFFFF;border-radius:12px;padding:16px;border:2px solid #D9C89A;box-shadow:0 2px 8px rgba(61,43,10,.1)">
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-                <div style="width:44px;height:44px;border-radius:50%;background:#1B2A4A;color:#FAF5E8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;border:3px solid #A67C1E">
+                <div style="width:46px;height:46px;border-radius:50%;background:#1B2A4A;color:#FAF5E8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;border:3px solid #A67C1E">
                   ${(d.driverName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
                 </div>
                 <div style="flex:1;min-width:0">
-                  <div style="font-size:16px;font-weight:800;color:#1B2A4A;line-height:1.2">${escapeHtml(d.driverName||'Driver')}</div>
-                  <div style="font-size:13px;font-weight:700;color:#4A3520;margin-top:2px">🚛 ${escapeHtml(d.vehicleId||'—')}</div>
+                  <div style="font-size:15px;font-weight:800;color:#1B2A4A;line-height:1.2">${escapeHtml(d.driverName||'Driver')}</div>
+                  <div style="font-size:12px;font-weight:700;color:#4A3520;margin-top:2px">🚛 ${escapeHtml(d.vehicleId||'—')}</div>
                 </div>
-                <span class="badge b-orange">🟠 In Transit</span>
+                <div style="text-align:right">
+                  <span class="badge b-orange" style="font-size:10px">In Transit</span>
+                  ${stops!==null?`<div style="font-size:10px;font-weight:700;color:#6A1B9A;margin-top:4px">${stops} stop${stops!==1?'s':''} left</div>`:''}
+                </div>
               </div>
               <div style="background:#FAF5E8;border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:4px solid #1B2A4A">
-                <div style="font-size:13px;font-weight:700;color:#1B2A4A;margin-bottom:4px">📍 Heading to: <span style="color:#BF360C">${escapeHtml(d.city||'—')}</span></div>
-                <div style="font-size:13px;font-weight:600;color:#3D2B0A">🏪 ${escapeHtml(d.retailerName||'—')}</div>
-                <div style="font-size:13px;font-weight:700;color:#1B5E20;margin-top:4px">⏰ ETA: ${escapeHtml(d.eta||'—')}</div>
+                <div style="font-size:13px;font-weight:700;color:#1B2A4A;margin-bottom:3px">📍 <span style="color:#BF360C">${escapeHtml(d.city||'—')}</span></div>
+                <div style="font-size:12px;font-weight:600;color:#3D2B0A;margin-bottom:3px">🏪 ${escapeHtml(d.retailerName||'—')}</div>
+                <div style="font-size:13px;font-weight:700;color:#1B5E20">⏰ ETA ${escapeHtml(d.eta||'—')}</div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+                ${kmh!==null?`<span style="background:#EBF4FF;color:#0D47A1;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">🏎 ${kmh} km/h</span>`:''}
+                ${acc!==null?`<span style="background:${acc<50?'#E8F5E9':'#FFF8E1'};color:${acc<50?'#1B5E20':'#856404'};border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">±${acc}m accuracy</span>`:''}
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #D9C89A;padding-top:10px">
-                <div style="font-size:12px;font-weight:700;color:#3D2B0A">🛰 GPS: <span id="last-update-${d.deliveryId}" style="color:#0f766e">just now</span></div>
+                <div style="font-size:12px;font-weight:700;color:#3D2B0A">🛰 <span id="last-update-${d.deliveryId}" style="color:${freshColor};font-weight:800">${freshLabel}</span></div>
                 <button class="btn btn-tan btn-sm" onclick="focusTruck(${d.deliveryId})">🎯 Focus</button>
               </div>
-            </div>`).join('')}
+            </div>`;
+          }).join('')}
         </div>
       </div>`;
 
@@ -1936,18 +1961,32 @@ async function pageLiveMap() {
   };
 
   await refreshMap();
-  mapPollInterval = setInterval(refreshMap, 10000);
+  mapPollInterval = setInterval(refreshMap, 5000); // 5s for smoother tracking
 }
 
 function popupHtml(d) {
-  return `<div style="min-width:220px;font-family:sans-serif;padding:6px">
-    <div style="font-size:15px;font-weight:800;color:#1B2A4A;margin-bottom:6px">🚛 ${escapeHtml(d.driverName||'Driver')}</div>
-    <div style="font-size:13px;font-weight:700;color:#3D2B0A;margin-bottom:2px">Vehicle: ${escapeHtml(d.vehicleId||'—')}</div>
-    <hr style="border:none;border-top:2px solid #D9C89A;margin:8px 0"/>
-    <div style="font-size:13px;font-weight:700;color:#BF360C;margin-bottom:4px">📍 Heading to: <strong>${escapeHtml(d.city||'—')}</strong></div>
-    <div style="font-size:13px;font-weight:600;color:#3D2B0A;margin-bottom:4px">🏪 ${escapeHtml(d.retailerName||'—')}</div>
-    <div style="font-size:13px;font-weight:800;color:#1B5E20;margin-bottom:8px">⏰ ETA: ${escapeHtml(d.eta||'—')}</div>
-    <div style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:4px 8px;border-radius:6px">🛰 GPS updated: ${escapeHtml(d.recordedAt||'—')}</div>
+  const secs = d.secondsAgo ? Math.round(parseFloat(d.secondsAgo)) : 0;
+  const freshness = secs < 30 ? '#0f766e' : secs < 90 ? '#b45309' : '#b91c1c';
+  const freshnessLabel = secs < 30 ? 'Live' : secs < 60 ? secs+'s ago' : Math.floor(secs/60)+'m ago';
+  const kmh = d.speed ? Math.round(parseFloat(d.speed) * 3.6) : null;
+  const acc = d.accuracy ? Math.round(parseFloat(d.accuracy)) : null;
+  const stops = d.stopsRemaining ? parseInt(d.stopsRemaining) : null;
+  return `<div style="min-width:230px;font-family:sans-serif;padding:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:15px;font-weight:800;color:#1B2A4A">🚛 ${escapeHtml(d.driverName||'Driver')}</div>
+      <div style="background:${freshness};color:white;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700">${freshnessLabel}</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#3D2B0A;margin-bottom:6px">🚗 ${escapeHtml(d.vehicleId||'—')}</div>
+    <hr style="border:none;border-top:2px solid #D9C89A;margin:6px 0"/>
+    <div style="font-size:13px;font-weight:700;color:#BF360C;margin-bottom:3px">📍 ${escapeHtml(d.city||'—')}</div>
+    <div style="font-size:12px;font-weight:600;color:#3D2B0A;margin-bottom:3px">🏪 ${escapeHtml(d.retailerName||'—')}</div>
+    <div style="font-size:13px;font-weight:800;color:#1B5E20;margin-bottom:8px">⏰ ETA ${escapeHtml(d.eta||'—')}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      ${kmh !== null ? `<span style="background:#EBF4FF;color:#1565C0;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700">🏎 ${kmh} km/h</span>` : ''}
+      ${acc !== null ? `<span style="background:${acc<50?'#E8F5E9':'#FFF8E1'};color:${acc<50?'#1B5E20':'#856404'};border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700">±${acc}m</span>` : ''}
+      ${stops !== null ? `<span style="background:#F3E5F5;color:#4A148C;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700">${stops} stop${stops!==1?'s':''} left</span>` : ''}
+    </div>
+    <div style="font-size:10px;font-weight:700;color:${freshness};background:#F1F8E9;padding:3px 8px;border-radius:6px">🛰 ${escapeHtml(d.recordedAt||'—')}</div>
   </div>`;
 }
 
@@ -2150,44 +2189,63 @@ let activeDeliveryId = null;
 
 function startGps(deliveryId) {
   activeDeliveryId = deliveryId;
+  lastSentLat = null; lastSentLng = null; consecutiveErrors = 0;
+
   if (!navigator.geolocation) {
     toast('⚠️ GPS not available on this device', '#ea580c');
     return;
   }
-  // First get an immediate fix
+
+  // Step 1: Get an immediate first fix (low accuracy ok — just to appear on map fast)
   navigator.geolocation.getCurrentPosition(
     pos => {
       sendLocation(deliveryId, pos);
       updateGpsIndicator(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
     },
-    err => console.warn('[GPS first fix]', err.message),
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    err => console.warn('[GPS first fix failed]', err.code, err.message),
+    { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 }
   );
-  // Then watch continuously — fires every time position changes
-  gpsWatcher = navigator.geolocation.watchPosition(
+
+  // Step 2: Then get high-accuracy fix
+  navigator.geolocation.getCurrentPosition(
     pos => {
       sendLocation(deliveryId, pos);
       updateGpsIndicator(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
     },
+    err => console.warn('[GPS high-accuracy fix failed]', err.code, err.message),
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+
+  // Step 3: Continuous watch — fires on every position change
+  gpsWatcher = navigator.geolocation.watchPosition(
+    pos => sendLocation(deliveryId, pos),
     err => {
       console.warn('[GPS watch error]', err.code, err.message);
-      if (err.code === 1) toast('⚠️ GPS permission denied — please allow location in browser settings', '#dc2626');
-      else if (err.code === 2) toast('⚠️ GPS signal lost — trying to reconnect…', '#ea580c');
+      if (err.code === 1) {
+        toast('⚠️ GPS permission denied — go to browser settings and allow location', '#dc2626');
+        stopGps();
+      } else if (err.code === 2) {
+        toast('⚠️ GPS signal weak — move to open area for better accuracy', '#ea580c');
+      } else if (err.code === 3) {
+        console.log('[GPS] Timeout — watchPosition will retry automatically');
+      }
     },
-    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
   );
-  // Fallback interval every 15s in case watchPosition stalls
+
+  // Step 4: Heartbeat every 10s — forces a fresh fix even if driver is stationary
   gpsInterval = setInterval(() => {
     if (!activeDeliveryId) return;
     navigator.geolocation.getCurrentPosition(
       pos => sendLocation(deliveryId, pos),
-      err => console.warn('[GPS fallback]', err.message),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+      err => console.warn('[GPS heartbeat error]', err.code),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 5000 }
     );
-  }, 15000);
+  }, 10000);
+
   showGpsIndicator();
-  toast('📍 GPS tracking started — sharing your live location', '#0f766e');
-  console.log('[GPS] Tracking started for delivery', deliveryId);
+  toast('📍 GPS started — your live location is being shared', '#0f766e');
+  console.log('[GPS] Started for delivery', deliveryId);
 }
 
 function stopGps() {
@@ -2198,20 +2256,47 @@ function stopGps() {
   console.log('[GPS] Tracking stopped');
 }
 
+let lastSentLat = null, lastSentLng = null, consecutiveErrors = 0;
+
 async function sendLocation(deliveryId, pos) {
   try {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const acc = pos.coords.accuracy || null;
+    const spd = pos.coords.speed    || null;
+    const hdg = pos.coords.heading  || null;
+
+    // Skip if position hasn't changed meaningfully (< 5m movement)
+    if (lastSentLat !== null) {
+      const dlat = Math.abs(lat - lastSentLat), dlng = Math.abs(lng - lastSentLng);
+      if (dlat < 0.00005 && dlng < 0.00005) {
+        console.log('[GPS] Skipped — no meaningful movement');
+        return;
+      }
+    }
+    lastSentLat = lat; lastSentLng = lng;
+
     const payload = {
       deliveryId: parseInt(deliveryId),
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude
+      lat, lng,
+      accuracy: acc ? Math.round(acc) : null,
+      speed:    spd ? parseFloat(spd.toFixed(2)) : null,
+      heading:  hdg ? Math.round(hdg) : null
     };
     const r = await api('/tracking/update', 'POST', payload);
     if (r && r.ok) {
-      console.log('[GPS] ✅ Sent:', pos.coords.latitude.toFixed(5), pos.coords.longitude.toFixed(5), '±' + Math.round(pos.coords.accuracy||0) + 'm');
+      consecutiveErrors = 0;
+      const accStr = acc ? `±${Math.round(acc)}m` : '';
+      const spdStr = spd ? ` ${(spd*3.6).toFixed(1)}km/h` : '';
+      console.log(`[GPS] ✅ Sent: ${lat.toFixed(5)}, ${lng.toFixed(5)} ${accStr}${spdStr}`);
+      updateGpsIndicator(lat, lng, acc);
     } else {
+      consecutiveErrors++;
       console.warn('[GPS] ⚠️ Server response:', r);
+      if (consecutiveErrors >= 3) toast('⚠️ GPS: having trouble sending location — check connection', '#ea580c');
     }
   } catch(e) {
+    consecutiveErrors++;
     console.warn('[GPS send error]', e.message);
   }
 }
@@ -2268,20 +2353,21 @@ function showGpsIndicator() {
   bar.style.display = 'flex';
 }
 
-function updateGpsIndicator(lat, lng, accuracy) {
-  // Update bottom pill
+function updateGpsIndicator(lat, lng, accuracy, speed) {
+  // Bottom floating pill
   const el = document.getElementById('gps-text');
   if (el) {
-    const acc = accuracy ? `±${Math.round(accuracy)}m` : '';
-    const accColor = accuracy < 20 ? '#4ade80' : accuracy < 100 ? '#fbbf24' : '#f87171';
-    el.innerHTML = `GPS Live &nbsp;<span style="color:${accColor};font-size:11px">${acc}</span>`;
+    const acc = accuracy ? Math.round(accuracy) : null;
+    const accColor = !acc ? '#9ca3af' : acc < 20 ? '#4ade80' : acc < 100 ? '#fbbf24' : '#f87171';
+    const kmh = speed ? Math.round(speed * 3.6) : null;
+    el.innerHTML = `GPS Live &nbsp;<span style="color:${accColor};font-size:11px">${acc ? '±'+acc+'m' : ''}</span>${kmh ? `&nbsp;<span style="color:#93c5fd;font-size:11px">${kmh}km/h</span>` : ''}`;
   }
-  // Update panel text
+  // Panel text on Update Status page
   const panel = document.getElementById('gps-panel-text');
   if (panel) {
     const acc = Math.round(accuracy || 0);
     const now = new Date().toLocaleTimeString('en-LK', { timeZone:'Asia/Colombo', hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    panel.textContent = `✅ Sharing live — ${lat.toFixed(5)}, ${lng.toFixed(5)} ±${acc}m · Updated ${now}`;
+    panel.textContent = `✅ Sharing live · ${lat.toFixed(5)}, ${lng.toFixed(5)} · ±${acc}m · ${now}`;
   }
 }
 
