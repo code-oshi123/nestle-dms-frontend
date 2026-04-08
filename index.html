@@ -2376,26 +2376,146 @@ function hideGpsIndicator() {
   if (bar) bar.style.display = 'none';
 }
 
-// ── TRACK MAP MODAL ──
-let mapMarker = null;
+// ══════════════════════════════════════════════
+// ADVANCED GPS TRACKING — all 7 features
+// ══════════════════════════════════════════════
 
+/* ── State ── */
+let mapMarker    = null;
+let mapSseSource = null;   // EventSource for SSE push
+let mapTrailLine = null;   // breadcrumb polyline
+let mapTrailCoords = [];   // raw [ [lat,lng], … ]
+let mapGpsHud    = null;   // Leaflet control reference
+let mapHudEl     = null;   // DOM element inside HUD
+
+/* ── Haversine distance (km) ── */
+function haversineKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2
+          + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+/* ── Smooth marker animation (easing over durationMs) ── */
+function animateMarker(marker, toLat, toLng, durationMs = 1800) {
+  const from = marker.getLatLng();
+  const startTime = performance.now();
+  function easeInOut(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+  function step(now) {
+    const raw = Math.min((now - startTime) / durationMs, 1);
+    const t   = easeInOut(raw);
+    marker.setLatLng([
+      from.lat + (toLat - from.lat) * t,
+      from.lng + (toLng - from.lng) * t
+    ]);
+    if (raw < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ── Rotating truck icon based on heading ── */
+function getTruckIcon(heading) {
+  const deg = (heading != null && !isNaN(heading)) ? heading : 0;
+  return L.divIcon({
+    html: `<div style="font-size:28px;transform:rotate(${deg}deg);transform-origin:center;
+           filter:drop-shadow(0 2px 5px rgba(0,0,0,.4));transition:transform 1.2s ease">🚚</div>`,
+    iconSize: [32, 32], iconAnchor: [16, 16], className: ''
+  });
+}
+
+/* ── Update the GPS HUD panel ── */
+function updateHud(speed, accuracy, distKm, destCoord, lat, lng) {
+  if (!mapHudEl) return;
+  const speedKmh = (speed != null && !isNaN(speed)) ? (speed * 3.6).toFixed(1) : '—';
+  const accM     = (accuracy != null && !isNaN(accuracy)) ? Math.round(accuracy) + 'm' : '—';
+  let etaStr = '—';
+  if (speed != null && !isNaN(speed) && speed * 3.6 > 2 && distKm != null) {
+    const mins = Math.round((distKm / (speed * 3.6)) * 60);
+    etaStr = mins < 60 ? `~${mins} min` : `~${Math.floor(mins/60)}h ${mins%60}m`;
+  }
+  const distStr = distKm != null ? distKm.toFixed(1) + ' km' : '—';
+  mapHudEl.innerHTML =
+    `<div style="font-weight:600;margin-bottom:4px;color:#3D2B0A;font-size:11px;text-transform:uppercase;letter-spacing:.5px">GPS Status</div>` +
+    `<div>🚀 <b>${speedKmh}</b> km/h</div>` +
+    `<div>📡 ±<b>${accM}</b></div>` +
+    `<div>📏 <b>${distStr}</b> remaining</div>` +
+    `<div>⏱ ETA <b>${etaStr}</b></div>`;
+}
+
+/* ── Apply new location data to map (called from both poll & SSE) ── */
+function applyLocationUpdate(r, destCoord) {
+  const lat = parseFloat(r.lat), lng = parseFloat(r.lng);
+  if (isNaN(lat) || isNaN(lng)) return;
+
+  // 1. Smooth animation + heading rotation
+  if (mapMarker) {
+    animateMarker(mapMarker, lat, lng);
+    mapMarker.setIcon(getTruckIcon(r.heading));
+  }
+
+  // 2. Breadcrumb trail — append point
+  if (mapInstance) {
+    mapTrailCoords.push([lat, lng]);
+    if (mapTrailLine) {
+      mapTrailLine.setLatLngs(mapTrailCoords);
+    } else {
+      mapTrailLine = L.polyline(mapTrailCoords, {
+        color: '#8B6914', weight: 3, opacity: 0.75
+      }).addTo(mapInstance);
+    }
+
+    // Dashed straight line to destination
+    if (!mapInstance._routeLine) {
+      mapInstance._routeLine = L.polyline([[lat, lng], destCoord], {
+        color: '#1B2A4A', weight: 2, dashArray: '7,7', opacity: 0.5
+      }).addTo(mapInstance);
+    } else {
+      mapInstance._routeLine.setLatLngs([[lat, lng], destCoord]);
+    }
+    mapInstance.fitBounds([[lat, lng], destCoord], { padding: [50, 50], maxZoom: 14 });
+  }
+
+  // 3. Stale detection — colour-code driver name
+  const nameEl   = document.getElementById('map-driver-name');
+  const updateEl = document.getElementById('map-last-update');
+  const secsAgo  = parseFloat(r.secondsAgo) || 0;
+  if (nameEl) {
+    const isStale = secsAgo > 120;
+    nameEl.style.color = isStale ? '#B71C1C' : '';
+    const staleSuffix   = isStale ? ` ⚠️ offline (${Math.round(secsAgo / 60)}m ago)` : '';
+    nameEl.textContent  = (r.driverName ? '🚚 ' + r.driverName : 'Driver') + staleSuffix;
+  }
+  if (updateEl) {
+    const when = r.recordedAt || r.timeStr || '';
+    updateEl.textContent = when ? 'Last update: ' + when : '';
+  }
+
+  // 4. HUD — speed, accuracy, ETA
+  const distKm = haversineKm(lat, lng, destCoord[0], destCoord[1]);
+  updateHud(r.speed, r.accuracy, distKm, destCoord, lat, lng);
+}
+
+/* ── Open the tracking modal ── */
 function openTrackMap(deliveryId, city, retailer) {
-  // Remove existing modal if any
   document.getElementById('track-modal-bg')?.remove();
-  if (mapPollInterval) clearInterval(mapPollInterval);
-  if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+  if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
+  if (mapSseSource)    { mapSseSource.close(); mapSseSource = null; }
+  if (mapInstance)     { mapInstance.remove(); mapInstance = null; }
+  mapMarker = null; mapTrailLine = null; mapTrailCoords = [];
 
   const modalHtml = `
     <div id="track-modal-bg" class="modal-bg" style="z-index:500">
-      <div class="modal" style="max-width:700px;width:95vw">
+      <div class="modal" style="max-width:760px;width:96vw">
         <div class="modal-title">🗺️ Live Tracking — ${escapeHtml(retailer)} · ${escapeHtml(city)}</div>
-        <div class="modal-body">
-          <div class="map-info-bar">
+        <div class="modal-body" style="padding-bottom:0">
+          <div class="map-info-bar" style="flex-wrap:wrap;gap:8px">
             <span><span class="map-pulse"></span> Live</span>
-            <span id="map-driver-name">Locating driver…</span>
-            <span id="map-last-update"></span>
+            <span id="map-driver-name" style="font-weight:600">Locating driver…</span>
+            <span id="map-last-update" style="margin-left:auto;opacity:.7;font-size:11px"></span>
           </div>
-          <div class="map-container" id="track-map"></div>
+          <div class="map-container" id="track-map" style="height:460px"></div>
         </div>
         <div class="modal-actions">
           <button class="btn btn-ghost" onclick="closeTrackMap()">Close</button>
@@ -2405,7 +2525,6 @@ function openTrackMap(deliveryId, city, retailer) {
   document.body.insertAdjacentHTML('beforeend', modalHtml);
   document.getElementById('track-modal-bg').style.display = 'flex';
 
-  // Load Leaflet and init map
   if (!window.L) {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -2420,62 +2539,107 @@ function openTrackMap(deliveryId, city, retailer) {
   }
 }
 
-function initMap(deliveryId, city) {
+/* ── Initialise the Leaflet map ── */
+async function initMap(deliveryId, city) {
   const CITY_COORDS = {
     'Colombo':[6.9271,79.8612],'Galle':[6.0535,80.2210],'Kandy':[7.2906,80.6337],
     'Kurunegala':[7.4875,80.3647],'Matara':[5.9549,80.5550],'Negombo':[7.2096,79.8386],
     'Ratnapura':[6.6828,80.4004],'Jaffna':[9.6615,80.0255],'Peradeniya':[7.2676,80.5957],
     'Dehiwala':[6.8519,79.8674],'Nugegoda':[6.8728,79.8880],'Kiribathgoda':[7.0003,80.0170],
   };
-  const destCoord = CITY_COORDS[city] || [7.8731, 80.7718]; // Sri Lanka centre fallback
+  const destCoord = CITY_COORDS[city] || [7.8731, 80.7718];
 
   mapInstance = L.map('track-map').setView([7.8731, 80.7718], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }).addTo(mapInstance);
 
-  // Destination marker (pin)
-  const destIcon = L.divIcon({ html:'<div style="font-size:24px">📍</div>', iconSize:[24,24], iconAnchor:[12,24], className:'' });
+  // Destination pin
+  const destIcon = L.divIcon({
+    html: `<div style="font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35))">📍</div>`,
+    iconSize: [28,32], iconAnchor: [14,30], className: ''
+  });
   L.marker(destCoord, { icon: destIcon }).addTo(mapInstance)
     .bindPopup(`<strong>Destination</strong><br>${city}`);
 
-  // Driver marker (truck)
-  const truckIcon = L.divIcon({ html:'<div style="font-size:24px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))">🚚</div>', iconSize:[28,28], iconAnchor:[14,14], className:'' });
-  mapMarker = L.marker([7.8731, 80.7718], { icon: truckIcon }).addTo(mapInstance);
+  // Truck marker (starts at Sri Lanka centre until first fix)
+  mapMarker = L.marker([7.8731, 80.7718], { icon: getTruckIcon(0) }).addTo(mapInstance);
 
-  // Start polling
-  pollLocation(deliveryId, destCoord);
-  mapPollInterval = setInterval(() => pollLocation(deliveryId, destCoord), 10000);
+  // ── GPS HUD control (bottom-left) ──
+  mapGpsHud = L.control({ position: 'bottomleft' });
+  mapGpsHud.onAdd = () => {
+    const div = L.DomUtil.create('div');
+    div.style.cssText =
+      'background:rgba(255,253,248,.93);padding:10px 14px;border-radius:10px;' +
+      'font-family:DM Mono,monospace;font-size:12px;line-height:1.7;' +
+      'box-shadow:0 2px 10px rgba(0,0,0,.18);border:1px solid rgba(139,105,20,.2);min-width:150px';
+    div.innerHTML = '<div style="color:#9E7A3A;font-size:11px">Awaiting GPS fix…</div>';
+    mapHudEl = div;
+    return div;
+  };
+  mapGpsHud.addTo(mapInstance);
+
+  // ── Load breadcrumb trail from history ──
+  try {
+    const trail = await api('/tracking/' + deliveryId + '/trail?limit=150').catch(() => []);
+    if (trail && trail.length > 1) {
+      mapTrailCoords = trail.map(p => [parseFloat(p.lat), parseFloat(p.lng)]);
+      mapTrailLine   = L.polyline(mapTrailCoords, {
+        color: '#8B6914', weight: 3, opacity: 0.75
+      }).addTo(mapInstance);
+    }
+  } catch(_) {}
+
+  // ── Initial snapshot from REST ──
+  const snap = await api('/tracking/' + deliveryId).catch(() => null);
+  if (snap && snap.found) {
+    applyLocationUpdate(snap, destCoord);
+  } else {
+    document.getElementById('map-driver-name').textContent = 'Waiting for driver GPS…';
+  }
+
+  // ── SSE real-time push (replaces polling) ──
+  const token = localStorage.getItem('dms_token') || sessionStorage.getItem('dms_token') || '';
+  const BASE   = (typeof API_BASE !== 'undefined' ? API_BASE : '').replace(/\/$/, '');
+  try {
+    // Pass token as query param — EventSource doesn't support custom headers
+    mapSseSource = new EventSource(`${BASE}/api/tracking/${deliveryId}/stream?token=${encodeURIComponent(token)}`);
+    mapSseSource.onmessage = e => {
+      try {
+        const data = JSON.parse(e.data);
+        applyLocationUpdate(data, destCoord);
+      } catch(_) {}
+    };
+    mapSseSource.onerror = () => {
+      // SSE failed — fall back to 10s polling
+      if (mapSseSource) { mapSseSource.close(); mapSseSource = null; }
+      if (!mapPollInterval) {
+        mapPollInterval = setInterval(() => pollLocation(deliveryId, destCoord), 10000);
+      }
+    };
+  } catch(_) {
+    // SSE not supported — use polling fallback
+    mapPollInterval = setInterval(() => pollLocation(deliveryId, destCoord), 10000);
+  }
 }
 
+/* ── Polling fallback (used if SSE fails) ── */
 async function pollLocation(deliveryId, destCoord) {
   const r = await api('/tracking/' + deliveryId).catch(() => null);
   if (!r || !r.found) {
-    document.getElementById('map-driver-name').textContent = 'Waiting for driver location…';
+    const el = document.getElementById('map-driver-name');
+    if (el) el.textContent = 'Waiting for driver GPS…';
     return;
   }
-  const lat = parseFloat(r.lat), lng = parseFloat(r.lng);
-  if (mapMarker) {
-    mapMarker.setLatLng([lat, lng]);
-    if (mapInstance) {
-      // Draw route line if not exists
-      if (!mapInstance._routeLine) {
-        mapInstance._routeLine = L.polyline([[lat, lng], destCoord], {
-          color:'#1B2A4A', weight:2, dashArray:'6,6', opacity:0.6
-        }).addTo(mapInstance);
-      } else {
-        mapInstance._routeLine.setLatLngs([[lat, lng], destCoord]);
-      }
-      mapInstance.fitBounds([[lat, lng], destCoord], { padding: [40, 40] });
-    }
-  }
-  if (r.driverName) document.getElementById('map-driver-name').textContent = '🚚 ' + r.driverName;
-  if (r.timeStr)   document.getElementById('map-last-update').textContent = 'Last update: ' + r.timeStr;
+  applyLocationUpdate(r, destCoord);
 }
 
+/* ── Close and clean up ── */
 function closeTrackMap() {
   if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
-  if (mapInstance) { mapInstance.remove(); mapInstance = null; mapMarker = null; }
+  if (mapSseSource)    { mapSseSource.close(); mapSseSource = null; }
+  if (mapInstance)     { mapInstance.remove(); mapInstance = null; }
+  mapMarker = null; mapTrailLine = null; mapTrailCoords = []; mapHudEl = null;
   document.getElementById('track-modal-bg')?.remove();
 }
 function openModal(id)    { document.getElementById(id).classList.add('open'); }
