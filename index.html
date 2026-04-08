@@ -466,22 +466,79 @@ tr:hover td{background:rgba(139,105,20,.03)}
 
 <!-- ══ MODALS ══════════════════════════════════════════════ -->
 <div class="modal-bg" id="m-confirm">
-  <div class="modal">
-    <div class="modal-title" id="mc-title">📋 Review Order — Pending</div>
+  <div class="modal" style="max-width:540px">
+    <div class="modal-title" id="mc-title">📋 Review Order</div>
     <div class="modal-body">
       <input type="hidden" id="mc-id"/>
-      <div class="fg"><label>Order</label><input id="mc-label" disabled/></div>
-      <div class="fg"><label>Items</label><input id="mc-items" disabled/></div>
-      <div class="fg"><label>Priority</label><input id="mc-prio" disabled/></div>
-      <div class="fg" id="mc-reason-wrap">
-        <label>Rejection Reason <span style="color:var(--red)">*</span> <span style="color:var(--brown-l);font-weight:400;text-transform:none">(required when rejecting)</span></label>
-        <input id="mc-reason" placeholder="e.g. Out of stock in region, incorrect address…"/>
-        <div class="field-err" id="mc-reason-err">A reason is required when rejecting an order.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div class="fg" style="margin:0"><label>Order</label><input id="mc-label" disabled/></div>
+        <div class="fg" style="margin:0"><label>Items</label><input id="mc-items" disabled/></div>
+        <div class="fg" style="margin:0"><label>Priority</label><input id="mc-prio" disabled/></div>
       </div>
+
+      <!-- Rejection section — shown only when rejecting -->
+      <div id="mc-reject-section" style="display:none">
+        <div class="fg">
+          <label>Rejection Category <span style="color:var(--red)">*</span></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px" id="mc-cat-grid">
+            <button type="button" class="reject-cat-btn" data-cat="out_of_stock" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">📦</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Out of Stock</div>
+              <div style="font-size:10px;color:var(--gray)">Auto-notify when restocked</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="duplicate_order" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">🔄</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Duplicate Order</div>
+              <div style="font-size:10px;color:var(--gray)">Same order already exists</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="coverage_area" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">🗺️</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Coverage Area</div>
+              <div style="font-size:10px;color:var(--gray)">City not served currently</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="suspicious_quantity" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">⚠️</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Suspicious Quantity</div>
+              <div style="font-size:10px;color:var(--gray)">Unusual order amount</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="credit_hold" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">💳</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Credit Hold</div>
+              <div style="font-size:10px;color:var(--gray)">Pending account balance</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="other" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">📝</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Other</div>
+              <div style="font-size:10px;color:var(--gray)">Describe in notes below</div>
+            </button>
+          </div>
+          <input type="hidden" id="mc-category" value=""/>
+          <div class="field-err" id="mc-cat-err">Please select a rejection category.</div>
+        </div>
+
+        <!-- Stock watch notice -->
+        <div id="mc-stock-watch-notice" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--green)">
+          🔔 <strong>Auto-notify enabled</strong> — Retailer will be automatically notified when this product is back in stock.
+        </div>
+
+        <div class="fg">
+          <label>Additional Note <span style="color:var(--red)">*</span></label>
+          <input id="mc-reason" placeholder="Provide specific details for the retailer…"/>
+          <div class="field-err" id="mc-reason-err">Please add a note for the retailer.</div>
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('m-confirm')">Cancel</button>
-        <button class="btn btn-red"   onclick="confirmOrder('reject')">✕ Reject — Notify Retailer</button>
-        <button class="btn btn-green" onclick="confirmOrder('confirm')">✓ Confirm — Notify Retailer</button>
+        <button class="btn btn-red"   onclick="showRejectSection()" id="mc-reject-btn">✕ Reject Order</button>
+        <button class="btn btn-green" onclick="confirmOrder('confirm')" id="mc-confirm-btn">✓ Confirm — Notify Retailer</button>
+        <button class="btn btn-red"   onclick="confirmOrder('reject')" id="mc-submit-reject-btn" style="display:none">✕ Submit Rejection 🔔</button>
       </div>
     </div>
   </div>
@@ -717,7 +774,7 @@ function stopPoll()  { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; 
 const ROLE_PAGES = {
   retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
   order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'retailers', ico:'🏪', lbl:'Retailers'     },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
-  warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
+  warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     },{id:'wh-stock', ico:'📋', lbl:'Stock Levels'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
   distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'      },{id:'upd-status',  ico:'✅', lbl:'Update Status'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
 };
 
@@ -745,6 +802,7 @@ async function render(id) {
 
   if (id==='wh-incoming') await pageWhIncoming();
   if (id==='wh-prepare')  await pageWhPrepare();
+  if (id==='wh-stock')    await pageWhStock();
   if (id==='my-routes')   await pageMyRoutes();
   if (id==='upd-status')  await pageUpdStatus();
   if (id==='live-map')    await pageLiveMap();
@@ -759,13 +817,62 @@ async function pageMyOrders() {
   const rejected = data.filter(o=>o.status==='rejected');
   const awaitingReceipt = data.filter(o=>o.deliveryStatus==='delivered' && !o.receiptConfirmed);
 
+  const catIcons = {
+    out_of_stock:'📦', duplicate_order:'🔄', coverage_area:'🗺️',
+    suspicious_quantity:'⚠️', credit_hold:'💳', other:'📝'
+  };
+  const catLabels = {
+    out_of_stock:'Out of Stock', duplicate_order:'Duplicate Order',
+    coverage_area:'Coverage Area', suspicious_quantity:'Suspicious Quantity',
+    credit_hold:'Credit Hold', other:'Other'
+  };
+  const catActions = {
+    out_of_stock:    'You will be notified automatically when stock is replenished — no action needed right now.',
+    duplicate_order: 'Check My Orders — you may already have an active order for this product.',
+    coverage_area:   'Contact your account manager to request delivery coverage for your city.',
+    suspicious_quantity:'Please resubmit with the correct quantity.',
+    credit_hold:     'Please contact your account manager to resolve your account balance.',
+    other:           'Please review the reason below and resubmit a corrected order.'
+  };
+
   const rejectionBanner = rejected.length ? `
-    <div class="rejection-notice">
-      <div class="rn-title">⚠️ You have ${rejected.length} rejected order(s)</div>
-      <div class="rn-reason">
-        ${rejected.map(o=>`<strong>${o.id}</strong>: ${o.rejectReason||'No reason provided'}`).join('<br>')}
+    <div style="margin-bottom:18px">
+      <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:12px">
+        ⚠️ ${rejected.length} Rejected Order${rejected.length>1?'s':''}
       </div>
-      <div class="rn-hint">You can correct and resubmit a new order by clicking "New Request" below.</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${rejected.map(o => {
+          const cat = o.rejectCategory || 'other';
+          const ico = catIcons[cat] || '📝';
+          const lbl = catLabels[cat] || 'Rejected';
+          const action = catActions[cat] || '';
+          return `
+          <div style="background:var(--white);border:2px solid #FFCDD2;border-radius:12px;padding:16px;border-left:5px solid var(--red)">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:20px">${ico}</span>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--red)">${lbl} — Order #${o.id}</div>
+                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(o.city)} · ${o.items} items · ${o.prio} priority</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost btn-sm" onclick="editAndResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">✏️ Edit & Resubmit</button>
+                <button class="btn btn-tan btn-sm" onclick="quickResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">🔄 Quick Resubmit</button>
+              </div>
+            </div>
+            <div style="background:#FFF5F5;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Rejection Reason</div>
+              <div style="font-size:13px;color:var(--brown);font-weight:500">${escapeHtml(o.rejectReason||'No reason provided')}</div>
+            </div>
+            ${cat === 'out_of_stock' ? `
+            <div style="background:#E8F5E9;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);font-weight:600">
+              🔔 Auto-notify active — you will be notified when stock is replenished
+            </div>` : `
+            <div style="font-size:12px;color:var(--brown-m);font-style:italic">💡 ${action}</div>`}
+          </div>`;
+        }).join('')}
+      </div>
     </div>` : '';
 
   const receiptBanner = awaitingReceipt.length ? `
@@ -836,6 +943,23 @@ async function pageMyOrders() {
       </div>
     </div>
   </div>`);
+}
+
+// ── Quick resubmit — same details, new order
+async function quickResubmit(orderId, city, items, prio) {
+  if (!confirm(`Resubmit order to ${city} (${items} items, ${prio} priority)?`)) return;
+  const original = await api(`/orders/${orderId}/details`).catch(() => null);
+  // Navigate to request order page with pre-filled values stored in sessionStorage
+  sessionStorage.setItem('resubmit', JSON.stringify({ city, items, prio, fromOrderId: orderId }));
+  nav('req-order');
+  toast('📝 Form pre-filled with your previous order details — review and submit', '#1565C0');
+}
+
+// ── Edit and resubmit — navigate to form with all fields pre-filled for editing
+function editAndResubmit(orderId, city, items, prio) {
+  sessionStorage.setItem('resubmit', JSON.stringify({ city, items, prio, fromOrderId: orderId, edit: true }));
+  nav('req-order');
+  toast('✏️ Edit your order details and resubmit', '#8B6914');
 }
 
 function openConfirmReceipt(deliveryId, orderId, city) {
@@ -911,6 +1035,39 @@ async function pageReqOrder() {
     </div>`);
 
   await loadProductsForOrderForm();
+
+  // ── Check if this is a resubmit — pre-fill form
+  const resubmitData = sessionStorage.getItem('resubmit');
+  if (resubmitData) {
+    try {
+      const rd = JSON.parse(resubmitData);
+      sessionStorage.removeItem('resubmit');
+      if (rd.city) {
+        const cityEl = document.getElementById('i-city');
+        if (cityEl) cityEl.value = rd.city;
+      }
+      if (rd.items) {
+        const itemsEl = document.getElementById('i-items');
+        if (itemsEl) { itemsEl.value = rd.items; calcKg(); }
+      }
+      if (rd.prio) {
+        const prioEl = document.getElementById('i-prio');
+        if (prioEl) prioEl.value = rd.prio;
+      }
+      // Show resubmit notice
+      const errBox = document.getElementById('submit-err');
+      if (errBox) {
+        errBox.textContent = '';
+        errBox.style.display = 'none';
+      }
+      const notice = document.createElement('div');
+      notice.className = 'alert-banner alert-info';
+      notice.style.marginBottom = '14px';
+      notice.innerHTML = `🔄 <strong>Resubmitting Order #${rd.fromOrderId}</strong> — form pre-filled with your previous details. ${rd.edit ? 'Make your changes and submit.' : 'Review and submit when ready.'}`;
+      const card = document.querySelector('#main-content .card');
+      if (card) card.insertAdjacentElement('beforebegin', notice);
+    } catch(e) { sessionStorage.removeItem('resubmit'); }
+  }
 }
 
 // ── FIX: Strict input validation ──
@@ -1061,8 +1218,11 @@ async function pageAllOrders() {
             <td>${o.retailer}</td><td>${o.city}</td>
             <td>${o.items} · ${o.kg}kg</td>
             <td>${orderBadge(o.status)}</td>
-            <td style="font-size:12px;max-width:200px;color:${o.status==='rejected'?'var(--red)':'var(--brown-l)'}">
-              ${o.status==='rejected' && o.rejectReason ? o.rejectReason : o.confirmedBy||'—'}
+            <td style="font-size:12px;max-width:220px">
+              ${o.status==='rejected'
+                ? `<div style="color:var(--red);font-weight:600">${o.rejectCategory ? (({'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'})[o.rejectCategory]||o.rejectCategory) : ''}</div>
+                   <div style="color:var(--brown-m);font-size:11px;margin-top:2px">${o.rejectReason||'—'}</div>`
+                : `<span style="color:var(--brown-l)">${o.confirmedBy||'—'}</span>`}
             </td>
             <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>No processed orders yet.</div></div></td></tr>'}</tbody>
@@ -1073,38 +1233,108 @@ async function pageAllOrders() {
 function openConfirm(id, retailer, city, items, kg, prio) {
   document.getElementById('mc-id').value    = id;
   document.getElementById('mc-label').value = `${id} — ${retailer}, ${city}`;
-  document.getElementById('mc-items').value = `${items} items · ${kg}kg`;
-  document.getElementById('mc-prio').value  = prio.toUpperCase();
+  document.getElementById('mc-items').value = `${items} items · ${parseFloat(kg||0).toFixed(1)}kg`;
+  document.getElementById('mc-prio').value  = (prio||'normal').toUpperCase();
   document.getElementById('mc-reason').value = '';
+  document.getElementById('mc-category').value = '';
   document.getElementById('mc-reason-err').classList.remove('show');
+  document.getElementById('mc-cat-err').classList.remove('show');
   document.getElementById('mc-reason').classList.remove('err');
+  document.getElementById('mc-reject-section').style.display = 'none';
+  document.getElementById('mc-stock-watch-notice').style.display = 'none';
+  document.getElementById('mc-reject-btn').style.display = 'inline-flex';
+  document.getElementById('mc-confirm-btn').style.display = 'inline-flex';
+  document.getElementById('mc-submit-reject-btn').style.display = 'none';
+  // Reset category buttons
+  document.querySelectorAll('.reject-cat-btn').forEach(b => {
+    b.style.border = '2px solid var(--cream-dk)';
+    b.style.background = 'var(--white)';
+  });
   openModal('m-confirm');
 }
 
-async function confirmOrder(action) {
-  const id     = document.getElementById('mc-id').value;
-  const reason = document.getElementById('mc-reason').value.trim();
+function showRejectSection() {
+  document.getElementById('mc-reject-section').style.display = 'block';
+  document.getElementById('mc-reject-btn').style.display = 'none';
+  document.getElementById('mc-confirm-btn').style.display = 'none';
+  document.getElementById('mc-submit-reject-btn').style.display = 'inline-flex';
+}
 
-  // ── FIX: Require reason when rejecting ──
-  if (action === 'reject' && !reason) {
-    document.getElementById('mc-reason').classList.add('err');
-    document.getElementById('mc-reason-err').classList.add('show');
-    return;
+function selectRejectCat(btn) {
+  document.querySelectorAll('.reject-cat-btn').forEach(b => {
+    b.style.border = '2px solid var(--cream-dk)';
+    b.style.background = 'var(--white)';
+  });
+  btn.style.border = '2px solid var(--red)';
+  btn.style.background = '#FFF5F5';
+  const cat = btn.dataset.cat;
+  document.getElementById('mc-category').value = cat;
+  document.getElementById('mc-cat-err').classList.remove('show');
+  // Show auto-notify notice for out_of_stock
+  const notice = document.getElementById('mc-stock-watch-notice');
+  notice.style.display = cat === 'out_of_stock' ? 'block' : 'none';
+  // Auto-fill note placeholder based on category
+  const placeholders = {
+    out_of_stock:        'Specify which product is out of stock and approximate restock date if known…',
+    duplicate_order:     'Specify the existing order ID that this duplicates…',
+    coverage_area:       'Specify which areas are currently covered and when coverage may expand…',
+    suspicious_quantity: 'Specify the expected reasonable quantity and ask them to resubmit correctly…',
+    credit_hold:         'Advise retailer to contact their account manager to resolve balance…',
+    other:               'Provide a clear explanation so the retailer knows exactly what to fix…',
+  };
+  document.getElementById('mc-reason').placeholder = placeholders[cat] || 'Provide details…';
+}
+
+async function confirmOrder(action) {
+  const id       = document.getElementById('mc-id').value;
+  const reason   = document.getElementById('mc-reason').value.trim();
+  const category = document.getElementById('mc-category').value;
+  let valid = true;
+
+  if (action === 'reject') {
+    if (!category) {
+      document.getElementById('mc-cat-err').classList.add('show');
+      valid = false;
+    }
+    if (!reason) {
+      document.getElementById('mc-reason').classList.add('err');
+      document.getElementById('mc-reason-err').classList.add('show');
+      valid = false;
+    }
+    if (!valid) return;
   }
   document.getElementById('mc-reason').classList.remove('err');
   document.getElementById('mc-reason-err').classList.remove('show');
+  document.getElementById('mc-cat-err').classList.remove('show');
 
-  const r = await api(`/orders/${id}/confirm`, 'PUT', { action, confirmedBy:user.id, rejectReason:reason||null });
+  const btn = document.getElementById(action === 'confirm' ? 'mc-confirm-btn' : 'mc-submit-reject-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
-  if (r.error) {
-    toast(`❌ ${r.error}`, '#B71C1C');
-    return;
-  }
+  const r = await api(`/orders/${id}/confirm`, 'PUT', {
+    action,
+    confirmedBy:    user.id,
+    rejectReason:   reason || null,
+    rejectCategory: category || null
+  });
+
+  if (btn) { btn.disabled = false; btn.textContent = action === 'confirm' ? '✓ Confirm — Notify Retailer' : '✕ Submit Rejection 🔔'; }
+
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
 
   closeModal('m-confirm');
+
+  const catLabels = {
+    out_of_stock: '📦 Out of Stock',
+    duplicate_order: '🔄 Duplicate',
+    coverage_area: '🗺️ Coverage Area',
+    suspicious_quantity: '⚠️ Suspicious Qty',
+    credit_hold: '💳 Credit Hold',
+    other: '📝 Other'
+  };
   toast(action === 'confirm'
-    ? `✅ Order ${id} confirmed — Added to priority dispatch queue 🔔`
-    : `❌ Order ${id} rejected — Retailer notified with reason 🔔`);
+    ? `✅ Order ${id} confirmed — queued for dispatch 🔔`
+    : `❌ Order ${id} rejected (${catLabels[category]||category}) — Retailer notified 🔔`,
+    action === 'confirm' ? '#16a34a' : '#B71C1C');
   pollBadge();
   pageAllOrders();
 }
@@ -1179,6 +1409,61 @@ async function doConsolidate() {
 }
 
 // ══ WAREHOUSE PAGES ═════════════════════════════
+async function pageWhStock() {
+  const stocks = await api('/stock');
+  setContent(`
+    <div class="sec-hdr">
+      <div><div class="sec-title">Stock Levels</div>
+      <div class="sec-sub">Update stock levels — retailers watching out-of-stock products are notified automatically 🔔</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Current Stock Levels</div>
+      <div class="tw"><table>
+        <thead><tr><th>Product</th><th>Units Available</th><th>Weight Available</th><th>Weight/Unit</th><th>Watching</th><th>Update Stock</th></tr></thead>
+        <tbody>${stocks.length ? stocks.map(p=>`
+          <tr>
+            <td><strong>${escapeHtml(p.productName||'—')}</strong></td>
+            <td>
+              <span style="font-size:16px;font-weight:800;color:${p.availableUnits>10?'var(--green)':p.availableUnits>0?'var(--orange)':'var(--red)'}">
+                ${p.availableUnits||0}
+              </span>
+            </td>
+            <td style="font-weight:700;color:var(--blue)">${p.availableKg?parseFloat(p.availableKg).toFixed(1)+'kg':'—'}</td>
+            <td style="color:var(--brown-m)">${p.weightPerUnit?p.weightPerUnit+'kg/unit':'—'}</td>
+            <td>
+              ${parseInt(p.watchCount||0) > 0
+                ? `<span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount>1?'s':''} waiting</span>`
+                : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+            </td>
+            <td style="display:flex;gap:6px;align-items:center">
+              <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}"
+                style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px"/>
+              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})">
+                ✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}
+              </button>
+            </td>
+          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
+      </table></div>
+    </div>
+    <div class="alert-banner alert-info">
+      🔔 <strong>Auto-notify:</strong> When you update stock for a product, any retailer whose order was rejected as "Out of Stock" will be automatically notified that they can resubmit.
+    </div>`);
+}
+
+async function updateStock(productId, productName, currentKg) {
+  const units = parseInt(document.getElementById('units-'+productId)?.value) || 0;
+  // Estimate kg from units using current ratio
+  const kg = currentKg > 0 ? currentKg : units;
+  const r = await api(`/stock/${productId}/update`, 'PUT', { availableUnits: units, availableKg: kg });
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+  const msg = r.restockedCount > 0
+    ? `✅ Stock updated — ${r.restockedCount} retailer${r.restockedCount>1?'s':''} notified 🔔`
+    : `✅ ${productName} stock updated to ${units} units`;
+  toast(msg, r.restockedCount > 0 ? '#0f766e' : '#16a34a');
+  pollBadge();
+  pageWhStock();
+}
+
 async function pageWhIncoming() {
   const data     = await api('/deliveries');
   const relevant = data.filter(d => ['assigned','warehouse_ready','loaded'].includes(d.status));
