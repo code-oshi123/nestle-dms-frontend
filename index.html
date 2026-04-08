@@ -628,6 +628,45 @@ tr:hover td{background:rgba(139,105,20,.03)}
   </div>
 </div>
 
+<!-- ── PIN Verification Modal ── -->
+<div class="modal-bg" id="m-pin-verify" style="z-index:500">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title" style="background:linear-gradient(135deg,#1B2A4A,#2d4a7a)">🔐 PIN Verification</div>
+    <div class="modal-body" style="text-align:center">
+      <input type="hidden" id="pv-id"/>
+      <div style="font-size:46px;margin-bottom:8px">🔐</div>
+      <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px" id="pv-label">Verify Delivery</div>
+      <div style="font-size:13px;color:var(--brown-m);margin-bottom:22px">Ask the retailer for their 4-digit PIN and enter it below</div>
+
+      <!-- 4 PIN digit boxes -->
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px">
+        <input type="tel" id="pin-1" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-2')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-2" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-3')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-3" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-4')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-4" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,null)" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+      </div>
+
+      <div id="pv-err" class="alert-banner alert-error" style="display:none;margin-bottom:12px;text-align:left"></div>
+      <div id="pv-ok"  class="alert-banner alert-success" style="display:none;margin-bottom:12px;text-align:left"></div>
+
+      <div class="modal-actions" style="flex-direction:column;gap:8px">
+        <button class="btn btn-tan" id="pv-btn" onclick="submitPin()" style="width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700">
+          🔐 Verify PIN & Complete Delivery
+        </button>
+        <button class="btn btn-ghost" onclick="closeModal('m-pin-verify')" style="width:100%;justify-content:center">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" style="background:var(--brown)"><span id="toast-msg"></span></div>
 
 <script>
@@ -1235,7 +1274,7 @@ async function pageMyOrders() {
     ${rejectionBanner}
     ${receiptBanner}
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
+      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>🔐 Delivery PIN</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
       <tbody>${data.length ? data.map(o=>`
         <tr>
           <td><span class="mono">${o.id}</span></td>
@@ -1246,6 +1285,17 @@ async function pageMyOrders() {
           <td>${orderBadge(o.status)}</td>
           <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
             ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
+          </td>
+          <td>
+            ${o.deliveryPin && ['assigned','warehouse_ready','loaded','in-transit'].includes(o.deliveryStatus||'')
+              ? `<div style="background:#1B2A4A;border-radius:10px;padding:8px 14px;display:inline-block;text-align:center;min-width:110px">
+                   <div style="font-size:9px;font-weight:700;color:#D4A832;letter-spacing:1.5px;margin-bottom:3px">YOUR PIN</div>
+                   <div style="font-size:24px;font-weight:800;color:#FFFFFF;letter-spacing:8px;font-family:'DM Mono',monospace">${o.deliveryPin}</div>
+                   <div style="font-size:9px;color:rgba(217,200,154,.75);margin-top:3px">Show to driver on arrival</div>
+                 </div>`
+              : o.pinVerified
+              ? `<span class="badge b-green">🔐 PIN Verified ✅</span>`
+              : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
           </td>
           <td>
             ${o.receiptConfirmed
@@ -2033,8 +2083,11 @@ async function pageMyRoutes() {
               </div>
             </div>
             ${isNext && !isDone ? `
-              <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%" onclick="openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}','${del ? del.status : ''}')">
-                ${del && del.status==='in-transit' ? '✅ Mark Delivered' : '🚛 Mark In Transit'}
+              <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%"
+                onclick="${del && del.status==='in-transit'
+                  ? `openPinVerify('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}')`
+                  : `openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}','${del ? del.status : ''}')`}">
+                ${del && del.status==='in-transit' ? '🔐 Verify PIN & Deliver' : '🚛 Mark In Transit'}
               </button>` : ''}
           </div>
         </div>`;
@@ -2243,7 +2296,9 @@ async function pageUpdStatus() {
             <td>${delBadge(d.status)}</td>
             <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
               ${d.status==='in-transit' ? '<span style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:3px 8px;border-radius:20px">📡 GPS On</span>' : ''}
-              <button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>
+              ${d.status==='in-transit'
+                ? `<button class="btn btn-tan btn-sm" onclick="openPinVerify('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}')">🔐 Verify PIN</button>`
+                : `<button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>`}
             </td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>All stops complete! 🎉</div></div></td></tr>'}</tbody>
       </table></div>
@@ -2922,6 +2977,75 @@ function calcKg() {
     badge.style.border = '1px solid #90CAF9';
   } else {
     badge.style.display = 'none';
+  }
+}
+
+// ── PIN VERIFICATION ─────────────────────────
+function pinDigit(el, nextId) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+  if (el.value && nextId) document.getElementById(nextId)?.focus();
+  // Auto-submit when all 4 filled
+  const pin = ['pin-1','pin-2','pin-3','pin-4'].map(i => document.getElementById(i)?.value||'').join('');
+  if (pin.length === 4) setTimeout(submitPin, 200);
+}
+
+function openPinVerify(deliveryId, retailer, city) {
+  document.getElementById('pv-id').value = deliveryId;
+  document.getElementById('pv-label').textContent = `${retailer} — ${city}`;
+  ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value=''; el.style.borderColor='var(--cream-dk)'; el.style.background='white'; el.disabled=false; }
+  });
+  document.getElementById('pv-err').style.display = 'none';
+  document.getElementById('pv-ok').style.display  = 'none';
+  const btn = document.getElementById('pv-btn');
+  btn.disabled = false;
+  btn.textContent = '🔐 Verify PIN & Complete Delivery';
+  btn.style.background = '';
+  openModal('m-pin-verify');
+  setTimeout(() => document.getElementById('pin-1')?.focus(), 350);
+}
+
+async function submitPin() {
+  const id  = document.getElementById('pv-id').value;
+  const pin = ['pin-1','pin-2','pin-3','pin-4'].map(i => document.getElementById(i)?.value||'').join('');
+  if (pin.length !== 4) return;
+
+  const btn = document.getElementById('pv-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying…';
+  document.getElementById('pv-err').style.display = 'none';
+
+  const r = await api(`/deliveries/${id}/verify-pin`, 'POST', { pin });
+
+  if (r.ok) {
+    // Success — green boxes
+    ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.borderColor='#16a34a'; el.style.background='#F0FFF4'; el.disabled=true; }
+    });
+    document.getElementById('pv-ok').innerHTML = '✅ PIN verified! Delivery marked as complete.';
+    document.getElementById('pv-ok').style.display = 'flex';
+    btn.textContent = '✅ Complete!';
+    btn.style.background = '#16a34a';
+    stopGps();
+    setTimeout(() => {
+      closeModal('m-pin-verify');
+      toast('✅ PIN Verified — Delivery Complete! All 4 parties notified 🔔', '#16a34a');
+      pollBadge();
+      pageUpdStatus();
+    }, 1600);
+  } else {
+    // Error — red boxes, clear for retry
+    ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.borderColor='#B71C1C'; el.style.background='#FFF5F5'; el.value=''; }
+    });
+    document.getElementById('pv-err').textContent = r.error || 'Incorrect PIN. Please try again.';
+    document.getElementById('pv-err').style.display = 'flex';
+    btn.disabled = r.locked || false;
+    btn.textContent = r.locked ? '🔒 Locked — Contact OPT' : '🔐 Try Again';
+    if (!r.locked) setTimeout(() => document.getElementById('pin-1')?.focus(), 100);
   }
 }
 
