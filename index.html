@@ -1044,19 +1044,14 @@ RULES:
 - Use emojis naturally
 - If you detect an order intent, ALWAYS output the <ORDER> JSON block at the end of your message`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: aiChatHistory
-      })
+    // Call via backend proxy — keeps API key secure on server
+    const data = await api('/ai/chat', 'POST', {
+      messages: aiChatHistory,
+      systemPrompt
     });
 
-    const data = await response.json();
-    const fullText = (data.content || []).map(c => c.text || '').join('');
+    if (data.error) throw new Error(data.error);
+    const fullText = data.text || '';
 
     // Check for ORDER intent
     const orderMatch = fullText.match(/<ORDER>([\s\S]*?)<\/ORDER>/);
