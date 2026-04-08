@@ -1050,6 +1050,7 @@ RULES:
       systemPrompt
     });
 
+    if (!data || Object.keys(data).length === 0) throw new Error('No response from server — check backend is running');
     if (data.error) throw new Error(data.error);
     const fullText = data.text || '';
 
