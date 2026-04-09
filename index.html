@@ -466,29 +466,86 @@ tr:hover td{background:rgba(139,105,20,.03)}
 
 <!-- ══ MODALS ══════════════════════════════════════════════ -->
 <div class="modal-bg" id="m-confirm">
-  <div class="modal">
-    <div class="modal-title" id="mc-title">📋 Review Order — Pending</div>
+  <div class="modal" style="max-width:540px">
+    <div class="modal-title" id="mc-title">📋 Review Order</div>
     <div class="modal-body">
       <input type="hidden" id="mc-id"/>
-      <div class="fg"><label>Order</label><input id="mc-label" disabled/></div>
-      <div class="fg"><label>Items</label><input id="mc-items" disabled/></div>
-      <div class="fg"><label>Priority</label><input id="mc-prio" disabled/></div>
-      <div class="fg" id="mc-reason-wrap">
-        <label>Rejection Reason <span style="color:var(--red)">*</span> <span style="color:var(--brown-l);font-weight:400;text-transform:none">(required when rejecting)</span></label>
-        <input id="mc-reason" placeholder="e.g. Out of stock in region, incorrect address…"/>
-        <div class="field-err" id="mc-reason-err">A reason is required when rejecting an order.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div class="fg" style="margin:0"><label>Order</label><input id="mc-label" disabled/></div>
+        <div class="fg" style="margin:0"><label>Items</label><input id="mc-items" disabled/></div>
+        <div class="fg" style="margin:0"><label>Priority</label><input id="mc-prio" disabled/></div>
       </div>
+
+      <!-- Rejection section — shown only when rejecting -->
+      <div id="mc-reject-section" style="display:none">
+        <div class="fg">
+          <label>Rejection Category <span style="color:var(--red)">*</span></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px" id="mc-cat-grid">
+            <button type="button" class="reject-cat-btn" data-cat="out_of_stock" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">📦</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Out of Stock</div>
+              <div style="font-size:10px;color:var(--gray)">Auto-notify when restocked</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="duplicate_order" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">🔄</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Duplicate Order</div>
+              <div style="font-size:10px;color:var(--gray)">Same order already exists</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="coverage_area" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">🗺️</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Coverage Area</div>
+              <div style="font-size:10px;color:var(--gray)">City not served currently</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="suspicious_quantity" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">⚠️</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Suspicious Quantity</div>
+              <div style="font-size:10px;color:var(--gray)">Unusual order amount</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="credit_hold" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">💳</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Credit Hold</div>
+              <div style="font-size:10px;color:var(--gray)">Pending account balance</div>
+            </button>
+            <button type="button" class="reject-cat-btn" data-cat="other" onclick="selectRejectCat(this)"
+              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+              <div style="font-size:16px;margin-bottom:3px">📝</div>
+              <div style="font-size:11px;font-weight:700;color:var(--brown)">Other</div>
+              <div style="font-size:10px;color:var(--gray)">Describe in notes below</div>
+            </button>
+          </div>
+          <input type="hidden" id="mc-category" value=""/>
+          <div class="field-err" id="mc-cat-err">Please select a rejection category.</div>
+        </div>
+
+        <!-- Stock watch notice -->
+        <div id="mc-stock-watch-notice" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--green)">
+          🔔 <strong>Auto-notify enabled</strong> — Retailer will be automatically notified when this product is back in stock.
+        </div>
+
+        <div class="fg">
+          <label>Additional Note <span style="color:var(--red)">*</span></label>
+          <input id="mc-reason" placeholder="Provide specific details for the retailer…"/>
+          <div class="field-err" id="mc-reason-err">Please add a note for the retailer.</div>
+        </div>
+      </div>
+
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('m-confirm')">Cancel</button>
-        <button class="btn btn-red"   onclick="confirmOrder('reject')">✕ Reject — Notify Retailer</button>
-        <button class="btn btn-green" onclick="confirmOrder('confirm')">✓ Confirm — Notify Retailer</button>
+        <button class="btn btn-red"   onclick="showRejectSection()" id="mc-reject-btn">✕ Reject Order</button>
+        <button class="btn btn-green" onclick="confirmOrder('confirm')" id="mc-confirm-btn">✓ Confirm — Notify Retailer</button>
+        <button class="btn btn-red"   onclick="confirmOrder('reject')" id="mc-submit-reject-btn" style="display:none">✕ Submit Rejection 🔔</button>
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal-bg" id="m-status">
-  <div class="modal" style="max-width:500px">
+  <div class="modal" style="max-width:520px">
     <div class="modal-title">📋 Update Delivery Status</div>
     <div class="modal-body">
       <input type="hidden" id="s-id"/>
@@ -500,24 +557,111 @@ tr:hover td{background:rgba(139,105,20,.03)}
           <option value="failed">❌ Failed — could not complete delivery</option>
         </select>
       </div>
+      <!-- Failure type selector — shown only when Failed is selected -->
+      <div class="fg" id="s-failtype-wrap" style="display:none">
+        <label>Failure Reason <span style="color:var(--red)">*</span></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px" id="s-failtype-grid">
+          <button type="button" class="fail-type-btn" data-type="vehicle_breakdown" onclick="selectFailType(this)"
+            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+            <div style="font-size:18px;margin-bottom:4px">🔧</div>
+            <div style="font-size:12px;font-weight:700;color:var(--brown)">Vehicle Breakdown</div>
+            <div style="font-size:10px;color:var(--gray)">Accident, tyre, engine</div>
+          </button>
+          <button type="button" class="fail-type-btn" data-type="out_of_stock" onclick="selectFailType(this)"
+            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+            <div style="font-size:18px;margin-bottom:4px">📦</div>
+            <div style="font-size:12px;font-weight:700;color:var(--brown)">Out of Stock</div>
+            <div style="font-size:10px;color:var(--gray)">Missing or unavailable items</div>
+          </button>
+          <button type="button" class="fail-type-btn" data-type="customer_absent" onclick="selectFailType(this)"
+            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+            <div style="font-size:18px;margin-bottom:4px">🚪</div>
+            <div style="font-size:12px;font-weight:700;color:var(--brown)">Customer Absent</div>
+            <div style="font-size:10px;color:var(--gray)">No one available to receive</div>
+          </button>
+          <button type="button" class="fail-type-btn" data-type="customer_refused" onclick="selectFailType(this)"
+            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+            <div style="font-size:18px;margin-bottom:4px">❌</div>
+            <div style="font-size:12px;font-weight:700;color:var(--brown)">Customer Refused</div>
+            <div style="font-size:10px;color:var(--gray)">Retailer rejected delivery</div>
+          </button>
+          <button type="button" class="fail-type-btn" data-type="wrong_address" onclick="selectFailType(this)"
+            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+            <div style="font-size:18px;margin-bottom:4px">📍</div>
+            <div style="font-size:12px;font-weight:700;color:var(--brown)">Wrong Address</div>
+            <div style="font-size:10px;color:var(--gray)">Location not found</div>
+          </button>
+          <button type="button" class="fail-type-btn" data-type="other" onclick="selectFailType(this)"
+            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+            <div style="font-size:18px;margin-bottom:4px">⚠️</div>
+            <div style="font-size:12px;font-weight:700;color:var(--brown)">Other</div>
+            <div style="font-size:10px;color:var(--gray)">Describe in notes below</div>
+          </button>
+        </div>
+        <input type="hidden" id="s-failtype" value=""/>
+        <div class="field-err" id="s-failtype-err">Please select a failure reason.</div>
+      </div>
       <div class="fg" id="s-note-wrap">
-        <label>Note / Reason <span id="s-note-req" style="color:var(--red);display:none">* Required for Failed</span></label>
-        <input id="s-note" placeholder="e.g. Customer unavailable / delivered at gate / wrong address"/>
-        <div class="field-err" id="s-note-err">A reason is required when marking a delivery as failed.</div>
+        <label>Note / Details <span id="s-note-req" style="color:var(--red);display:none">*</span></label>
+        <input id="s-note" placeholder="Additional details…"/>
+        <div class="field-err" id="s-note-err">A note is required when marking as failed.</div>
+      </div>
+      <!-- Auto-reassign notice -->
+      <div id="s-reassign-notice" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:var(--green)">
+        🔄 <strong>Auto-reassignment enabled</strong> — system will automatically find the next available driver and notify all stakeholders.
       </div>
       <!-- Notification preview -->
-      <div id="s-notif-preview" style="background:var(--cream);border:1px solid var(--cream-dk);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--brown-m);margin-bottom:4px">
-        <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">🔔 Will notify</div>
+      <div style="background:var(--cream);border:1px solid var(--cream-dk);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--brown-m);margin-bottom:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">🔔 Will notify instantly</div>
         <div id="s-notif-list" style="display:flex;flex-wrap:wrap;gap:6px">
           <span class="badge b-blue">Retailer</span>
           <span class="badge b-gray">Order Team</span>
           <span class="badge b-purple">Warehouse</span>
-          
+          <span class="badge b-orange">Driver</span>
         </div>
       </div>
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('m-status')">Cancel</button>
-        <button class="btn btn-tan"   onclick="saveStatus()" id="s-submit-btn">Update &amp; Notify All 🔔</button>
+        <button class="btn btn-tan" onclick="saveStatus()" id="s-submit-btn">Update &amp; Notify All 🔔</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── PIN Verification Modal ── -->
+<div class="modal-bg" id="m-pin-verify" style="z-index:500">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title" style="background:linear-gradient(135deg,#1B2A4A,#2d4a7a)">🔐 PIN Verification</div>
+    <div class="modal-body" style="text-align:center">
+      <input type="hidden" id="pv-id"/>
+      <div style="font-size:46px;margin-bottom:8px">🔐</div>
+      <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px" id="pv-label">Verify Delivery</div>
+      <div style="font-size:13px;color:var(--brown-m);margin-bottom:22px">Ask the retailer for their 4-digit PIN and enter it below</div>
+
+      <!-- 4 PIN digit boxes -->
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px">
+        <input type="tel" id="pin-1" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-2')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-2" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-3')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-3" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-4')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-4" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,null)" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+      </div>
+
+      <div id="pv-err" class="alert-banner alert-error" style="display:none;margin-bottom:12px;text-align:left"></div>
+      <div id="pv-ok"  class="alert-banner alert-success" style="display:none;margin-bottom:12px;text-align:left"></div>
+
+      <div class="modal-actions" style="flex-direction:column;gap:8px">
+        <button class="btn btn-tan" id="pv-btn" onclick="submitPin()" style="width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700">
+          🔐 Verify PIN & Complete Delivery
+        </button>
+        <button class="btn btn-ghost" onclick="closeModal('m-pin-verify')" style="width:100%;justify-content:center">Cancel</button>
       </div>
     </div>
   </div>
@@ -667,9 +811,9 @@ function stopPoll()  { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; 
 
 // ══ NAV ═════════════════════════════════════════
 const ROLE_PAGES = {
-  retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
+  retailer:      [{id:'my-orders',   ico:'📦', lbl:'My Orders'      },{id:'req-order',   ico:'➕', lbl:'Request Order'    },{id:'ai-assistant', ico:'🤖', lbl:'AI Assistant'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
   order_team:    [{id:'all-orders',  ico:'📋', lbl:'Pending Review' },{id:'deliveries',  ico:'🚚', lbl:'All Deliveries'   },{id:'retailers', ico:'🏪', lbl:'Retailers'     },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
-  warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
+  warehouse:     [{id:'wh-incoming', ico:'📦', lbl:'Incoming'       },{id:'wh-prepare',  ico:'🏭', lbl:'Cargo Status'     },{id:'wh-stock', ico:'📋', lbl:'Stock Levels'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
   distributor:   [{id:'my-routes',   ico:'🛣️', lbl:'My Routes'      },{id:'upd-status',  ico:'✅', lbl:'Update Status'    },{id:'live-map', ico:'🗺️', lbl:'Live Tracking'  }],
 };
 
@@ -691,17 +835,364 @@ async function render(id) {
   setContent('<div class="empty"><div class="empty-icon">⏳</div><div>Loading…</div></div>');
   if (id==='my-orders')   await pageMyOrders();
   if (id==='req-order')   await pageReqOrder();
+  if (id==='ai-assistant') await pageAiAssistant();
   if (id==='all-orders')  await pageAllOrders();
   if (id==='deliveries')  await pageDeliveries();
   // consolidate removed — auto-handled on confirm
 
   if (id==='wh-incoming') await pageWhIncoming();
   if (id==='wh-prepare')  await pageWhPrepare();
+  if (id==='wh-stock')    await pageWhStock();
   if (id==='my-routes')   await pageMyRoutes();
   if (id==='upd-status')  await pageUpdStatus();
   if (id==='live-map')    await pageLiveMap();
   if (id==='retailers')   await pageRetailers();
   if (id==='admin-users') await pageAdminUsers();
+}
+
+// ══ AI ASSISTANT ════════════════════════════════
+let aiChatHistory = [];
+let aiTyping = false;
+
+async function pageAiAssistant() {
+  aiChatHistory = [];
+  setContent(`
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-title">🤖 AI Assistant</div>
+        <div class="sec-sub">Order anything, check delivery status, get help — just type naturally</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:#E8F5E9;border-radius:20px;padding:5px 14px">
+        <div style="width:8px;height:8px;border-radius:50%;background:#16a34a;animation:truckPulse 1.5s infinite"></div>
+        <span style="font-size:12px;font-weight:700;color:#16a34a">AI Online</span>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
+
+      <!-- Chat window -->
+      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;height:520px">
+        <!-- Chat messages -->
+        <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
+          <!-- Welcome message -->
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div style="width:36px;height:36px;border-radius:50%;background:#1B2A4A;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>
+            <div style="max-width:80%">
+              <div style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px;font-size:13px;color:#1B2A4A;line-height:1.6">
+                Hello <strong>${user.name}</strong>! 👋 I'm your Nestlé Smart DMS assistant.<br><br>
+                I can help you:<br>
+                • <strong>Place orders</strong> — just tell me what you need<br>
+                • <strong>Check delivery status</strong> — ask about any order<br>
+                • <strong>Track your driver</strong> — get live location updates<br>
+                • <strong>Answer questions</strong> — about products, prices, availability<br><br>
+                What can I help you with today?
+              </div>
+              <div style="font-size:10px;color:var(--brown-l);margin-top:4px;padding:0 4px">AI Assistant · just now</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick suggestions -->
+        <div id="ai-suggestions" style="padding:10px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:8px;flex-wrap:wrap;background:var(--cream)">
+          <button onclick="sendAiMessage('Where is my latest delivery?')" class="ai-suggestion-btn"
+            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
+            📍 Where is my delivery?
+          </button>
+          <button onclick="sendAiMessage('I need 30 boxes of Milo to Colombo urgently')" class="ai-suggestion-btn"
+            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
+            🛒 Place an order
+          </button>
+          <button onclick="sendAiMessage('What is the status of my orders?')" class="ai-suggestion-btn"
+            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
+            📋 Check order status
+          </button>
+          <button onclick="sendAiMessage('Show me all my pending orders')" class="ai-suggestion-btn"
+            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
+            ⏳ Pending orders
+          </button>
+        </div>
+
+        <!-- Input -->
+        <div style="padding:14px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:10px;align-items:center;background:var(--white)">
+          <input id="ai-input" type="text" placeholder="Type your message… e.g. 'Order 50 Nescafé to Kandy'"
+            style="flex:1;padding:11px 16px;border:2px solid var(--cream-dk);border-radius:24px;font-family:'Jost',sans-serif;font-size:14px;color:var(--brown);outline:none;transition:border-color .2s"
+            onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendAiInput()}"
+            onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor='var(--cream-dk)'"/>
+          <button onclick="sendAiInput()" id="ai-send-btn"
+            style="width:44px;height:44px;border-radius:50%;background:#1B2A4A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:all .15s"
+            onmouseover="this.style.background='#D4A832'" onmouseout="this.style.background='#1B2A4A'">
+            ➤
+          </button>
+        </div>
+      </div>
+
+      <!-- Side panel -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <!-- Pending order confirmation card -->
+        <div id="ai-order-confirm-card" style="display:none;background:var(--white);border:2px solid var(--tan);border-radius:12px;padding:16px">
+          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px">🛒 Order to Submit</div>
+          <div id="ai-order-details" style="font-size:13px;color:var(--brown);line-height:1.8;margin-bottom:12px"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-green" style="flex:1;font-size:13px" onclick="confirmAiOrder()">✅ Confirm</button>
+            <button class="btn btn-ghost" style="font-size:13px" onclick="cancelAiOrder()">✕</button>
+          </div>
+        </div>
+
+        <!-- Live delivery card -->
+        <div id="ai-delivery-card" style="display:none;background:var(--white);border:2px solid #1565C0;border-radius:12px;padding:16px">
+          <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:10px">🚛 Live Delivery</div>
+          <div id="ai-delivery-details" style="font-size:12px;color:var(--brown);line-height:1.8"></div>
+        </div>
+
+        <!-- Tips card -->
+        <div style="background:var(--cream);border-radius:12px;padding:16px;border:1px solid var(--cream-dk)">
+          <div style="font-size:12px;font-weight:700;color:var(--tan);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">💡 Try Saying</div>
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--brown-m)">
+            <div>📦 "Order 20 KitKat to Galle high priority"</div>
+            <div>📍 "Where is my order #5?"</div>
+            <div>🔄 "Resubmit my last rejected order"</div>
+            <div>📋 "List all my orders this week"</div>
+            <div>⏰ "When will my delivery arrive?"</div>
+            <div>🚛 "How far is my driver?"</div>
+          </div>
+        </div>
+      </div>
+    </div>`);
+}
+
+// ── Pending AI order state
+let aiPendingOrder = null;
+
+function addAiMessage(text, sender='ai', isHtml=false) {
+  const container = document.getElementById('ai-chat-messages');
+  if (!container) return;
+
+  const isUser = sender === 'user';
+  const time = new Date().toLocaleTimeString('en-LK', { timeZone:'Asia/Colombo', hour:'2-digit', minute:'2-digit' });
+
+  const div = document.createElement('div');
+  div.style.cssText = `display:flex;gap:10px;align-items:flex-start;${isUser?'flex-direction:row-reverse':''}`;
+
+  const avatar = isUser
+    ? `<div style="width:36px;height:36px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">${user.avatar||'U'}</div>`
+    : `<div style="width:36px;height:36px;border-radius:50%;background:#1B2A4A;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>`;
+
+  const bubble = isUser
+    ? `<div style="max-width:80%"><div style="background:#1B2A4A;color:white;border-radius:12px 0 12px 12px;padding:10px 14px;font-size:13px;line-height:1.5">${escapeHtml(text)}</div><div style="font-size:10px;color:var(--brown-l);margin-top:4px;text-align:right;padding:0 4px">${time}</div></div>`
+    : `<div style="max-width:85%"><div style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px;font-size:13px;color:#1B2A4A;line-height:1.6">${isHtml?text:escapeHtml(text)}</div><div style="font-size:10px;color:var(--brown-l);margin-top:4px;padding:0 4px">AI Assistant · ${time}</div></div>`;
+
+  div.innerHTML = avatar + bubble;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function addAiTyping() {
+  const container = document.getElementById('ai-chat-messages');
+  if (!container) return;
+  const div = document.createElement('div');
+  div.id = 'ai-typing';
+  div.style.cssText = 'display:flex;gap:10px;align-items:flex-start';
+  div.innerHTML = `
+    <div style="width:36px;height:36px;border-radius:50%;background:#1B2A4A;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>
+    <div style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px">
+      <div style="display:flex;gap:5px;align-items:center">
+        <div style="width:8px;height:8px;border-radius:50%;background:#1B2A4A;animation:truckPulse 1s infinite"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#1B2A4A;animation:truckPulse 1s .2s infinite"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:#1B2A4A;animation:truckPulse 1s .4s infinite"></div>
+      </div>
+    </div>`;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeAiTyping() {
+  document.getElementById('ai-typing')?.remove();
+}
+
+async function sendAiInput() {
+  const input = document.getElementById('ai-input');
+  if (!input || !input.value.trim()) return;
+  const msg = input.value.trim();
+  input.value = '';
+  await sendAiMessage(msg);
+}
+
+async function sendAiMessage(userMsg) {
+  if (aiTyping) return;
+  aiTyping = true;
+
+  // Hide suggestions after first message
+  const suggestions = document.getElementById('ai-suggestions');
+  if (suggestions) suggestions.style.display = 'none';
+
+  addAiMessage(userMsg, 'user');
+  addAiTyping();
+
+  // Fetch live context for the AI
+  const [orders, deliveries] = await Promise.all([
+    api(`/orders?role=retailer&userId=${user.id}`).catch(() => []),
+    api(`/deliveries?role=retailer&userId=${user.id}`).catch(() => []),
+  ]);
+
+  // Build a products list for the AI
+  const productList = Object.entries(productWeights).length > 0
+    ? Object.entries(productWeights).map(([id,w])=>`Product ID ${id}: weight ${w}kg/unit`).join(', ')
+    : 'Milo Active Go 1kg (id:1), Nescafé Classic 200g (id:5), KitKat 45g (id:8), Maggi Noodles 77g (id:10)';
+
+  const cities = ['Colombo','Dehiwala','Nugegoda','Negombo','Kiribathgoda','Kandy','Peradeniya','Galle','Matara','Jaffna','Ratnapura','Kurunegala'];
+
+  const activeDelivery = deliveries.find ? deliveries.find(d => ['in-transit','loaded','assigned'].includes(d.status)) : null;
+  let trackingInfo = '';
+  if (activeDelivery) {
+    const track = await api(`/tracking/${activeDelivery.id}`).catch(() => null);
+    if (track && track.found) {
+      trackingInfo = `Active delivery #${activeDelivery.id}: driver ${track.driverName}, vehicle ${track.vehicleId}, heading to ${track.city}, ETA ${track.eta}, GPS updated ${track.recordedAt}.`;
+    }
+  }
+
+  // Add user message to history
+  aiChatHistory.push({ role:'user', content: userMsg });
+
+  // Call Claude API
+  try {
+    const systemPrompt = `You are a smart AI assistant for Nestlé Smart DMS — a delivery management system in Sri Lanka.
+
+You are talking to: ${user.name} (Retailer)
+
+CURRENT DATA:
+Orders: ${JSON.stringify(orders.slice(0,10))}
+Deliveries: ${JSON.stringify(deliveries.slice(0,5))}
+Tracking: ${trackingInfo || 'No active tracking'}
+Available cities: ${cities.join(', ')}
+Available products: ${productList}
+
+YOUR CAPABILITIES:
+1. PLACE ORDERS — Extract: product name, quantity (integer), city, priority (normal/high/urgent). When you have all details, respond with JSON block: <ORDER>{"product":"Milo Active Go 1kg","productId":1,"items":30,"city":"Colombo","priority":"normal","notes":""}</ORDER>
+2. DELIVERY STATUS — Tell them current status, driver name, ETA, GPS position if available
+3. TRACKING — Give live driver location and ETA from tracking data
+4. ORDER HISTORY — Summarise their orders, highlight pending/rejected/delivered
+5. RESUBMIT — If they want to resubmit a rejected order, tell them to click "Edit & Resubmit" on that order
+
+RULES:
+- Be conversational, friendly and concise
+- Always confirm order details before placing (show a summary)
+- If product name is ambiguous, ask for clarification
+- If city is not in the list, say it is not covered
+- Use Sri Lanka context — mention rupees if prices come up
+- Keep responses short — 2-4 sentences max unless listing data
+- Use emojis naturally
+- If you detect an order intent, ALWAYS output the <ORDER> JSON block at the end of your message`;
+
+    // Call via backend proxy — keeps API key secure on server
+    const data = await api('/ai/chat', 'POST', {
+      messages: aiChatHistory,
+      systemPrompt
+    });
+
+    if (!data || Object.keys(data).length === 0) throw new Error('No response from server — check backend is running');
+    if (data.error) throw new Error(data.error);
+    const fullText = data.text || '';
+
+    // Check for ORDER intent
+    const orderMatch = fullText.match(/<ORDER>([\s\S]*?)<\/ORDER>/);
+    let displayText = fullText.replace(/<ORDER>[\s\S]*?<\/ORDER>/g, '').trim();
+
+    removeAiTyping();
+
+    if (orderMatch) {
+      try {
+        aiPendingOrder = JSON.parse(orderMatch[1]);
+        // Show confirmation card
+        const card = document.getElementById('ai-order-confirm-card');
+        const details = document.getElementById('ai-order-details');
+        if (card && details) {
+          details.innerHTML = `
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div>📦 <strong>${escapeHtml(aiPendingOrder.product)}</strong></div>
+              <div>🔢 Quantity: <strong>${aiPendingOrder.items} units</strong></div>
+              <div>📍 City: <strong>${escapeHtml(aiPendingOrder.city)}</strong></div>
+              <div>⚡ Priority: <strong style="text-transform:capitalize">${aiPendingOrder.priority}</strong></div>
+              ${aiPendingOrder.notes ? `<div>📝 Note: ${escapeHtml(aiPendingOrder.notes)}</div>` : ''}
+            </div>`;
+          card.style.display = 'block';
+        }
+      } catch(e) { console.warn('Order parse error', e); }
+    }
+
+    // Show delivery tracking card if tracking data
+    if (trackingInfo && (userMsg.toLowerCase().includes('where') || userMsg.toLowerCase().includes('track') || userMsg.toLowerCase().includes('driver') || userMsg.toLowerCase().includes('delivery'))) {
+      if (activeDelivery) {
+        const track = await api(`/tracking/${activeDelivery.id}`).catch(()=>null);
+        if (track && track.found) {
+          const card = document.getElementById('ai-delivery-card');
+          const details = document.getElementById('ai-delivery-details');
+          if (card && details) {
+            details.innerHTML = `
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <div>🚛 <strong>${escapeHtml(track.driverName||'Driver')}</strong></div>
+                <div>🚗 Vehicle: ${escapeHtml(track.vehicleId||'—')}</div>
+                <div>📍 Heading to: <strong style="color:#BF360C">${escapeHtml(track.city||'—')}</strong></div>
+                <div>⏰ ETA: <strong style="color:#1B5E20">${escapeHtml(track.eta||'—')}</strong></div>
+                <div style="margin-top:6px">
+                  <button class="btn btn-blue btn-sm" style="width:100%" onclick="nav('live-map')">🗺️ Open Live Map</button>
+                </div>
+              </div>`;
+            card.style.display = 'block';
+          }
+        }
+      }
+    }
+
+    addAiMessage(displayText || "I'm here to help! Try asking about your orders or placing a new one.", 'ai', false);
+    aiChatHistory.push({ role:'assistant', content: fullText });
+
+  } catch(e) {
+    removeAiTyping();
+    addAiMessage('Sorry, I had trouble connecting. Please try again in a moment.', 'ai');
+    console.error('[AI]', e);
+  }
+
+  aiTyping = false;
+}
+
+async function confirmAiOrder() {
+  if (!aiPendingOrder) return;
+  const card = document.getElementById('ai-order-confirm-card');
+  if (card) card.style.display = 'none';
+
+  addAiMessage('Submitting your order now...', 'ai');
+
+  try {
+    const r = await api('/orders', 'POST', {
+      retailerId:   user.id,
+      retailerName: user.name,
+      city:         aiPendingOrder.city,
+      productId:    aiPendingOrder.productId || 1,
+      productName:  aiPendingOrder.product,
+      specifics:    aiPendingOrder.product,
+      items:        parseInt(aiPendingOrder.items),
+      kg:           productWeights[aiPendingOrder.productId] ? productWeights[aiPendingOrder.productId] * parseInt(aiPendingOrder.items) : 0,
+      priority:     aiPendingOrder.priority || 'normal',
+      notes:        aiPendingOrder.notes || ''
+    });
+
+    if (r.id) {
+      addAiMessage(`✅ Order #${r.id} placed successfully! The Order Processing Team has been notified. You can track it in My Orders. Is there anything else I can help with?`, 'ai');
+      pollBadge();
+    } else {
+      addAiMessage(`❌ Sorry, I couldn't place the order: ${r.error || 'Unknown error'}. Please try using the Request Order form.`, 'ai');
+    }
+  } catch(e) {
+    addAiMessage('Sorry, something went wrong placing the order. Please use the Request Order form.', 'ai');
+  }
+  aiPendingOrder = null;
+}
+
+function cancelAiOrder() {
+  aiPendingOrder = null;
+  const card = document.getElementById('ai-order-confirm-card');
+  if (card) card.style.display = 'none';
+  addAiMessage('Order cancelled. Let me know if you want to change anything and try again.', 'ai');
 }
 
 // ══ RETAILER PAGES ═══════════════════════════════
@@ -711,13 +1202,62 @@ async function pageMyOrders() {
   const rejected = data.filter(o=>o.status==='rejected');
   const awaitingReceipt = data.filter(o=>o.deliveryStatus==='delivered' && !o.receiptConfirmed);
 
+  const catIcons = {
+    out_of_stock:'📦', duplicate_order:'🔄', coverage_area:'🗺️',
+    suspicious_quantity:'⚠️', credit_hold:'💳', other:'📝'
+  };
+  const catLabels = {
+    out_of_stock:'Out of Stock', duplicate_order:'Duplicate Order',
+    coverage_area:'Coverage Area', suspicious_quantity:'Suspicious Quantity',
+    credit_hold:'Credit Hold', other:'Other'
+  };
+  const catActions = {
+    out_of_stock:    'You will be notified automatically when stock is replenished — no action needed right now.',
+    duplicate_order: 'Check My Orders — you may already have an active order for this product.',
+    coverage_area:   'Contact your account manager to request delivery coverage for your city.',
+    suspicious_quantity:'Please resubmit with the correct quantity.',
+    credit_hold:     'Please contact your account manager to resolve your account balance.',
+    other:           'Please review the reason below and resubmit a corrected order.'
+  };
+
   const rejectionBanner = rejected.length ? `
-    <div class="rejection-notice">
-      <div class="rn-title">⚠️ You have ${rejected.length} rejected order(s)</div>
-      <div class="rn-reason">
-        ${rejected.map(o=>`<strong>${o.id}</strong>: ${o.rejectReason||'No reason provided'}`).join('<br>')}
+    <div style="margin-bottom:18px">
+      <div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:12px">
+        ⚠️ ${rejected.length} Rejected Order${rejected.length>1?'s':''}
       </div>
-      <div class="rn-hint">You can correct and resubmit a new order by clicking "New Request" below.</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${rejected.map(o => {
+          const cat = o.rejectCategory || 'other';
+          const ico = catIcons[cat] || '📝';
+          const lbl = catLabels[cat] || 'Rejected';
+          const action = catActions[cat] || '';
+          return `
+          <div style="background:var(--white);border:2px solid #FFCDD2;border-radius:12px;padding:16px;border-left:5px solid var(--red)">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:20px">${ico}</span>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:var(--red)">${lbl} — Order #${o.id}</div>
+                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(o.city)} · ${o.items} items · ${o.prio} priority</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-ghost btn-sm" onclick="editAndResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">✏️ Edit & Resubmit</button>
+                <button class="btn btn-tan btn-sm" onclick="quickResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">🔄 Quick Resubmit</button>
+              </div>
+            </div>
+            <div style="background:#FFF5F5;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+              <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Rejection Reason</div>
+              <div style="font-size:13px;color:var(--brown);font-weight:500">${escapeHtml(o.rejectReason||'No reason provided')}</div>
+            </div>
+            ${cat === 'out_of_stock' ? `
+            <div style="background:#E8F5E9;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);font-weight:600">
+              🔔 Auto-notify active — you will be notified when stock is replenished
+            </div>` : `
+            <div style="font-size:12px;color:var(--brown-m);font-style:italic">💡 ${action}</div>`}
+          </div>`;
+        }).join('')}
+      </div>
     </div>` : '';
 
   const receiptBanner = awaitingReceipt.length ? `
@@ -734,7 +1274,7 @@ async function pageMyOrders() {
     ${rejectionBanner}
     ${receiptBanner}
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
+      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>🔐 Delivery PIN</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
       <tbody>${data.length ? data.map(o=>`
         <tr>
           <td><span class="mono">${o.id}</span></td>
@@ -745,6 +1285,17 @@ async function pageMyOrders() {
           <td>${orderBadge(o.status)}</td>
           <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
             ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
+          </td>
+          <td>
+            ${o.deliveryPin && ['assigned','warehouse_ready','loaded','in-transit'].includes(o.deliveryStatus||'')
+              ? `<div style="background:#1B2A4A;border-radius:10px;padding:8px 14px;display:inline-block;text-align:center;min-width:110px">
+                   <div style="font-size:9px;font-weight:700;color:#D4A832;letter-spacing:1.5px;margin-bottom:3px">YOUR PIN</div>
+                   <div style="font-size:24px;font-weight:800;color:#FFFFFF;letter-spacing:8px;font-family:'DM Mono',monospace">${o.deliveryPin}</div>
+                   <div style="font-size:9px;color:rgba(217,200,154,.75);margin-top:3px">Show to driver on arrival</div>
+                 </div>`
+              : o.pinVerified
+              ? `<span class="badge b-green">🔐 PIN Verified ✅</span>`
+              : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
           </td>
           <td>
             ${o.receiptConfirmed
@@ -788,6 +1339,23 @@ async function pageMyOrders() {
       </div>
     </div>
   </div>`);
+}
+
+// ── Quick resubmit — same details, new order
+async function quickResubmit(orderId, city, items, prio) {
+  if (!confirm(`Resubmit order to ${city} (${items} items, ${prio} priority)?`)) return;
+  const original = await api(`/orders/${orderId}/details`).catch(() => null);
+  // Navigate to request order page with pre-filled values stored in sessionStorage
+  sessionStorage.setItem('resubmit', JSON.stringify({ city, items, prio, fromOrderId: orderId }));
+  nav('req-order');
+  toast('📝 Form pre-filled with your previous order details — review and submit', '#1565C0');
+}
+
+// ── Edit and resubmit — navigate to form with all fields pre-filled for editing
+function editAndResubmit(orderId, city, items, prio) {
+  sessionStorage.setItem('resubmit', JSON.stringify({ city, items, prio, fromOrderId: orderId, edit: true }));
+  nav('req-order');
+  toast('✏️ Edit your order details and resubmit', '#8B6914');
 }
 
 function openConfirmReceipt(deliveryId, orderId, city) {
@@ -863,6 +1431,39 @@ async function pageReqOrder() {
     </div>`);
 
   await loadProductsForOrderForm();
+
+  // ── Check if this is a resubmit — pre-fill form
+  const resubmitData = sessionStorage.getItem('resubmit');
+  if (resubmitData) {
+    try {
+      const rd = JSON.parse(resubmitData);
+      sessionStorage.removeItem('resubmit');
+      if (rd.city) {
+        const cityEl = document.getElementById('i-city');
+        if (cityEl) cityEl.value = rd.city;
+      }
+      if (rd.items) {
+        const itemsEl = document.getElementById('i-items');
+        if (itemsEl) { itemsEl.value = rd.items; calcKg(); }
+      }
+      if (rd.prio) {
+        const prioEl = document.getElementById('i-prio');
+        if (prioEl) prioEl.value = rd.prio;
+      }
+      // Show resubmit notice
+      const errBox = document.getElementById('submit-err');
+      if (errBox) {
+        errBox.textContent = '';
+        errBox.style.display = 'none';
+      }
+      const notice = document.createElement('div');
+      notice.className = 'alert-banner alert-info';
+      notice.style.marginBottom = '14px';
+      notice.innerHTML = `🔄 <strong>Resubmitting Order #${rd.fromOrderId}</strong> — form pre-filled with your previous details. ${rd.edit ? 'Make your changes and submit.' : 'Review and submit when ready.'}`;
+      const card = document.querySelector('#main-content .card');
+      if (card) card.insertAdjacentElement('beforebegin', notice);
+    } catch(e) { sessionStorage.removeItem('resubmit'); }
+  }
 }
 
 // ── FIX: Strict input validation ──
@@ -1013,8 +1614,11 @@ async function pageAllOrders() {
             <td>${o.retailer}</td><td>${o.city}</td>
             <td>${o.items} · ${o.kg}kg</td>
             <td>${orderBadge(o.status)}</td>
-            <td style="font-size:12px;max-width:200px;color:${o.status==='rejected'?'var(--red)':'var(--brown-l)'}">
-              ${o.status==='rejected' && o.rejectReason ? o.rejectReason : o.confirmedBy||'—'}
+            <td style="font-size:12px;max-width:220px">
+              ${o.status==='rejected'
+                ? `<div style="color:var(--red);font-weight:600">${o.rejectCategory ? (({'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'})[o.rejectCategory]||o.rejectCategory) : ''}</div>
+                   <div style="color:var(--brown-m);font-size:11px;margin-top:2px">${o.rejectReason||'—'}</div>`
+                : `<span style="color:var(--brown-l)">${o.confirmedBy||'—'}</span>`}
             </td>
             <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>No processed orders yet.</div></div></td></tr>'}</tbody>
@@ -1025,38 +1629,108 @@ async function pageAllOrders() {
 function openConfirm(id, retailer, city, items, kg, prio) {
   document.getElementById('mc-id').value    = id;
   document.getElementById('mc-label').value = `${id} — ${retailer}, ${city}`;
-  document.getElementById('mc-items').value = `${items} items · ${kg}kg`;
-  document.getElementById('mc-prio').value  = prio.toUpperCase();
+  document.getElementById('mc-items').value = `${items} items · ${parseFloat(kg||0).toFixed(1)}kg`;
+  document.getElementById('mc-prio').value  = (prio||'normal').toUpperCase();
   document.getElementById('mc-reason').value = '';
+  document.getElementById('mc-category').value = '';
   document.getElementById('mc-reason-err').classList.remove('show');
+  document.getElementById('mc-cat-err').classList.remove('show');
   document.getElementById('mc-reason').classList.remove('err');
+  document.getElementById('mc-reject-section').style.display = 'none';
+  document.getElementById('mc-stock-watch-notice').style.display = 'none';
+  document.getElementById('mc-reject-btn').style.display = 'inline-flex';
+  document.getElementById('mc-confirm-btn').style.display = 'inline-flex';
+  document.getElementById('mc-submit-reject-btn').style.display = 'none';
+  // Reset category buttons
+  document.querySelectorAll('.reject-cat-btn').forEach(b => {
+    b.style.border = '2px solid var(--cream-dk)';
+    b.style.background = 'var(--white)';
+  });
   openModal('m-confirm');
 }
 
-async function confirmOrder(action) {
-  const id     = document.getElementById('mc-id').value;
-  const reason = document.getElementById('mc-reason').value.trim();
+function showRejectSection() {
+  document.getElementById('mc-reject-section').style.display = 'block';
+  document.getElementById('mc-reject-btn').style.display = 'none';
+  document.getElementById('mc-confirm-btn').style.display = 'none';
+  document.getElementById('mc-submit-reject-btn').style.display = 'inline-flex';
+}
 
-  // ── FIX: Require reason when rejecting ──
-  if (action === 'reject' && !reason) {
-    document.getElementById('mc-reason').classList.add('err');
-    document.getElementById('mc-reason-err').classList.add('show');
-    return;
+function selectRejectCat(btn) {
+  document.querySelectorAll('.reject-cat-btn').forEach(b => {
+    b.style.border = '2px solid var(--cream-dk)';
+    b.style.background = 'var(--white)';
+  });
+  btn.style.border = '2px solid var(--red)';
+  btn.style.background = '#FFF5F5';
+  const cat = btn.dataset.cat;
+  document.getElementById('mc-category').value = cat;
+  document.getElementById('mc-cat-err').classList.remove('show');
+  // Show auto-notify notice for out_of_stock
+  const notice = document.getElementById('mc-stock-watch-notice');
+  notice.style.display = cat === 'out_of_stock' ? 'block' : 'none';
+  // Auto-fill note placeholder based on category
+  const placeholders = {
+    out_of_stock:        'Specify which product is out of stock and approximate restock date if known…',
+    duplicate_order:     'Specify the existing order ID that this duplicates…',
+    coverage_area:       'Specify which areas are currently covered and when coverage may expand…',
+    suspicious_quantity: 'Specify the expected reasonable quantity and ask them to resubmit correctly…',
+    credit_hold:         'Advise retailer to contact their account manager to resolve balance…',
+    other:               'Provide a clear explanation so the retailer knows exactly what to fix…',
+  };
+  document.getElementById('mc-reason').placeholder = placeholders[cat] || 'Provide details…';
+}
+
+async function confirmOrder(action) {
+  const id       = document.getElementById('mc-id').value;
+  const reason   = document.getElementById('mc-reason').value.trim();
+  const category = document.getElementById('mc-category').value;
+  let valid = true;
+
+  if (action === 'reject') {
+    if (!category) {
+      document.getElementById('mc-cat-err').classList.add('show');
+      valid = false;
+    }
+    if (!reason) {
+      document.getElementById('mc-reason').classList.add('err');
+      document.getElementById('mc-reason-err').classList.add('show');
+      valid = false;
+    }
+    if (!valid) return;
   }
   document.getElementById('mc-reason').classList.remove('err');
   document.getElementById('mc-reason-err').classList.remove('show');
+  document.getElementById('mc-cat-err').classList.remove('show');
 
-  const r = await api(`/orders/${id}/confirm`, 'PUT', { action, confirmedBy:user.id, rejectReason:reason||null });
+  const btn = document.getElementById(action === 'confirm' ? 'mc-confirm-btn' : 'mc-submit-reject-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
-  if (r.error) {
-    toast(`❌ ${r.error}`, '#B71C1C');
-    return;
-  }
+  const r = await api(`/orders/${id}/confirm`, 'PUT', {
+    action,
+    confirmedBy:    user.id,
+    rejectReason:   reason || null,
+    rejectCategory: category || null
+  });
+
+  if (btn) { btn.disabled = false; btn.textContent = action === 'confirm' ? '✓ Confirm — Notify Retailer' : '✕ Submit Rejection 🔔'; }
+
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
 
   closeModal('m-confirm');
+
+  const catLabels = {
+    out_of_stock: '📦 Out of Stock',
+    duplicate_order: '🔄 Duplicate',
+    coverage_area: '🗺️ Coverage Area',
+    suspicious_quantity: '⚠️ Suspicious Qty',
+    credit_hold: '💳 Credit Hold',
+    other: '📝 Other'
+  };
   toast(action === 'confirm'
-    ? `✅ Order ${id} confirmed — Added to priority dispatch queue 🔔`
-    : `❌ Order ${id} rejected — Retailer notified with reason 🔔`);
+    ? `✅ Order ${id} confirmed — queued for dispatch 🔔`
+    : `❌ Order ${id} rejected (${catLabels[category]||category}) — Retailer notified 🔔`,
+    action === 'confirm' ? '#16a34a' : '#B71C1C');
   pollBadge();
   pageAllOrders();
 }
@@ -1131,6 +1805,61 @@ async function doConsolidate() {
 }
 
 // ══ WAREHOUSE PAGES ═════════════════════════════
+async function pageWhStock() {
+  const stocks = await api('/stock');
+  setContent(`
+    <div class="sec-hdr">
+      <div><div class="sec-title">Stock Levels</div>
+      <div class="sec-sub">Update stock levels — retailers watching out-of-stock products are notified automatically 🔔</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📋 Current Stock Levels</div>
+      <div class="tw"><table>
+        <thead><tr><th>Product</th><th>Units Available</th><th>Weight Available</th><th>Weight/Unit</th><th>Watching</th><th>Update Stock</th></tr></thead>
+        <tbody>${stocks.length ? stocks.map(p=>`
+          <tr>
+            <td><strong>${escapeHtml(p.productName||'—')}</strong></td>
+            <td>
+              <span style="font-size:16px;font-weight:800;color:${p.availableUnits>10?'var(--green)':p.availableUnits>0?'var(--orange)':'var(--red)'}">
+                ${p.availableUnits||0}
+              </span>
+            </td>
+            <td style="font-weight:700;color:var(--blue)">${p.availableKg?parseFloat(p.availableKg).toFixed(1)+'kg':'—'}</td>
+            <td style="color:var(--brown-m)">${p.weightPerUnit?p.weightPerUnit+'kg/unit':'—'}</td>
+            <td>
+              ${parseInt(p.watchCount||0) > 0
+                ? `<span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount>1?'s':''} waiting</span>`
+                : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+            </td>
+            <td style="display:flex;gap:6px;align-items:center">
+              <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}"
+                style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px"/>
+              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})">
+                ✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}
+              </button>
+            </td>
+          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
+      </table></div>
+    </div>
+    <div class="alert-banner alert-info">
+      🔔 <strong>Auto-notify:</strong> When you update stock for a product, any retailer whose order was rejected as "Out of Stock" will be automatically notified that they can resubmit.
+    </div>`);
+}
+
+async function updateStock(productId, productName, currentKg) {
+  const units = parseInt(document.getElementById('units-'+productId)?.value) || 0;
+  // Estimate kg from units using current ratio
+  const kg = currentKg > 0 ? currentKg : units;
+  const r = await api(`/stock/${productId}/update`, 'PUT', { availableUnits: units, availableKg: kg });
+  if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+  const msg = r.restockedCount > 0
+    ? `✅ Stock updated — ${r.restockedCount} retailer${r.restockedCount>1?'s':''} notified 🔔`
+    : `✅ ${productName} stock updated to ${units} units`;
+  toast(msg, r.restockedCount > 0 ? '#0f766e' : '#16a34a');
+  pollBadge();
+  pageWhStock();
+}
+
 async function pageWhIncoming() {
   const data     = await api('/deliveries');
   const relevant = data.filter(d => ['assigned','warehouse_ready','loaded'].includes(d.status));
@@ -1354,8 +2083,11 @@ async function pageMyRoutes() {
               </div>
             </div>
             ${isNext && !isDone ? `
-              <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%" onclick="openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}','${del ? del.status : ''}')">
-                ${del && del.status==='in-transit' ? '✅ Mark Delivered' : '🚛 Mark In Transit'}
+              <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%"
+                onclick="${del && del.status==='in-transit'
+                  ? `openPinVerify('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}')`
+                  : `openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}','${del ? del.status : ''}')`}">
+                ${del && del.status==='in-transit' ? '🔐 Verify PIN & Deliver' : '🚛 Mark In Transit'}
               </button>` : ''}
           </div>
         </div>`;
@@ -1564,7 +2296,9 @@ async function pageUpdStatus() {
             <td>${delBadge(d.status)}</td>
             <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
               ${d.status==='in-transit' ? '<span style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:3px 8px;border-radius:20px">📡 GPS On</span>' : ''}
-              <button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>
+              ${d.status==='in-transit'
+                ? `<button class="btn btn-tan btn-sm" onclick="openPinVerify('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}')">🔐 Verify PIN</button>`
+                : `<button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>`}
             </td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>All stops complete! 🎉</div></div></td></tr>'}</tbody>
       </table></div>
@@ -1572,14 +2306,15 @@ async function pageUpdStatus() {
     <div class="card">
       <div class="card-title">Completed <span class="badge b-green" style="margin-left:8px">${completed.length}</span></div>
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Final Status</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Status</th><th>Action</th></tr></thead>
         <tbody>${completed.length ? completed.map(d=>`
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td>${d.retailer}</td><td>${d.city}</td>
             <td style="font-size:12px">${d.items} items</td>
             <td>${delBadge(d.status)}</td>
-          </tr>`).join('') : '<tr><td colspan="5"><div class="empty"><div>No completed deliveries yet.</div></div></td></tr>'}</tbody>
+            <td>${d.status==='failed'?`<button class="btn btn-blue btn-sm" onclick="rescheduleDelivery('${d.id}')">🔄 Reschedule</button>`:'—'}</td>
+          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div>No completed deliveries yet.</div></div></td></tr>'}</tbody>
       </table></div>
     </div>`);
 }
@@ -1604,25 +2339,53 @@ function openStatus(id, retailer, city, currentStatus) {
   openModal('m-status');
 }
 
+function selectFailType(btn) {
+  document.querySelectorAll('.fail-type-btn').forEach(b => {
+    b.style.border = '2px solid var(--cream-dk)';
+    b.style.background = 'var(--white)';
+  });
+  btn.style.border = '2px solid var(--red)';
+  btn.style.background = '#FFF5F5';
+  document.getElementById('s-failtype').value = btn.dataset.type;
+  document.getElementById('s-failtype-err').classList.remove('show');
+
+  // Show auto-reassign notice for breakdown
+  const notice = document.getElementById('s-reassign-notice');
+  if (notice) notice.style.display = btn.dataset.type === 'vehicle_breakdown' ? 'block' : 'none';
+}
+
 function onStatusChange() {
   const status = document.getElementById('s-status').value;
-  const reqLabel = document.getElementById('s-note-req');
+  const reqLabel  = document.getElementById('s-note-req');
   const noteInput = document.getElementById('s-note');
-  const btn = document.getElementById('s-submit-btn');
+  const btn       = document.getElementById('s-submit-btn');
+  const failWrap  = document.getElementById('s-failtype-wrap');
+  const notice    = document.getElementById('s-reassign-notice');
+
+  // Reset fail type selection
+  document.querySelectorAll('.fail-type-btn').forEach(b => {
+    b.style.border = '2px solid var(--cream-dk)';
+    b.style.background = 'var(--white)';
+  });
+  document.getElementById('s-failtype').value = '';
+  if (notice) notice.style.display = 'none';
 
   if (status === 'failed') {
+    failWrap.style.display = 'block';
     reqLabel.style.display = 'inline';
-    noteInput.placeholder = 'Required: reason delivery failed (e.g. address not found, customer refused)';
+    noteInput.placeholder = 'Additional details about the failure…';
     btn.className = 'btn btn-red';
     btn.textContent = '❌ Mark Failed & Notify All';
   } else if (status === 'delivered') {
+    failWrap.style.display = 'none';
     reqLabel.style.display = 'none';
-    noteInput.placeholder = 'Optional: any delivery note (e.g. left with security, signed by manager)';
+    noteInput.placeholder = 'Optional: signed by manager, left at gate…';
     btn.className = 'btn btn-green';
     btn.textContent = '✅ Mark Delivered & Notify All';
   } else {
+    failWrap.style.display = 'none';
     reqLabel.style.display = 'none';
-    noteInput.placeholder = 'Optional: e.g. departed at 14:30, en route via highway';
+    noteInput.placeholder = 'Optional: departed 14:30, en route via highway…';
     btn.className = 'btn btn-tan';
     btn.textContent = '🚛 Mark In Transit & Notify All';
   }
@@ -1632,46 +2395,81 @@ async function saveStatus() {
   const id        = document.getElementById('s-id').value;
   const newStatus = document.getElementById('s-status').value;
   const note      = document.getElementById('s-note').value.trim();
+  const failType  = document.getElementById('s-failtype')?.value || '';
   const noteErr   = document.getElementById('s-note-err');
   const noteInput = document.getElementById('s-note');
+  let valid = true;
 
-  // Client-side validation: note required for failed
+  // Validate: note required for failed
   if (newStatus === 'failed' && !note) {
-    noteErr.classList.add('show');
-    noteInput.classList.add('err');
-    noteInput.focus();
-    return;
+    noteErr.classList.add('show'); noteInput.classList.add('err');
+    noteInput.focus(); valid = false;
+  } else {
+    noteErr.classList.remove('show'); noteInput.classList.remove('err');
   }
-  noteErr.classList.remove('show');
-  noteInput.classList.remove('err');
+  // Validate: failType required for failed
+  if (newStatus === 'failed' && !failType) {
+    document.getElementById('s-failtype-err').classList.add('show');
+    valid = false;
+  } else {
+    document.getElementById('s-failtype-err')?.classList.remove('show');
+  }
+  if (!valid) return;
 
   const btn = document.getElementById('s-submit-btn');
   btn.disabled = true;
   btn.textContent = 'Saving…';
 
-  const result = await api(`/deliveries/${id}/status`, 'PUT', { newStatus, note, updatedBy: user.id });
+  const result = await api(`/deliveries/${id}/status`, 'PUT', { newStatus, note, failType, updatedBy: user.id });
   btn.disabled = false;
   onStatusChange();
 
-  if (result.error) {
-    toast(`❌ ${result.error}`, '#dc2626');
-    return;
-  }
+  if (result.error) { toast(`❌ ${result.error}`, '#dc2626'); return; }
 
-  // Only start/stop GPS AFTER confirmed successful status update
   if (newStatus === 'in-transit') {
     startGps(id);
-    toast('🚛 In Transit — GPS tracking started 📍 Location is being shared live', '#1565C0');
-  } else if (newStatus === 'delivered' || newStatus === 'failed') {
+    toast('🚛 In Transit — GPS tracking started 📍', '#1565C0');
+  } else if (newStatus === 'delivered') {
     stopGps();
-    const labels = { 'delivered':'✅ Delivered — All 4 parties notified 🔔', 'failed':'❌ Failed — All 4 parties notified 🔔' };
-    const colours = { 'delivered':'#16a34a', 'failed':'#dc2626' };
-    toast(labels[newStatus], colours[newStatus]);
+    toast('✅ Delivered — All 4 parties notified 🔔', '#16a34a');
+  } else if (newStatus === 'failed') {
+    stopGps();
+    const failMessages = {
+      vehicle_breakdown: '🔧 Breakdown recorded — auto-reassignment triggered 🔔',
+      out_of_stock:      '📦 Out of stock recorded — warehouse alerted 🔔',
+      customer_absent:   '🚪 Customer absent recorded — OPT notified 🔔',
+      customer_refused:  '❌ Refusal recorded — OPT notified 🔔',
+      wrong_address:     '📍 Address issue recorded — OPT notified 🔔',
+      other:             '❌ Failure recorded — All parties notified 🔔',
+    };
+    toast(failMessages[failType] || '❌ Failed — All parties notified 🔔', '#dc2626');
+
+    // Show reschedule option after breakdown or stock issue
+    if (failType === 'vehicle_breakdown' || failType === 'out_of_stock') {
+      setTimeout(() => {
+        if (confirm('Would you like to reschedule this delivery now?')) {
+          rescheduleDelivery(id);
+        }
+      }, 1000);
+    }
   }
 
   closeModal('m-status');
   pollBadge();
   pageUpdStatus();
+}
+
+async function rescheduleDelivery(deliveryId) {
+  const btn = document.querySelector(`[onclick="rescheduleDelivery('${deliveryId}')"]`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Rescheduling…'; }
+  const r = await api(`/deliveries/${deliveryId}/reschedule`, 'POST', {});
+  if (r.error) {
+    toast(`❌ Cannot reschedule: ${r.error}`, '#dc2626');
+  } else {
+    toast(`🔄 Rescheduled to ${r.driverName} (${r.vehicleId}) · ETA ${r.eta} — All parties notified 🔔`, '#0f766e');
+    pollBadge();
+    pageUpdStatus();
+  }
 }
 
 // ══ DELIVERY HISTORY ════════════════════════════
@@ -1770,14 +2568,21 @@ async function pageLiveMap() {
   const routeLines      = {};
   let lastUpdateTime    = {};
 
-  function makeTruckIcon(driverName) {
+  function makeTruckIcon(driverName, heading, speed) {
     const initials = (driverName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const kmh = speed ? Math.round(speed * 3.6) : null;
+    const speedBadge = kmh !== null && kmh > 0 ? `<div style="position:absolute;top:-18px;left:50%;transform:translateX(-50%);background:#D4A832;color:#1B2A4A;border-radius:10px;padding:1px 6px;font-size:9px;font-weight:800;white-space:nowrap">${kmh} km/h</div>` : '';
+    const arrow = heading !== null && heading !== undefined ? `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(${heading}deg);font-size:12px;line-height:1">▲</div>` : '';
     return L.divIcon({
-      html: `<div class="truck-pin" style="background:#1B2A4A;color:white;border-radius:50%;width:40px;height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #A67C1E;font-size:9px;font-weight:700;line-height:1.1">
-               <span style="font-size:16px;line-height:1">🚛</span>
-               <span style="font-size:8px;opacity:.85">${initials}</span>
+      html: `<div style="position:relative">
+               ${speedBadge}
+               ${arrow}
+               <div class="truck-pin" style="background:#1B2A4A;color:white;border-radius:50%;width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;border:3px solid #A67C1E;font-size:9px;font-weight:700;line-height:1.1;box-shadow:0 3px 12px rgba(27,42,74,.5)">
+                 <span style="font-size:18px;line-height:1">🚛</span>
+                 <span style="font-size:8px;opacity:.9">${initials}</span>
+               </div>
              </div>`,
-      className:'', iconSize:[40,40], iconAnchor:[20,20]
+      className:'', iconSize:[44,44], iconAnchor:[22,22]
     });
   }
 
@@ -1841,14 +2646,16 @@ async function pageLiveMap() {
       lastUpdateTime[id] = Date.now() - (secsAgo * 1000);
 
       // ── Truck marker
+      const heading = d.heading ? parseFloat(d.heading) : null;
+      const speed   = d.speed   ? parseFloat(d.speed)   : null;
       if (mapMarkers[id]) {
         mapMarkers[id].setLatLng([lat, lng]);
-        mapMarkers[id].setIcon(makeTruckIcon(d.driverName));
+        mapMarkers[id].setIcon(makeTruckIcon(d.driverName, heading, speed));
         mapMarkers[id].getPopup().setContent(popupHtml(d));
       } else {
-        mapMarkers[id] = L.marker([lat, lng], { icon: makeTruckIcon(d.driverName), zIndexOffset:1000 })
+        mapMarkers[id] = L.marker([lat, lng], { icon: makeTruckIcon(d.driverName, heading, speed), zIndexOffset:1000 })
           .addTo(mapInstance)
-          .bindPopup(popupHtml(d), { maxWidth:220 });
+          .bindPopup(popupHtml(d), { maxWidth:240 });
       }
 
       // ── Accuracy circle (50m radius visual)
@@ -1891,39 +2698,55 @@ async function pageLiveMap() {
       }
     });
 
-    // Auto-fit map to show all active trucks
-    if (Object.keys(mapMarkers).length > 0) {
+    // Auto-fit map only on FIRST load — don't jump while user is viewing
+    if (Object.keys(mapMarkers).length > 0 && !mapInstance._hasAutoFitted) {
       const group = L.featureGroup(Object.values(mapMarkers));
       mapInstance.fitBounds(group.getBounds().pad(0.3));
+      mapInstance._hasAutoFitted = true;
     }
 
     // Info panel
     document.getElementById('map-info').innerHTML = `
       <div class="card">
         <div class="card-title" style="font-size:17px;font-weight:800;color:#1B2A4A">🚛 Active Drivers on the Road — ${data.length}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">
-          ${data.map(d => `
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">
+          ${data.map(d => {
+            const kmh = d.speed ? Math.round(parseFloat(d.speed)*3.6) : null;
+            const acc = d.accuracy ? Math.round(parseFloat(d.accuracy)) : null;
+            const stops = d.stopsRemaining ? parseInt(d.stopsRemaining) : null;
+            const secs = d.secondsAgo ? Math.round(parseFloat(d.secondsAgo)) : 0;
+            const freshColor = secs<30?'#0f766e':secs<90?'#b45309':'#b91c1c';
+            const freshLabel = secs<30?'Live':secs<60?secs+'s ago':Math.floor(secs/60)+'m ago';
+            return `
             <div style="background:#FFFFFF;border-radius:12px;padding:16px;border:2px solid #D9C89A;box-shadow:0 2px 8px rgba(61,43,10,.1)">
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-                <div style="width:44px;height:44px;border-radius:50%;background:#1B2A4A;color:#FAF5E8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;border:3px solid #A67C1E">
+                <div style="width:46px;height:46px;border-radius:50%;background:#1B2A4A;color:#FAF5E8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;border:3px solid #A67C1E">
                   ${(d.driverName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}
                 </div>
                 <div style="flex:1;min-width:0">
-                  <div style="font-size:16px;font-weight:800;color:#1B2A4A;line-height:1.2">${escapeHtml(d.driverName||'Driver')}</div>
-                  <div style="font-size:13px;font-weight:700;color:#4A3520;margin-top:2px">🚛 ${escapeHtml(d.vehicleId||'—')}</div>
+                  <div style="font-size:15px;font-weight:800;color:#1B2A4A;line-height:1.2">${escapeHtml(d.driverName||'Driver')}</div>
+                  <div style="font-size:12px;font-weight:700;color:#4A3520;margin-top:2px">🚛 ${escapeHtml(d.vehicleId||'—')}</div>
                 </div>
-                <span class="badge b-orange">🟠 In Transit</span>
+                <div style="text-align:right">
+                  <span class="badge b-orange" style="font-size:10px">In Transit</span>
+                  ${stops!==null?`<div style="font-size:10px;font-weight:700;color:#6A1B9A;margin-top:4px">${stops} stop${stops!==1?'s':''} left</div>`:''}
+                </div>
               </div>
               <div style="background:#FAF5E8;border-radius:8px;padding:10px 12px;margin-bottom:10px;border-left:4px solid #1B2A4A">
-                <div style="font-size:13px;font-weight:700;color:#1B2A4A;margin-bottom:4px">📍 Heading to: <span style="color:#BF360C">${escapeHtml(d.city||'—')}</span></div>
-                <div style="font-size:13px;font-weight:600;color:#3D2B0A">🏪 ${escapeHtml(d.retailerName||'—')}</div>
-                <div style="font-size:13px;font-weight:700;color:#1B5E20;margin-top:4px">⏰ ETA: ${escapeHtml(d.eta||'—')}</div>
+                <div style="font-size:13px;font-weight:700;color:#1B2A4A;margin-bottom:3px">📍 <span style="color:#BF360C">${escapeHtml(d.city||'—')}</span></div>
+                <div style="font-size:12px;font-weight:600;color:#3D2B0A;margin-bottom:3px">🏪 ${escapeHtml(d.retailerName||'—')}</div>
+                <div style="font-size:13px;font-weight:700;color:#1B5E20">⏰ ETA ${escapeHtml(d.eta||'—')}</div>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+                ${kmh!==null?`<span style="background:#EBF4FF;color:#0D47A1;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">🏎 ${kmh} km/h</span>`:''}
+                ${acc!==null?`<span style="background:${acc<50?'#E8F5E9':'#FFF8E1'};color:${acc<50?'#1B5E20':'#856404'};border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700">±${acc}m accuracy</span>`:''}
               </div>
               <div style="display:flex;align-items:center;justify-content:space-between;border-top:1px solid #D9C89A;padding-top:10px">
-                <div style="font-size:12px;font-weight:700;color:#3D2B0A">🛰 GPS: <span id="last-update-${d.deliveryId}" style="color:#0f766e">just now</span></div>
+                <div style="font-size:12px;font-weight:700;color:#3D2B0A">🛰 <span id="last-update-${d.deliveryId}" style="color:${freshColor};font-weight:800">${freshLabel}</span></div>
                 <button class="btn btn-tan btn-sm" onclick="focusTruck(${d.deliveryId})">🎯 Focus</button>
               </div>
-            </div>`).join('')}
+            </div>`;
+          }).join('')}
         </div>
       </div>`;
 
@@ -1936,18 +2759,32 @@ async function pageLiveMap() {
   };
 
   await refreshMap();
-  mapPollInterval = setInterval(refreshMap, 10000);
+  mapPollInterval = setInterval(refreshMap, 5000); // 5s for smoother tracking
 }
 
 function popupHtml(d) {
-  return `<div style="min-width:220px;font-family:sans-serif;padding:6px">
-    <div style="font-size:15px;font-weight:800;color:#1B2A4A;margin-bottom:6px">🚛 ${escapeHtml(d.driverName||'Driver')}</div>
-    <div style="font-size:13px;font-weight:700;color:#3D2B0A;margin-bottom:2px">Vehicle: ${escapeHtml(d.vehicleId||'—')}</div>
-    <hr style="border:none;border-top:2px solid #D9C89A;margin:8px 0"/>
-    <div style="font-size:13px;font-weight:700;color:#BF360C;margin-bottom:4px">📍 Heading to: <strong>${escapeHtml(d.city||'—')}</strong></div>
-    <div style="font-size:13px;font-weight:600;color:#3D2B0A;margin-bottom:4px">🏪 ${escapeHtml(d.retailerName||'—')}</div>
-    <div style="font-size:13px;font-weight:800;color:#1B5E20;margin-bottom:8px">⏰ ETA: ${escapeHtml(d.eta||'—')}</div>
-    <div style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:4px 8px;border-radius:6px">🛰 GPS updated: ${escapeHtml(d.recordedAt||'—')}</div>
+  const secs = d.secondsAgo ? Math.round(parseFloat(d.secondsAgo)) : 0;
+  const freshness = secs < 30 ? '#0f766e' : secs < 90 ? '#b45309' : '#b91c1c';
+  const freshnessLabel = secs < 30 ? 'Live' : secs < 60 ? secs+'s ago' : Math.floor(secs/60)+'m ago';
+  const kmh = d.speed ? Math.round(parseFloat(d.speed) * 3.6) : null;
+  const acc = d.accuracy ? Math.round(parseFloat(d.accuracy)) : null;
+  const stops = d.stopsRemaining ? parseInt(d.stopsRemaining) : null;
+  return `<div style="min-width:230px;font-family:sans-serif;padding:6px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:15px;font-weight:800;color:#1B2A4A">🚛 ${escapeHtml(d.driverName||'Driver')}</div>
+      <div style="background:${freshness};color:white;border-radius:10px;padding:2px 8px;font-size:10px;font-weight:700">${freshnessLabel}</div>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#3D2B0A;margin-bottom:6px">🚗 ${escapeHtml(d.vehicleId||'—')}</div>
+    <hr style="border:none;border-top:2px solid #D9C89A;margin:6px 0"/>
+    <div style="font-size:13px;font-weight:700;color:#BF360C;margin-bottom:3px">📍 ${escapeHtml(d.city||'—')}</div>
+    <div style="font-size:12px;font-weight:600;color:#3D2B0A;margin-bottom:3px">🏪 ${escapeHtml(d.retailerName||'—')}</div>
+    <div style="font-size:13px;font-weight:800;color:#1B5E20;margin-bottom:8px">⏰ ETA ${escapeHtml(d.eta||'—')}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      ${kmh !== null ? `<span style="background:#EBF4FF;color:#1565C0;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700">🏎 ${kmh} km/h</span>` : ''}
+      ${acc !== null ? `<span style="background:${acc<50?'#E8F5E9':'#FFF8E1'};color:${acc<50?'#1B5E20':'#856404'};border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700">±${acc}m</span>` : ''}
+      ${stops !== null ? `<span style="background:#F3E5F5;color:#4A148C;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:700">${stops} stop${stops!==1?'s':''} left</span>` : ''}
+    </div>
+    <div style="font-size:10px;font-weight:700;color:${freshness};background:#F1F8E9;padding:3px 8px;border-radius:6px">🛰 ${escapeHtml(d.recordedAt||'—')}</div>
   </div>`;
 }
 
@@ -2143,6 +2980,75 @@ function calcKg() {
   }
 }
 
+// ── PIN VERIFICATION ─────────────────────────
+function pinDigit(el, nextId) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+  if (el.value && nextId) document.getElementById(nextId)?.focus();
+  // Auto-submit when all 4 filled
+  const pin = ['pin-1','pin-2','pin-3','pin-4'].map(i => document.getElementById(i)?.value||'').join('');
+  if (pin.length === 4) setTimeout(submitPin, 200);
+}
+
+function openPinVerify(deliveryId, retailer, city) {
+  document.getElementById('pv-id').value = deliveryId;
+  document.getElementById('pv-label').textContent = `${retailer} — ${city}`;
+  ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value=''; el.style.borderColor='var(--cream-dk)'; el.style.background='white'; el.disabled=false; }
+  });
+  document.getElementById('pv-err').style.display = 'none';
+  document.getElementById('pv-ok').style.display  = 'none';
+  const btn = document.getElementById('pv-btn');
+  btn.disabled = false;
+  btn.textContent = '🔐 Verify PIN & Complete Delivery';
+  btn.style.background = '';
+  openModal('m-pin-verify');
+  setTimeout(() => document.getElementById('pin-1')?.focus(), 350);
+}
+
+async function submitPin() {
+  const id  = document.getElementById('pv-id').value;
+  const pin = ['pin-1','pin-2','pin-3','pin-4'].map(i => document.getElementById(i)?.value||'').join('');
+  if (pin.length !== 4) return;
+
+  const btn = document.getElementById('pv-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying…';
+  document.getElementById('pv-err').style.display = 'none';
+
+  const r = await api(`/deliveries/${id}/verify-pin`, 'POST', { pin });
+
+  if (r.ok) {
+    // Success — green boxes
+    ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.borderColor='#16a34a'; el.style.background='#F0FFF4'; el.disabled=true; }
+    });
+    document.getElementById('pv-ok').innerHTML = '✅ PIN verified! Delivery marked as complete.';
+    document.getElementById('pv-ok').style.display = 'flex';
+    btn.textContent = '✅ Complete!';
+    btn.style.background = '#16a34a';
+    stopGps();
+    setTimeout(() => {
+      closeModal('m-pin-verify');
+      toast('✅ PIN Verified — Delivery Complete! All 4 parties notified 🔔', '#16a34a');
+      pollBadge();
+      pageUpdStatus();
+    }, 1600);
+  } else {
+    // Error — red boxes, clear for retry
+    ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.borderColor='#B71C1C'; el.style.background='#FFF5F5'; el.value=''; }
+    });
+    document.getElementById('pv-err').textContent = r.error || 'Incorrect PIN. Please try again.';
+    document.getElementById('pv-err').style.display = 'flex';
+    btn.disabled = r.locked || false;
+    btn.textContent = r.locked ? '🔒 Locked — Contact OPT' : '🔐 Try Again';
+    if (!r.locked) setTimeout(() => document.getElementById('pin-1')?.focus(), 100);
+  }
+}
+
 // ── GPS TRACKING ──
 let gpsWatcher = null;
 let gpsInterval = null;
@@ -2150,44 +3056,63 @@ let activeDeliveryId = null;
 
 function startGps(deliveryId) {
   activeDeliveryId = deliveryId;
+  lastSentLat = null; lastSentLng = null; consecutiveErrors = 0;
+
   if (!navigator.geolocation) {
     toast('⚠️ GPS not available on this device', '#ea580c');
     return;
   }
-  // First get an immediate fix
+
+  // Step 1: Get an immediate first fix (low accuracy ok — just to appear on map fast)
   navigator.geolocation.getCurrentPosition(
     pos => {
       sendLocation(deliveryId, pos);
       updateGpsIndicator(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
     },
-    err => console.warn('[GPS first fix]', err.message),
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    err => console.warn('[GPS first fix failed]', err.code, err.message),
+    { enableHighAccuracy: false, timeout: 5000, maximumAge: 30000 }
   );
-  // Then watch continuously — fires every time position changes
-  gpsWatcher = navigator.geolocation.watchPosition(
+
+  // Step 2: Then get high-accuracy fix
+  navigator.geolocation.getCurrentPosition(
     pos => {
       sendLocation(deliveryId, pos);
       updateGpsIndicator(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy);
     },
+    err => console.warn('[GPS high-accuracy fix failed]', err.code, err.message),
+    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+  );
+
+  // Step 3: Continuous watch — fires on every position change
+  gpsWatcher = navigator.geolocation.watchPosition(
+    pos => sendLocation(deliveryId, pos),
     err => {
       console.warn('[GPS watch error]', err.code, err.message);
-      if (err.code === 1) toast('⚠️ GPS permission denied — please allow location in browser settings', '#dc2626');
-      else if (err.code === 2) toast('⚠️ GPS signal lost — trying to reconnect…', '#ea580c');
+      if (err.code === 1) {
+        toast('⚠️ GPS permission denied — go to browser settings and allow location', '#dc2626');
+        stopGps();
+      } else if (err.code === 2) {
+        toast('⚠️ GPS signal weak — move to open area for better accuracy', '#ea580c');
+      } else if (err.code === 3) {
+        console.log('[GPS] Timeout — watchPosition will retry automatically');
+      }
     },
-    { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 }
+    { enableHighAccuracy: true, maximumAge: 0, timeout: 30000 }
   );
-  // Fallback interval every 15s in case watchPosition stalls
+
+  // Step 4: Heartbeat every 10s — forces a fresh fix even if driver is stationary
   gpsInterval = setInterval(() => {
     if (!activeDeliveryId) return;
     navigator.geolocation.getCurrentPosition(
       pos => sendLocation(deliveryId, pos),
-      err => console.warn('[GPS fallback]', err.message),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 10000 }
+      err => console.warn('[GPS heartbeat error]', err.code),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 5000 }
     );
-  }, 15000);
+  }, 10000);
+
   showGpsIndicator();
-  toast('📍 GPS tracking started — sharing your live location', '#0f766e');
-  console.log('[GPS] Tracking started for delivery', deliveryId);
+  toast('📍 GPS started — your live location is being shared', '#0f766e');
+  console.log('[GPS] Started for delivery', deliveryId);
 }
 
 function stopGps() {
@@ -2198,20 +3123,47 @@ function stopGps() {
   console.log('[GPS] Tracking stopped');
 }
 
+let lastSentLat = null, lastSentLng = null, consecutiveErrors = 0;
+
 async function sendLocation(deliveryId, pos) {
   try {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const acc = pos.coords.accuracy || null;
+    const spd = pos.coords.speed    || null;
+    const hdg = pos.coords.heading  || null;
+
+    // Skip if position hasn't changed meaningfully (< 5m movement)
+    if (lastSentLat !== null) {
+      const dlat = Math.abs(lat - lastSentLat), dlng = Math.abs(lng - lastSentLng);
+      if (dlat < 0.00005 && dlng < 0.00005) {
+        console.log('[GPS] Skipped — no meaningful movement');
+        return;
+      }
+    }
+    lastSentLat = lat; lastSentLng = lng;
+
     const payload = {
       deliveryId: parseInt(deliveryId),
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude
+      lat, lng,
+      accuracy: acc ? Math.round(acc) : null,
+      speed:    spd ? parseFloat(spd.toFixed(2)) : null,
+      heading:  hdg ? Math.round(hdg) : null
     };
     const r = await api('/tracking/update', 'POST', payload);
     if (r && r.ok) {
-      console.log('[GPS] ✅ Sent:', pos.coords.latitude.toFixed(5), pos.coords.longitude.toFixed(5), '±' + Math.round(pos.coords.accuracy||0) + 'm');
+      consecutiveErrors = 0;
+      const accStr = acc ? `±${Math.round(acc)}m` : '';
+      const spdStr = spd ? ` ${(spd*3.6).toFixed(1)}km/h` : '';
+      console.log(`[GPS] ✅ Sent: ${lat.toFixed(5)}, ${lng.toFixed(5)} ${accStr}${spdStr}`);
+      updateGpsIndicator(lat, lng, acc);
     } else {
+      consecutiveErrors++;
       console.warn('[GPS] ⚠️ Server response:', r);
+      if (consecutiveErrors >= 3) toast('⚠️ GPS: having trouble sending location — check connection', '#ea580c');
     }
   } catch(e) {
+    consecutiveErrors++;
     console.warn('[GPS send error]', e.message);
   }
 }
@@ -2268,20 +3220,21 @@ function showGpsIndicator() {
   bar.style.display = 'flex';
 }
 
-function updateGpsIndicator(lat, lng, accuracy) {
-  // Update bottom pill
+function updateGpsIndicator(lat, lng, accuracy, speed) {
+  // Bottom floating pill
   const el = document.getElementById('gps-text');
   if (el) {
-    const acc = accuracy ? `±${Math.round(accuracy)}m` : '';
-    const accColor = accuracy < 20 ? '#4ade80' : accuracy < 100 ? '#fbbf24' : '#f87171';
-    el.innerHTML = `GPS Live &nbsp;<span style="color:${accColor};font-size:11px">${acc}</span>`;
+    const acc = accuracy ? Math.round(accuracy) : null;
+    const accColor = !acc ? '#9ca3af' : acc < 20 ? '#4ade80' : acc < 100 ? '#fbbf24' : '#f87171';
+    const kmh = speed ? Math.round(speed * 3.6) : null;
+    el.innerHTML = `GPS Live &nbsp;<span style="color:${accColor};font-size:11px">${acc ? '±'+acc+'m' : ''}</span>${kmh ? `&nbsp;<span style="color:#93c5fd;font-size:11px">${kmh}km/h</span>` : ''}`;
   }
-  // Update panel text
+  // Panel text on Update Status page
   const panel = document.getElementById('gps-panel-text');
   if (panel) {
     const acc = Math.round(accuracy || 0);
     const now = new Date().toLocaleTimeString('en-LK', { timeZone:'Asia/Colombo', hour:'2-digit', minute:'2-digit', second:'2-digit' });
-    panel.textContent = `✅ Sharing live — ${lat.toFixed(5)}, ${lng.toFixed(5)} ±${acc}m · Updated ${now}`;
+    panel.textContent = `✅ Sharing live · ${lat.toFixed(5)}, ${lng.toFixed(5)} · ±${acc}m · ${now}`;
   }
 }
 
