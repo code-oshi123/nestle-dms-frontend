@@ -2,12 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <title>Nestlé — Smart Delivery Management System</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* ══ RESET & ROOT ══════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
   --tan:#8B6914;--tan-d:#6b4f0f;--tan-l:#A67C1E;
   --cream:#F7F0DF;--cream-d:#EDE0C0;--cream-dk:#D9C89A;
@@ -21,98 +25,100 @@
   --shadow:0 1px 3px rgba(61,43,10,.06),0 4px 20px rgba(61,43,10,.08);
   --shadow-card:0 2px 8px rgba(61,43,10,.10),0 8px 28px rgba(61,43,10,.07);
   --r:12px;--r-sm:8px;
+  --topbar-h:64px;--tabnav-h:50px;--bottomnav-h:0px;
 }
-body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown);min-height:100vh}
+html{scroll-behavior:smooth}
+body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown);min-height:100vh;overflow-x:hidden}
 
-/* ══ LOGIN ══════════════════════════════════ */
+/* ══ LOGIN ══════════════════════════════════════════════════════════ */
 #login{min-height:100vh;display:flex;align-items:center;justify-content:center;
   background:linear-gradient(145deg,#2a1c06 0%,#3D2B0A 40%,#6B4E1A 75%,#8B6914 100%);
-  position:relative;overflow:hidden}
+  position:relative;overflow:hidden;padding:16px}
 #login::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse at 80% 20%,rgba(166,124,30,.18) 0%,transparent 60%),
-             radial-gradient(ellipse at 10% 80%,rgba(139,105,20,.12) 0%,transparent 50%);
+  background:radial-gradient(ellipse at 80% 20%,rgba(166,124,30,.2) 0%,transparent 60%),
+             radial-gradient(ellipse at 10% 80%,rgba(139,105,20,.14) 0%,transparent 50%);
   pointer-events:none}
 #login::after{content:'';position:absolute;inset:0;
-  background:repeating-linear-gradient(45deg,transparent,transparent 60px,rgba(255,255,255,.012) 60px,rgba(255,255,255,.012) 61px);
+  background:repeating-linear-gradient(45deg,transparent,transparent 60px,rgba(255,255,255,.013) 60px,rgba(255,255,255,.013) 61px);
   pointer-events:none}
-.lcard{background:var(--cream);border-radius:24px;padding:48px 44px;width:100%;max-width:440px;
-  box-shadow:0 24px 80px rgba(0,0,0,.4),0 0 0 1px rgba(217,200,154,.5);
+.lcard{background:var(--cream);border-radius:24px;padding:40px 36px;width:100%;max-width:440px;
+  box-shadow:0 24px 80px rgba(0,0,0,.45),0 0 0 1px rgba(217,200,154,.5);
   position:relative;z-index:1;animation:slideUp .5s cubic-bezier(.34,1.56,.64,1)}
 @keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
-.llogo{display:flex;align-items:center;gap:16px;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid var(--cream-dk)}
-.llogo-img{width:56px;height:56px;object-fit:contain;background:var(--white);border-radius:12px;padding:6px;border:1px solid var(--cream-dk)}
-.lbrand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--brown);line-height:1.1}
-.lbrand span{display:block;font-size:10px;font-family:'Jost',sans-serif;color:var(--brown-l);text-transform:uppercase;letter-spacing:1px;font-weight:500;margin-top:3px}
+.llogo{display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-bottom:22px;border-bottom:1px solid var(--cream-dk)}
+.llogo-img{width:52px;height:52px;object-fit:contain;background:var(--white);border-radius:12px;padding:6px;border:1px solid var(--cream-dk);flex-shrink:0}
+.lbrand{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700;color:var(--brown);line-height:1.1}
+.lbrand span{display:block;font-size:10px;font-family:'Jost',sans-serif;color:var(--brown-l);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-top:3px}
 .lh{font-size:26px;font-weight:600;color:var(--brown);margin-bottom:4px;font-family:'Cormorant Garamond',serif}
-.ls{font-size:13px;color:var(--brown-m);margin-bottom:26px;font-weight:400}
+.ls{font-size:13px;color:var(--brown-m);margin-bottom:24px;font-weight:400;line-height:1.5}
 .fi{margin-bottom:16px}
-.fi label{display:block;font-size:10px;font-weight:600;color:var(--brown-m);margin-bottom:6px;text-transform:uppercase;letter-spacing:.8px}
-.fi input{width:100%;padding:12px 16px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:'Jost',sans-serif;font-size:14px;color:var(--brown);outline:none;transition:border-color .2s,box-shadow .2s;background:var(--white)}
-.fi input:focus{border-color:var(--tan);box-shadow:0 0 0 3px rgba(139,105,20,.12)}
-.lbtn{width:100%;padding:14px;background:linear-gradient(135deg,var(--tan) 0%,var(--tan-l) 100%);
+.fi label{display:block;font-size:10px;font-weight:700;color:var(--brown-m);margin-bottom:7px;text-transform:uppercase;letter-spacing:.8px}
+.fi input{width:100%;padding:13px 16px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:'Jost',sans-serif;font-size:16px;color:var(--brown);outline:none;transition:border-color .2s,box-shadow .2s;background:var(--white)}
+.fi input:focus{border-color:var(--tan);box-shadow:0 0 0 4px rgba(139,105,20,.12)}
+.lbtn{width:100%;padding:15px;background:linear-gradient(135deg,var(--tan) 0%,var(--tan-l) 100%);
   color:var(--cream);border:none;border-radius:var(--r-sm);
-  font-family:'Jost',sans-serif;font-size:15px;font-weight:600;cursor:pointer;
-  transition:all .2s;letter-spacing:.4px;box-shadow:0 4px 16px rgba(139,105,20,.35)}
+  font-family:'Jost',sans-serif;font-size:16px;font-weight:700;cursor:pointer;
+  transition:all .2s;letter-spacing:.4px;box-shadow:0 4px 16px rgba(139,105,20,.35);min-height:52px}
 .lbtn:hover{background:linear-gradient(135deg,var(--tan-d) 0%,var(--tan) 100%);box-shadow:0 6px 20px rgba(139,105,20,.45);transform:translateY(-1px)}
-.lerr{background:#fff0f0;border:1px solid #f9c0c0;color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none}
-.quick{margin-top:26px;padding-top:20px;border-top:1px solid var(--cream-dk)}
-.qlbl{font-size:10px;font-weight:600;color:var(--brown-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
-.qbtns{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.qbtn{display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--white);border:1px solid var(--cream-dk);border-radius:var(--r-sm);cursor:pointer;font-family:'Jost',sans-serif;font-size:12px;color:var(--brown);transition:all .15s;text-align:left}
-.qbtn:hover{background:var(--cream-d);border-color:var(--tan);transform:translateY(-1px)}
-.qav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
-.qname{font-weight:600;font-size:12px}.qrole{font-size:10px;color:var(--brown-l)}
+.lbtn:active{transform:translateY(0);box-shadow:0 2px 8px rgba(139,105,20,.35)}
+.lerr{background:#fff0f0;border:1px solid #f9c0c0;color:var(--red);border-radius:var(--r-sm);padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;font-weight:600}
+.quick{margin-top:24px;padding-top:20px;border-top:1px solid var(--cream-dk)}
+.qlbl{font-size:10px;font-weight:700;color:var(--brown-l);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px}
+.qbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.qbtn{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--white);border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);cursor:pointer;font-family:'Jost',sans-serif;font-size:12px;color:var(--brown);transition:all .15s;text-align:left;min-height:52px}
+.qbtn:hover,.qbtn:active{background:var(--cream-d);border-color:var(--tan);transform:translateY(-1px)}
+.qav{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.qname{font-weight:700;font-size:12px;line-height:1.2}.qrole{font-size:10px;color:var(--brown-l);margin-top:1px}
 
-/* ══ APP SHELL ══════════════════════════════ */
-#app{display:none;min-height:100vh}
-.topbar{background:linear-gradient(90deg,#2a1c06 0%,#3D2B0A 35%,#5a3c10 100%);
-  height:64px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.35),0 1px 0 rgba(217,200,154,.1)}
-.tl{display:flex;align-items:center;gap:16px}
-.tlogo-wrap{width:42px;height:42px;border-radius:10px;background:rgba(255,253,248,.95);
+/* ══ APP SHELL ══════════════════════════════════════════════════════ */
+#app{display:none;min-height:100vh;padding-bottom:var(--bottomnav-h)}
+.topbar{background:linear-gradient(90deg,#2a1c06 0%,#3D2B0A 40%,#4a3510 100%);
+  height:var(--topbar-h);padding:0 20px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.4),0 1px 0 rgba(217,200,154,.12)}
+.tl{display:flex;align-items:center;gap:14px;min-width:0;flex:1}
+.tlogo-wrap{width:40px;height:40px;border-radius:10px;background:rgba(255,253,248,.95);
   border:1px solid rgba(217,200,154,.4);display:flex;align-items:center;justify-content:center;padding:5px;flex-shrink:0}
 .tlogo-img{width:100%;height:100%;object-fit:contain;border-radius:6px}
-.tdivider{width:1px;height:32px;background:rgba(217,200,154,.2)}
-.ttitle{font-size:16px;font-weight:600;color:var(--cream);font-family:'Cormorant Garamond',serif;letter-spacing:.3px;line-height:1.1}
+.tdivider{width:1px;height:30px;background:rgba(217,200,154,.2);flex-shrink:0}
+.ttitle-wrap{min-width:0}
+.ttitle{font-size:16px;font-weight:600;color:var(--cream);font-family:'Cormorant Garamond',serif;letter-spacing:.3px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tsub{font-size:10px;color:rgba(245,237,214,.45);letter-spacing:.6px;font-weight:400;margin-top:2px}
-.tr{display:flex;align-items:center;gap:14px}
+.tr{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .tav{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--tan),var(--tan-l));
-  color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+  color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.3);flex-shrink:0}
 .tuser-info{text-align:right}
 .tname{font-size:13px;font-weight:600;color:var(--cream)}
 .trole{font-size:10px;color:rgba(245,237,214,.5);margin-top:1px}
-.tout{padding:7px 16px;background:rgba(245,237,214,.08);border:1px solid rgba(245,237,214,.2);
-  border-radius:8px;color:var(--cream);font-family:'Jost',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
-.tout:hover{background:rgba(245,237,214,.18);border-color:rgba(245,237,214,.4)}
+.tout{padding:7px 14px;background:rgba(245,237,214,.08);border:1px solid rgba(245,237,214,.2);
+  border-radius:8px;color:var(--cream);font-family:'Jost',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;min-height:36px}
+.tout:hover,.tout:active{background:rgba(245,237,214,.2);border-color:rgba(245,237,214,.4)}
 .bell-wrap{position:relative;cursor:pointer}
 .bell-btn{width:38px;height:38px;border-radius:50%;background:rgba(245,237,214,.08);
-  border:1px solid rgba(245,237,214,.2);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;cursor:pointer}
-.bell-btn:hover{background:rgba(245,237,214,.2)}
+  border:1px solid rgba(245,237,214,.2);display:flex;align-items:center;justify-content:center;font-size:17px;transition:all .15s;cursor:pointer;flex-shrink:0}
+.bell-btn:hover,.bell-btn:active{background:rgba(245,237,214,.2)}
 .bell-badge{position:absolute;top:-5px;right:-5px;background:var(--red);color:#fff;
   border-radius:20px;min-width:18px;height:18px;font-size:10px;font-weight:700;
   display:none;align-items:center;justify-content:center;padding:0 4px;border:2px solid #2a1c06}
 .bell-badge.show{display:flex}
 
-/* NOTIFICATION PANEL */
-.np{position:fixed;top:64px;right:0;width:380px;max-height:calc(100vh - 64px);
+/* ══ NOTIFICATION PANEL ════════════════════════════════════════════ */
+.np{position:fixed;top:var(--topbar-h);right:0;width:380px;max-height:calc(100vh - var(--topbar-h));
   background:var(--cream);box-shadow:-6px 0 28px rgba(61,43,10,.18);
   z-index:200;display:none;flex-direction:column;border-left:1px solid var(--cream-dk)}
 .np.open{display:flex}
-.np-hdr{padding:16px 18px;border-bottom:1px solid var(--cream-dk);
+.np-hdr{padding:14px 18px;border-bottom:1px solid var(--cream-dk);
   display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
   background:linear-gradient(90deg,var(--tan),var(--tan-l));color:var(--cream)}
 .np-title{font-size:15px;font-weight:600;color:var(--cream);display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
 .np-cnt{font-size:11px;background:var(--red);color:#fff;border-radius:20px;padding:2px 8px}
 .np-acts{display:flex;gap:6px;align-items:center}
-.np-readall{font-size:11px;font-weight:600;color:var(--cream);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);cursor:pointer;padding:4px 10px;border-radius:4px}
-.np-readall:hover{background:rgba(255,255,255,.25)}
-.np-x{background:none;border:none;font-size:20px;cursor:pointer;color:rgba(245,237,214,.7);line-height:1;padding:0 4px}
-.np-x:hover{color:var(--cream)}
-.np-list{overflow-y:auto;flex:1;background:var(--cream)}
+.np-readall{font-size:11px;font-weight:600;color:var(--cream);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);cursor:pointer;padding:4px 10px;border-radius:4px;min-height:30px}
+.np-x{background:none;border:none;font-size:22px;cursor:pointer;color:rgba(245,237,214,.7);line-height:1;padding:0 4px;min-width:32px;min-height:32px;display:flex;align-items:center;justify-content:center}
+.np-list{overflow-y:auto;flex:1;background:var(--cream);-webkit-overflow-scrolling:touch}
 .np-empty{text-align:center;padding:40px 20px;color:var(--brown-l)}
 .np-empty-ico{font-size:28px;margin-bottom:8px}
 .ni{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--cream-dk);cursor:pointer;transition:background .12s;position:relative}
-.ni:hover{background:var(--cream-d)}
+.ni:hover,.ni:active{background:var(--cream-d)}
 .ni.unread{background:rgba(166,124,30,.08)}
 .ni.unread::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0;background:var(--tan)}
 .ni.unread.t-success::before{background:var(--green)}
@@ -128,166 +134,75 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .ni-time{font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace}
 .ni-ref{font-size:10px;color:var(--tan);font-family:'DM Mono',monospace;background:rgba(139,105,20,.12);padding:1px 6px;border-radius:4px}
 
-/* ══ TABS ════════════════════════════════════ */
-.tabs{background:var(--white);border-bottom:1px solid var(--cream-dk);padding:0 28px;display:flex;gap:2px;overflow-x:auto;box-shadow:0 1px 6px rgba(61,43,10,.06)}
-.tab{padding:14px 20px;border:none;background:none;font-family:'Jost',sans-serif;font-size:12px;font-weight:600;
-  color:var(--brown-l);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
-  transition:color .15s,border-color .15s;white-space:nowrap;display:flex;align-items:center;gap:7px;
-  text-transform:uppercase;letter-spacing:.6px}
-.tab:hover{color:var(--brown)}.tab.active{color:var(--tan);border-bottom-color:var(--tan)}
+/* ══ TABS ════════════════════════════════════════════════════════ */
+.tabs{background:var(--white);border-bottom:2px solid var(--cream-dk);padding:0;display:flex;gap:0;overflow-x:auto;box-shadow:0 2px 8px rgba(61,43,10,.06);scrollbar-width:none;-webkit-overflow-scrolling:touch;position:sticky;top:var(--topbar-h);z-index:90}
+.tabs::-webkit-scrollbar{display:none}
+.tab{padding:14px 18px;border:none;background:none;font-family:'Jost',sans-serif;font-size:11px;font-weight:700;
+  color:var(--brown-l);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;
+  transition:color .15s,border-color .15s,background .15s;white-space:nowrap;display:flex;align-items:center;gap:6px;
+  text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;min-height:50px}
+.tab:hover{color:var(--brown);background:rgba(139,105,20,.04)}
+.tab.active{color:var(--tan);border-bottom-color:var(--tan);background:rgba(139,105,20,.05)}
 
-/* ══ MAIN ════════════════════════════════════ */
-.main{padding:28px;max-width:1180px;margin:0 auto}
-.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:24px;margin-bottom:18px;border:1px solid var(--cream-dk)}
-.card-title{font-size:15px;font-weight:600;color:var(--brown);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
-.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
-.map-container{width:100%;height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--cream-dk)}
+/* ══ MAIN CONTENT ════════════════════════════════════════════════ */
+.main{padding:24px 24px;max-width:1200px;margin:0 auto}
+.card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:22px;margin-bottom:18px;border:1px solid var(--cream-dk)}
+.card-title{font-size:15px;font-weight:700;color:var(--brown);margin-bottom:18px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.sec-title{font-size:26px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
+.sec-sub{font-size:13px;color:var(--brown-m);margin-top:4px;font-weight:400;line-height:1.5}
+
+/* ══ MAP ═════════════════════════════════════════════════════════ */
+.map-container{width:100%;height:440px;border-radius:var(--r);overflow:hidden;border:1.5px solid var(--cream-dk);position:relative}
 #live-map{width:100%;height:100%}
-.track-badge{display:inline-flex;align-items:center;gap:4px;background:#E8F5E9;color:#2E7D32;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;animation:pulse-green 2s infinite}
-@keyframes pulse-green{0%,100%{opacity:1}50%{opacity:0.6}}
-@media(max-width:768px){
-  /* ── Topbar ── */
-  .topbar{padding:0 14px;height:56px}
-  .tlogo-wrap{width:36px;height:36px;padding:4px;border-radius:8px}
-  .ttitle{font-size:14px;letter-spacing:0;font-weight:700}
-  .tsub,.tdivider,.tuser-name,.tuser-role,.tuser-info{display:none}
-  .tbadge{width:30px;height:30px;font-size:12px;border-width:2px}
-  .tright{gap:10px}
+.map-info-bar{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--navy);border-radius:var(--r-sm);margin-bottom:10px;flex-wrap:wrap}
+.map-info-bar span{color:var(--white);font-size:12px;font-weight:500}
+.map-pulse{display:inline-block;width:8px;height:8px;background:#4CAF50;border-radius:50%;animation:mapPulse 1.5s infinite;flex-shrink:0}
+@keyframes mapPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.track-badge{display:inline-flex;align-items:center;gap:5px;background:#E8F5E9;color:#2E7D32;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;animation:pulse-green 2s infinite}
+@keyframes pulse-green{0%,100%{opacity:1}50%{opacity:.6}}
 
-  /* ── Tabs ── */
-  .tabs{padding:0;gap:0;overflow-x:auto;scrollbar-width:none;border-bottom:2px solid var(--cream-dk)}
-  .tabs::-webkit-scrollbar{display:none}
-  .tab{padding:12px 14px;font-size:11px;letter-spacing:.2px;gap:5px;font-weight:700}
-  .tab.active{border-bottom-width:3px}
-
-  /* ── Main ── */
-  .main{padding:14px 12px;padding-bottom:100px}
-  .card{padding:16px;border-radius:12px;margin-bottom:14px;border-width:1.5px}
-  .card-title{font-size:15px;font-weight:700;margin-bottom:14px}
-
-  /* ── Section header ── */
-  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:16px}
-  .sec-title{font-size:22px;font-weight:700}
-  .sec-sub{font-size:13px}
-  .sec-hdr .btn{width:100%;justify-content:center;padding:12px;font-size:14px}
-
-  /* ── KPI cards ── */
-  .kpi-row{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
-  .kpi{padding:14px;border-top-width:4px}
-  .kpi-v{font-size:26px;font-weight:700}
-  .kpi-l{font-size:11px;margin-top:4px;font-weight:600}
-
-  /* ── Tables ── */
-  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}
-  table{min-width:520px}
-  th{padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:.5px}
-  td{padding:12px 12px;font-size:13px}
-  .btn-sm{padding:7px 12px;font-size:12px;font-weight:600;border-radius:8px}
-
-  /* ── Forms ── */
-  .form-grid{grid-template-columns:1fr}
-  .fg{margin-bottom:14px}
-  .fg input,.fg select,.fg textarea{font-size:16px;padding:12px 14px;border-width:2px;border-radius:10px}
-  .fg label{font-size:11px;font-weight:700;margin-bottom:6px}
-  .fg input:focus,.fg select:focus{border-color:var(--tan);box-shadow:0 0 0 4px rgba(139,105,20,.15)}
-
-  /* ── Modals ── */
-  .modal-bg{padding:0;align-items:flex-end;background:rgba(0,0,0,.7)}
-  .modal{max-width:100%;width:100%;border-radius:20px 20px 0 0;max-height:94vh;border:none;border-top:3px solid var(--tan)}
-  .modal-title{padding:18px 20px;font-size:17px;font-weight:700}
-  .modal .modal-body{padding:16px 20px}
-  .modal-actions{flex-direction:column-reverse;gap:8px;padding:0 20px 20px}
-  .modal-actions .btn{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700;border-radius:12px}
-
-  /* ── Buttons ── */
-  .btn{font-size:13px;padding:10px 16px;font-weight:700;border-radius:10px}
-  .btn-tan{box-shadow:0 3px 10px rgba(139,105,20,.35)}
-
-  /* ── Map ── */
-  .map-container{height:300px;border-radius:10px;border-width:2px}
-
-  /* ── Notifications ── */
-  .np{width:100%;right:0;left:0;border-left:none;border-top:2px solid var(--tan)}
-
-  /* ── Login ── */
-  .lcard{padding:28px 20px;border-radius:20px;margin:16px}
-  .lh{font-size:24px;font-weight:700}
-  .ls{font-size:14px}
-  .qbtn{padding:12px 14px;gap:10px;border-width:1.5px;border-radius:12px}
-  .qbtns{grid-template-columns:1fr}
-  .qav{width:40px;height:40px;font-size:14px;font-weight:700}
-  .qname{font-size:14px;font-weight:700}
-  .qrole{font-size:12px}
-
-  /* ── Alert banners ── */
-  .alert-banner{font-size:13px;padding:12px 14px;line-height:1.6;border-width:1.5px;border-radius:10px}
-
-  /* ── Toast ── */
-  .toast{bottom:80px;right:12px;left:12px;max-width:100%;font-size:13px;padding:14px 16px;border-radius:14px;font-weight:600}
-
-  /* ── Badges ── */
-  .badge{font-size:12px;padding:4px 12px;font-weight:700}
-
-  /* ── Route timeline ── */
-  .rb-stop{padding:12px 14px}
-  .rp-two-col{grid-template-columns:1fr}
-  .rt-city{font-size:14px;font-weight:700}
-}
-
-/* ── Extra small phones ── */
-@media(max-width:380px){
-  .main{padding:10px 10px;padding-bottom:90px}
-  .card{padding:12px}
-  .tab{padding:10px 10px;font-size:10px}
-  .kpi-row{grid-template-columns:1fr 1fr}
-  .kpi-v{font-size:22px}
-  .sec-title{font-size:20px}
-}
-
-/* ── Desktop improvements — higher contrast ── */
-@media(min-width:769px){
-  .badge{font-size:12px;padding:4px 12px;font-weight:700}
-  .btn{font-weight:700}
-  .kpi-v{font-size:30px;font-weight:700}
-  .kpi-l{font-size:12px;font-weight:600;color:var(--brown-m)}
-  td{font-size:14px}
-  th{font-size:11px;font-weight:700;letter-spacing:.8px}
-  .card-title{font-size:16px;font-weight:700}
-  .sec-title{font-size:26px}
-  .alert-banner{font-size:14px;font-weight:500}
-}
-.page-logo-banner{display:flex;align-items:center;gap:10px;padding:14px 0 10px 0;margin-bottom:4px;border-bottom:1px solid var(--cream-dk)}.page-logo-img{width:38px;height:38px;object-fit:contain;border-radius:8px;padding:4px;background:var(--white);border:1px solid var(--cream-dk)}.page-logo-text{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);letter-spacing:.4px;opacity:.7}
-.sec-title{font-size:24px;font-weight:600;color:var(--brown);font-family:'Cormorant Garamond',serif}
-.sec-sub{font-size:13px;color:var(--brown-m);margin-top:4px;font-weight:400}
-
-/* KPI */
+/* ══ KPI CARDS ═══════════════════════════════════════════════════ */
 .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.kpi{background:var(--white);border-radius:var(--r);padding:20px 22px;box-shadow:var(--shadow-card);border:1.5px solid var(--cream-dk);border-top:4px solid var(--tan);transition:transform .15s}
+.kpi{background:var(--white);border-radius:var(--r);padding:20px;box-shadow:var(--shadow-card);border:1.5px solid var(--cream-dk);border-top:4px solid var(--tan);transition:transform .15s}
 .kpi:hover{transform:translateY(-2px)}
 .kpi-v{font-size:32px;font-weight:700;color:var(--brown);font-family:'Cormorant Garamond',serif}
-.kpi-l{font-size:12px;color:var(--brown-m);margin-top:5px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+.kpi-l{font-size:11px;color:var(--brown-m);margin-top:6px;text-transform:uppercase;letter-spacing:.6px;font-weight:700}
 
-/* BUTTONS */
-.btn{padding:9px 18px;border-radius:var(--r-sm);border:none;font-family:'Jost',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;letter-spacing:.2px}
+/* ══ BUTTONS ═════════════════════════════════════════════════════ */
+.btn{padding:10px 18px;border-radius:var(--r-sm);border:none;font-family:'Jost',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;letter-spacing:.2px;min-height:40px;user-select:none}
+.btn:active{transform:scale(.97)}
 .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#8B0000}
 .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#1B5E20}
 .btn-orange{background:var(--orange);color:#fff}.btn-orange:hover{background:#BF360C}
 .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:#0D47A1}
 .btn-ghost{background:transparent;color:var(--brown);border:1.5px solid var(--cream-dk)}.btn-ghost:hover{border-color:var(--tan);color:var(--tan)}
 .btn-tan{background:linear-gradient(135deg,var(--tan),var(--tan-l));color:var(--cream);box-shadow:0 2px 8px rgba(139,105,20,.3)}.btn-tan:hover{background:linear-gradient(135deg,var(--tan-d),var(--tan));transform:translateY(-1px)}
-.btn-sm{padding:5px 12px;font-size:12px}
+.btn-sm{padding:6px 12px;font-size:12px;min-height:32px}
 
-/* TABLE */
-.tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{text-align:left;padding:11px 14px;font-size:10px;font-weight:800;color:var(--brown);text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid var(--cream-dk);background:rgba(139,105,20,.07)}
-td{padding:13px 14px;font-size:13px;border-bottom:1px solid rgba(217,200,154,.6);vertical-align:middle;color:var(--brown);font-weight:500}
+/* ══ TABLE ════════════════════════════════════════════════════════ */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -6px;padding:0 6px}
+table{width:100%;border-collapse:collapse;min-width:540px}
+th{text-align:left;padding:11px 14px;font-size:10px;font-weight:800;color:var(--brown);text-transform:uppercase;letter-spacing:.8px;border-bottom:2px solid var(--cream-dk);background:rgba(139,105,20,.06);white-space:nowrap}
+td{padding:12px 14px;font-size:13px;border-bottom:1px solid rgba(217,200,154,.6);vertical-align:middle;color:var(--brown);font-weight:500}
 tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(139,105,20,.03)}
+tr:hover td{background:rgba(139,105,20,.025)}
 .mono{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;color:var(--tan)}
 
-/* BADGES */
-.badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;text-transform:capitalize;white-space:nowrap;font-family:'Jost',sans-serif;letter-spacing:.2px}
+/* ══ MOBILE CARD ROWS (replaces tables on small screens) ════════ */
+.mcard-list{display:none;flex-direction:column;gap:10px}
+.mcard{background:var(--white);border-radius:var(--r-sm);padding:14px 16px;border:1.5px solid var(--cream-dk);box-shadow:0 1px 4px rgba(61,43,10,.06)}
+.mcard-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
+.mcard-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--tan);font-weight:600}
+.mcard-title{font-size:14px;font-weight:700;color:var(--brown);flex:1}
+.mcard-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;font-size:12px}
+.mcard-label{color:var(--brown-l);font-weight:600;text-transform:uppercase;letter-spacing:.3px;font-size:10px}
+.mcard-val{color:var(--brown);font-weight:500;text-align:right}
+.mcard-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.mcard-actions .btn{flex:1;justify-content:center;min-height:40px;font-size:13px}
+
+/* ══ BADGES ══════════════════════════════════════════════════════ */
+.badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;text-transform:capitalize;white-space:nowrap;font-family:'Jost',sans-serif;letter-spacing:.2px}
 .b-gray{background:#D9C89A;color:#3D2B0A}
 .b-blue{background:#BBDEFB;color:#0D47A1}
 .b-green{background:#C8E6C9;color:#1B5E20}
@@ -297,48 +212,48 @@ tr:hover td{background:rgba(139,105,20,.03)}
 .b-navy{background:#C5CAE9;color:#1A237E}
 .b-teal{background:#B2DFDB;color:#004D40}
 
-/* FORM */
+/* ══ FORMS ════════════════════════════════════════════════════════ */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .fg{margin-bottom:14px}
 .fg.full{grid-column:1/-1}
-.fg label{display:block;font-size:10px;font-weight:600;color:var(--brown-m);margin-bottom:5px;text-transform:uppercase;letter-spacing:.6px}
-.fg input,.fg select,.fg textarea{width:100%;padding:10px 14px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:'Jost',sans-serif;font-size:13px;color:var(--brown);outline:none;transition:border-color .2s,box-shadow .2s;background:var(--white)}
+.fg label{display:block;font-size:10px;font-weight:700;color:var(--brown-m);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px}
+.fg input,.fg select,.fg textarea{width:100%;padding:11px 14px;border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);font-family:'Jost',sans-serif;font-size:16px;color:var(--brown);outline:none;transition:border-color .2s,box-shadow .2s;background:var(--white);-webkit-appearance:none;appearance:none}
 .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--tan);box-shadow:0 0 0 3px rgba(139,105,20,.1)}
 .fg input:disabled{background:var(--cream-d);color:var(--brown-l)}
 .fg input.err{border-color:var(--red);background:#fff8f8}
-.field-err{font-size:11px;color:var(--red);margin-top:4px;display:none}
+.field-err{font-size:11px;color:var(--red);margin-top:4px;display:none;font-weight:600}
 .field-err.show{display:block}
 
-/* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(42,28,6,.6);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)}
+/* ══ MODAL ════════════════════════════════════════════════════════ */
+.modal-bg{position:fixed;inset:0;background:rgba(42,28,6,.65);z-index:300;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(3px)}
 .modal-bg.open{display:flex}
 .modal{background:var(--white);border-radius:16px;padding:0;width:100%;max-width:480px;box-shadow:0 24px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;border:1px solid var(--cream-dk)}
-.modal-title{font-size:18px;font-weight:600;color:var(--cream);padding:20px 24px;background:linear-gradient(90deg,var(--tan),var(--tan-l));border-radius:14px 14px 0 0;font-family:'Cormorant Garamond',serif}
-.modal .modal-body{padding:24px}
+.modal-title{font-size:18px;font-weight:600;color:var(--cream);padding:18px 22px;background:linear-gradient(90deg,var(--tan),var(--tan-l));border-radius:14px 14px 0 0;font-family:'Cormorant Garamond',serif}
+.modal .modal-body{padding:22px}
 .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
 
-/* ALERT BANNER */
-.alert-banner{border-radius:var(--r-sm);padding:12px 16px;font-size:13px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;line-height:1.5}
+/* ══ ALERT BANNERS ════════════════════════════════════════════════ */
+.alert-banner{border-radius:var(--r-sm);padding:12px 16px;font-size:13px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;line-height:1.6;font-weight:500}
 .alert-info{background:var(--blue-bg);border:1px solid #90CAF9;color:var(--blue)}
 .alert-warn{background:var(--orange-bg);border:1px solid #FFAB76;color:var(--orange)}
 .alert-success{background:var(--green-bg);border:1px solid #A5D6A7;color:var(--green)}
 .alert-error{background:var(--red-bg);border:1px solid #EF9A9A;color:var(--red)}
 
-/* TOAST */
-.toast{position:fixed;bottom:24px;right:24px;color:#fff;padding:13px 18px;border-radius:var(--r);font-size:13px;font-weight:500;box-shadow:0 8px 32px rgba(0,0,0,.2);z-index:9999;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:360px;font-family:'Jost',sans-serif}
+/* ══ TOAST ════════════════════════════════════════════════════════ */
+.toast{position:fixed;bottom:24px;right:24px;color:#fff;padding:13px 18px;border-radius:var(--r);font-size:13px;font-weight:600;box-shadow:0 8px 32px rgba(0,0,0,.25);z-index:9999;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);max-width:340px;font-family:'Jost',sans-serif;display:flex;align-items:center;gap:8px}
 .toast.show{transform:translateY(0);opacity:1}
 
-/* EMPTY */
+/* ══ EMPTY STATE ══════════════════════════════════════════════════ */
 .empty{text-align:center;padding:44px 24px;color:var(--brown-l)}
-.empty-icon{font-size:32px;margin-bottom:10px}
+.empty-icon{font-size:36px;margin-bottom:12px}
 
-/* REJECTION NOTICE */
+/* ══ REJECTION NOTICE ═════════════════════════════════════════════ */
 .rejection-notice{background:linear-gradient(135deg,#fff8f8,#fff0f0);border:1.5px solid #F9C0C0;border-radius:var(--r);padding:16px 20px;margin-bottom:20px}
 .rejection-notice .rn-title{font-size:14px;font-weight:700;color:var(--red);margin-bottom:6px}
 .rejection-notice .rn-reason{font-size:13px;color:#8B0000;line-height:1.6}
 .rejection-notice .rn-hint{font-size:12px;color:var(--brown-l);margin-top:8px;font-style:italic}
 
-/* ══ ROUTE BUILDER ═══════════════════════════ */
+/* ══ ROUTE BUILDER ════════════════════════════════════════════════ */
 .rb-pool{display:flex;flex-direction:column;gap:8px}
 .rb-stop{background:var(--white);border:1.5px solid var(--cream-dk);border-radius:var(--r-sm);padding:12px 14px;cursor:grab;transition:all .15s;user-select:none;position:relative}
 .rb-stop:hover{border-color:var(--tan);box-shadow:0 2px 8px rgba(139,105,20,.12)}
@@ -360,10 +275,10 @@ tr:hover td{background:rgba(139,105,20,.03)}
 .rt-stop{display:flex;align-items:flex-start;gap:12px;padding:10px 0}
 .rt-stop-dot{width:14px;height:14px;border-radius:50%;background:var(--blue);border:3px solid #90CAF9;flex-shrink:0;margin-top:2px}
 .rt-stop-dot.done{background:var(--green);border-color:#A5D6A7}
-.rt-stop-dot.active{background:var(--orange);border-color:#FFAB76;animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(216,67,21,.4)}50%{box-shadow:0 0 0 6px rgba(216,67,21,0)}}
+.rt-stop-dot.active{background:var(--orange);border-color:#FFAB76;animation:rtpulse 1.5s infinite}
+@keyframes rtpulse{0%,100%{box-shadow:0 0 0 0 rgba(216,67,21,.4)}50%{box-shadow:0 0 0 6px rgba(216,67,21,0)}}
 .rt-content{flex:1}
-.rt-city{font-size:13px;font-weight:600;color:var(--brown)}
+.rt-city{font-size:13px;font-weight:700;color:var(--brown)}
 .rt-detail{font-size:12px;color:var(--brown-m);margin-top:2px}
 .rt-eta-badge{font-size:11px;font-family:'DM Mono',monospace;background:var(--blue-bg);color:var(--blue);padding:2px 8px;border-radius:10px;white-space:nowrap}
 .route-card{border:1.5px solid var(--cream-dk);border-radius:var(--r);padding:18px;margin-bottom:14px;background:var(--white)}
@@ -372,26 +287,146 @@ tr:hover td{background:rgba(139,105,20,.03)}
 .rp-two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
 @media(max-width:900px){.rp-two-col{grid-template-columns:1fr}}
 .pool-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:20px;border:1px solid var(--cream-dk);height:fit-content}
-.pool-card-title{font-size:14px;font-weight:600;color:var(--brown);margin-bottom:14px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
+.pool-card-title{font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px;display:flex;align-items:center;gap:8px;font-family:'Cormorant Garamond',serif}
 .builder-card{background:var(--white);border-radius:var(--r);box-shadow:var(--shadow-card);padding:20px;border:2px solid var(--tan);height:fit-content}
 .builder-drop-zone{min-height:80px;border:2px dashed var(--cream-dk);border-radius:var(--r-sm);padding:16px;text-align:center;color:var(--brown-l);font-size:13px;transition:all .2s;margin-bottom:12px}
 .builder-drop-zone.active{border-color:var(--tan);background:rgba(139,105,20,.05);color:var(--tan)}
 
-
-/* Map container */
-.map-container{width:100%;height:420px;border-radius:12px;overflow:hidden;border:1px solid var(--cream-dk)}
-.map-info-bar{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--navy);border-radius:8px;margin-bottom:10px;flex-wrap:wrap}
-.map-info-bar span{color:var(--white);font-size:12px}
-.map-pulse{display:inline-block;width:8px;height:8px;background:#4CAF50;border-radius:50%;animation:mapPulse 1.5s infinite}
-@keyframes mapPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
-/* kg auto-calc badge */
+/* ══ KG BADGE ════════════════════════════════════════════════════ */
 .kg-badge{display:inline-flex;align-items:center;gap:6px;background:var(--cream-dk);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--brown);margin-top:6px;font-weight:500}
 .kg-badge strong{color:var(--navy)}
+
+/* ══ PAGE LOGO BANNER ═════════════════════════════════════════════ */
+.page-logo-banner{display:flex;align-items:center;gap:10px;padding:12px 0 8px 0;margin-bottom:4px;border-bottom:1px solid var(--cream-dk)}
+.page-logo-img{width:36px;height:36px;object-fit:contain;border-radius:8px;padding:4px;background:var(--white);border:1px solid var(--cream-dk)}
+.page-logo-text{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--brown);letter-spacing:.4px;opacity:.7}
+
+/* ══ ANIMATIONS ══════════════════════════════════════════════════ */
+@keyframes truckPulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(216,67,21,.4)}50%{box-shadow:0 0 0 6px rgba(216,67,21,0)}}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — TABLET (≤900px)
+═════════════════════════════════════════════════════════════════════ */
+@media(max-width:900px){
+  .kpi-row{grid-template-columns:1fr 1fr;gap:12px}
+  .form-grid{grid-template-columns:1fr}
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RESPONSIVE — MOBILE (≤768px)
+═════════════════════════════════════════════════════════════════════ */
+@media(max-width:768px){
+  :root{
+    --topbar-h:56px;
+    --bottomnav-h:64px;
+  }
+
+  /* ── Login ── */
+  .lcard{padding:28px 20px;border-radius:20px;margin:0}
+  .llogo-img{width:46px;height:46px}
+  .lbrand{font-size:18px}
+  .lh{font-size:22px}
+  .qbtns{grid-template-columns:1fr}
+  .qbtn{min-height:56px}
+
+  /* ── Topbar ── */
+  .topbar{padding:0 14px;height:var(--topbar-h)}
+  .tlogo-wrap{width:34px;height:34px;padding:4px;border-radius:8px}
+  .ttitle{font-size:14px;letter-spacing:0}
+  .tsub,.tdivider,.tuser-info,.tout{display:none!important}
+  .tr{gap:8px}
+  .bell-btn{width:36px;height:36px;font-size:16px}
+
+  /* ── Bottom Nav ── */
+  .bottom-nav{display:flex}
+
+  /* ── Tabs — hidden on mobile, replaced by bottom nav ── */
+  .tabs{display:none}
+
+  /* ── Main ── */
+  .main{padding:14px 12px 20px;}
+
+  /* ── Cards ── */
+  .card{padding:16px;border-radius:12px;margin-bottom:12px}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:14px}
+
+  /* ── Section header ── */
+  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:16px}
+  .sec-title{font-size:22px}
+  .sec-sub{font-size:13px}
+  .sec-hdr .btn{width:100%;justify-content:center;padding:13px;font-size:14px;min-height:48px}
+
+  /* ── KPI ── */
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .kpi{padding:14px;border-top-width:4px}
+  .kpi-v{font-size:26px}
+  .kpi-l{font-size:10px}
+
+  /* ── Tables: hide desktop table, show mobile cards ── */
+  .tw table{display:none}
+  .mcard-list{display:flex}
+
+  /* ── Forms ── */
+  .form-grid{grid-template-columns:1fr}
+  .fg{margin-bottom:12px}
+  .fg input,.fg select,.fg textarea{font-size:16px;padding:13px 14px;border-width:1.5px;border-radius:10px}
+  .fg label{font-size:11px;font-weight:700}
+
+  /* ── Modals ── */
+  .modal-bg{padding:0;align-items:flex-end;background:rgba(0,0,0,.72)}
+  .modal{max-width:100%;width:100%;border-radius:20px 20px 0 0;max-height:94vh;border:none;border-top:3px solid var(--tan)}
+  .modal-title{padding:16px 20px;font-size:17px;font-weight:700;border-radius:18px 18px 0 0}
+  .modal .modal-body{padding:16px 20px}
+  .modal-actions{flex-direction:column-reverse;gap:8px;padding:0 0 4px}
+  .modal-actions .btn{width:100%;justify-content:center;padding:15px;font-size:15px;font-weight:700;border-radius:12px;min-height:52px}
+
+  /* ── Buttons ── */
+  .btn{font-size:13px;padding:10px 16px;border-radius:10px}
+  .btn-sm{padding:8px 12px;font-size:12px;min-height:36px}
+
+  /* ── Map ── */
+  .map-container{height:320px;border-radius:10px}
+
+  /* ── Alert banners ── */
+  .alert-banner{font-size:13px;padding:12px 14px;border-radius:10px}
+
+  /* ── Toast ── */
+  .toast{bottom:76px;right:12px;left:12px;max-width:100%;font-size:13px;padding:14px 16px;border-radius:14px}
+
+  /* ── Notifications panel ── */
+  .np{width:100%;right:0;left:0;border-left:none;border-top:2px solid var(--tan);max-height:85vh}
+
+  /* ── Route builder ── */
+  .rp-two-col{grid-template-columns:1fr}
+  .rt-city{font-size:14px;font-weight:700}
+}
+
+/* ══ BOTTOM NAVIGATION (mobile only) ═════════════════════════════ */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bottomnav-h);background:linear-gradient(0deg,#2a1c06 0%,#3D2B0A 100%);z-index:95;padding:0;border-top:1px solid rgba(217,200,154,.15);box-shadow:0 -4px 20px rgba(0,0,0,.35);overflow-x:auto;scrollbar-width:none}
+.bottom-nav::-webkit-scrollbar{display:none}
+.bottom-nav-inner{display:flex;height:100%;min-width:max-content;width:100%}
+.bnav-btn{flex:1;min-width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border:none;background:none;cursor:pointer;color:rgba(245,237,214,.45);transition:all .15s;padding:0 4px;font-family:'Jost',sans-serif}
+.bnav-btn:active{background:rgba(245,237,214,.1)}
+.bnav-btn.active{color:var(--goldL)}
+.bnav-btn.active .bnav-icon{color:var(--goldL);transform:scale(1.1)}
+.bnav-icon{font-size:20px;line-height:1;transition:transform .15s}
+.bnav-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+
+/* ══ EXTRA SMALL (≤380px) ════════════════════════════════════════ */
+@media(max-width:380px){
+  .main{padding:10px 10px 18px}
+  .card{padding:12px}
+  .kpi-v{font-size:22px}
+  .sec-title{font-size:19px}
+  .lcard{padding:22px 16px}
+}
 </style>
 </head>
 <body>
 
-<!-- ══ LOGIN ══════════════════════════════════════════════ -->
+<!-- ══ LOGIN ══════════════════════════════════════════════════════ -->
 <div id="login">
   <div class="lcard">
     <div class="llogo">
@@ -404,14 +439,13 @@ tr:hover td{background:rgba(139,105,20,.03)}
     <div class="ls">Sign in to access your role-based workspace</div>
     <div class="lerr" id="lerr">Incorrect email or password.</div>
     <div class="fi"><label>Email / Username</label><input id="lemail" type="text" placeholder="you@nestle.lk" autocomplete="username"/></div>
-    <div class="fi"><label>Password</label><input id="lpass" type="password" placeholder="••••••••"/></div>
+    <div class="fi"><label>Password</label><input id="lpass" type="password" placeholder="••••••••" autocomplete="current-password"/></div>
     <button class="lbtn" id="lbtn" onclick="doLogin()">Sign In →</button>
     <div class="quick">
       <div class="qlbl">Quick demo access</div>
       <div class="qbtns">
         <button class="qbtn" onclick="quick('retailer1@cargills.lk','ret123')"><div class="qav" style="background:#8B6914">CM</div><div><div class="qname">Cargills Manager</div><div class="qrole">Retailer</div></div></button>
         <button class="qbtn" onclick="quick('order@nestle.lk','order123')"><div class="qav" style="background:#1565C0">ND</div><div><div class="qname">Nuwan Dissanayake</div><div class="qrole">Order Team</div></div></button>
-
         <button class="qbtn" onclick="quick('warehouse@nestle.lk','wh123')"><div class="qav" style="background:#6A1B9A">KB</div><div><div class="qname">Kasun Bandara</div><div class="qrole">Warehouse</div></div></button>
         <button class="qbtn" onclick="quick('driver1@nestle.lk','drv123')"><div class="qav" style="background:#D84315">KS</div><div><div class="qname">Kumara Silva</div><div class="qrole">Distributor</div></div></button>
       </div>
@@ -419,8 +453,9 @@ tr:hover td{background:rgba(139,105,20,.03)}
   </div>
 </div>
 
-<!-- ══ APP ════════════════════════════════════════════════ -->
+<!-- ══ APP ════════════════════════════════════════════════════════ -->
 <div id="app">
+  <!-- Top bar -->
   <div class="topbar">
     <div class="tl">
       <div class="tlogo-wrap">
@@ -460,11 +495,19 @@ tr:hover td{background:rgba(139,105,20,.03)}
     </div>
   </div>
 
+  <!-- Desktop Tabs -->
   <div class="tabs" id="nav-tabs"></div>
+
+  <!-- Mobile Bottom Navigation -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-inner" id="bottom-nav-inner"></div>
+  </nav>
+
+  <!-- Main Content -->
   <div class="main" id="main-content"></div>
 </div>
 
-<!-- ══ MODALS ══════════════════════════════════════════════ -->
+<!-- ══ MODALS ══════════════════════════════════════════════════════ -->
 <div class="modal-bg" id="m-confirm">
   <div class="modal" style="max-width:540px">
     <div class="modal-title" id="mc-title">📋 Review Order</div>
@@ -475,70 +518,58 @@ tr:hover td{background:rgba(139,105,20,.03)}
         <div class="fg" style="margin:0"><label>Items</label><input id="mc-items" disabled/></div>
         <div class="fg" style="margin:0"><label>Priority</label><input id="mc-prio" disabled/></div>
       </div>
-
-      <!-- Rejection section — shown only when rejecting -->
       <div id="mc-reject-section" style="display:none">
         <div class="fg">
           <label>Rejection Category <span style="color:var(--red)">*</span></label>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px" id="mc-cat-grid">
-            <button type="button" class="reject-cat-btn" data-cat="out_of_stock" onclick="selectRejectCat(this)"
-              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+            <button type="button" class="reject-cat-btn" data-cat="out_of_stock" onclick="selectRejectCat(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
               <div style="font-size:16px;margin-bottom:3px">📦</div>
               <div style="font-size:11px;font-weight:700;color:var(--brown)">Out of Stock</div>
-              <div style="font-size:10px;color:var(--gray)">Auto-notify when restocked</div>
+              <div style="font-size:10px;color:var(--brown-l)">Auto-notify when restocked</div>
             </button>
-            <button type="button" class="reject-cat-btn" data-cat="duplicate_order" onclick="selectRejectCat(this)"
-              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+            <button type="button" class="reject-cat-btn" data-cat="duplicate_order" onclick="selectRejectCat(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
               <div style="font-size:16px;margin-bottom:3px">🔄</div>
               <div style="font-size:11px;font-weight:700;color:var(--brown)">Duplicate Order</div>
-              <div style="font-size:10px;color:var(--gray)">Same order already exists</div>
+              <div style="font-size:10px;color:var(--brown-l)">Same order already exists</div>
             </button>
-            <button type="button" class="reject-cat-btn" data-cat="coverage_area" onclick="selectRejectCat(this)"
-              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+            <button type="button" class="reject-cat-btn" data-cat="coverage_area" onclick="selectRejectCat(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
               <div style="font-size:16px;margin-bottom:3px">🗺️</div>
               <div style="font-size:11px;font-weight:700;color:var(--brown)">Coverage Area</div>
-              <div style="font-size:10px;color:var(--gray)">City not served currently</div>
+              <div style="font-size:10px;color:var(--brown-l)">City not served currently</div>
             </button>
-            <button type="button" class="reject-cat-btn" data-cat="suspicious_quantity" onclick="selectRejectCat(this)"
-              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+            <button type="button" class="reject-cat-btn" data-cat="suspicious_quantity" onclick="selectRejectCat(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
               <div style="font-size:16px;margin-bottom:3px">⚠️</div>
               <div style="font-size:11px;font-weight:700;color:var(--brown)">Suspicious Quantity</div>
-              <div style="font-size:10px;color:var(--gray)">Unusual order amount</div>
+              <div style="font-size:10px;color:var(--brown-l)">Unusual order amount</div>
             </button>
-            <button type="button" class="reject-cat-btn" data-cat="credit_hold" onclick="selectRejectCat(this)"
-              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+            <button type="button" class="reject-cat-btn" data-cat="credit_hold" onclick="selectRejectCat(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
               <div style="font-size:16px;margin-bottom:3px">💳</div>
               <div style="font-size:11px;font-weight:700;color:var(--brown)">Credit Hold</div>
-              <div style="font-size:10px;color:var(--gray)">Pending account balance</div>
+              <div style="font-size:10px;color:var(--brown-l)">Pending account balance</div>
             </button>
-            <button type="button" class="reject-cat-btn" data-cat="other" onclick="selectRejectCat(this)"
-              style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+            <button type="button" class="reject-cat-btn" data-cat="other" onclick="selectRejectCat(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
               <div style="font-size:16px;margin-bottom:3px">📝</div>
               <div style="font-size:11px;font-weight:700;color:var(--brown)">Other</div>
-              <div style="font-size:10px;color:var(--gray)">Describe in notes below</div>
+              <div style="font-size:10px;color:var(--brown-l)">Describe in notes below</div>
             </button>
           </div>
           <input type="hidden" id="mc-category" value=""/>
           <div class="field-err" id="mc-cat-err">Please select a rejection category.</div>
         </div>
-
-        <!-- Stock watch notice -->
         <div id="mc-stock-watch-notice" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-bottom:10px;font-size:12px;color:var(--green)">
           🔔 <strong>Auto-notify enabled</strong> — Retailer will be automatically notified when this product is back in stock.
         </div>
-
         <div class="fg">
           <label>Additional Note <span style="color:var(--red)">*</span></label>
           <input id="mc-reason" placeholder="Provide specific details for the retailer…"/>
           <div class="field-err" id="mc-reason-err">Please add a note for the retailer.</div>
         </div>
       </div>
-
       <div class="modal-actions">
         <button class="btn btn-ghost" onclick="closeModal('m-confirm')">Cancel</button>
-        <button class="btn btn-red"   onclick="showRejectSection()" id="mc-reject-btn">✕ Reject Order</button>
-        <button class="btn btn-green" onclick="confirmOrder('confirm')" id="mc-confirm-btn">✓ Confirm — Notify Retailer</button>
-        <button class="btn btn-red"   onclick="confirmOrder('reject')" id="mc-submit-reject-btn" style="display:none">✕ Submit Rejection 🔔</button>
+        <button class="btn btn-red" onclick="showRejectSection()" id="mc-reject-btn">✕ Reject</button>
+        <button class="btn btn-green" onclick="confirmOrder('confirm')" id="mc-confirm-btn">✓ Confirm</button>
+        <button class="btn btn-red" onclick="confirmOrder('reject')" id="mc-submit-reject-btn" style="display:none">✕ Submit Rejection 🔔</button>
       </div>
     </div>
   </div>
@@ -557,45 +588,38 @@ tr:hover td{background:rgba(139,105,20,.03)}
           <option value="failed">❌ Failed — could not complete delivery</option>
         </select>
       </div>
-      <!-- Failure type selector — shown only when Failed is selected -->
       <div class="fg" id="s-failtype-wrap" style="display:none">
         <label>Failure Reason <span style="color:var(--red)">*</span></label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px" id="s-failtype-grid">
-          <button type="button" class="fail-type-btn" data-type="vehicle_breakdown" onclick="selectFailType(this)"
-            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+          <button type="button" class="fail-type-btn" data-type="vehicle_breakdown" onclick="selectFailType(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
             <div style="font-size:18px;margin-bottom:4px">🔧</div>
             <div style="font-size:12px;font-weight:700;color:var(--brown)">Vehicle Breakdown</div>
-            <div style="font-size:10px;color:var(--gray)">Accident, tyre, engine</div>
+            <div style="font-size:10px;color:var(--brown-l)">Accident, tyre, engine</div>
           </button>
-          <button type="button" class="fail-type-btn" data-type="out_of_stock" onclick="selectFailType(this)"
-            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+          <button type="button" class="fail-type-btn" data-type="out_of_stock" onclick="selectFailType(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
             <div style="font-size:18px;margin-bottom:4px">📦</div>
             <div style="font-size:12px;font-weight:700;color:var(--brown)">Out of Stock</div>
-            <div style="font-size:10px;color:var(--gray)">Missing or unavailable items</div>
+            <div style="font-size:10px;color:var(--brown-l)">Missing or unavailable items</div>
           </button>
-          <button type="button" class="fail-type-btn" data-type="customer_absent" onclick="selectFailType(this)"
-            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+          <button type="button" class="fail-type-btn" data-type="customer_absent" onclick="selectFailType(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
             <div style="font-size:18px;margin-bottom:4px">🚪</div>
             <div style="font-size:12px;font-weight:700;color:var(--brown)">Customer Absent</div>
-            <div style="font-size:10px;color:var(--gray)">No one available to receive</div>
+            <div style="font-size:10px;color:var(--brown-l)">No one available to receive</div>
           </button>
-          <button type="button" class="fail-type-btn" data-type="customer_refused" onclick="selectFailType(this)"
-            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+          <button type="button" class="fail-type-btn" data-type="customer_refused" onclick="selectFailType(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
             <div style="font-size:18px;margin-bottom:4px">❌</div>
             <div style="font-size:12px;font-weight:700;color:var(--brown)">Customer Refused</div>
-            <div style="font-size:10px;color:var(--gray)">Retailer rejected delivery</div>
+            <div style="font-size:10px;color:var(--brown-l)">Retailer rejected delivery</div>
           </button>
-          <button type="button" class="fail-type-btn" data-type="wrong_address" onclick="selectFailType(this)"
-            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+          <button type="button" class="fail-type-btn" data-type="wrong_address" onclick="selectFailType(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
             <div style="font-size:18px;margin-bottom:4px">📍</div>
             <div style="font-size:12px;font-weight:700;color:var(--brown)">Wrong Address</div>
-            <div style="font-size:10px;color:var(--gray)">Location not found</div>
+            <div style="font-size:10px;color:var(--brown-l)">Location not found</div>
           </button>
-          <button type="button" class="fail-type-btn" data-type="other" onclick="selectFailType(this)"
-            style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+          <button type="button" class="fail-type-btn" data-type="other" onclick="selectFailType(this)" style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
             <div style="font-size:18px;margin-bottom:4px">⚠️</div>
             <div style="font-size:12px;font-weight:700;color:var(--brown)">Other</div>
-            <div style="font-size:10px;color:var(--gray)">Describe in notes below</div>
+            <div style="font-size:10px;color:var(--brown-l)">Describe in notes below</div>
           </button>
         </div>
         <input type="hidden" id="s-failtype" value=""/>
@@ -606,11 +630,9 @@ tr:hover td{background:rgba(139,105,20,.03)}
         <input id="s-note" placeholder="Additional details…"/>
         <div class="field-err" id="s-note-err">A note is required when marking as failed.</div>
       </div>
-      <!-- Auto-reassign notice -->
       <div id="s-reassign-notice" style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:var(--green)">
         🔄 <strong>Auto-reassignment enabled</strong> — system will automatically find the next available driver and notify all stakeholders.
       </div>
-      <!-- Notification preview -->
       <div style="background:var(--cream);border:1px solid var(--cream-dk);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--brown-m);margin-bottom:4px">
         <div style="font-size:10px;font-weight:700;color:var(--tan);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">🔔 Will notify instantly</div>
         <div id="s-notif-list" style="display:flex;flex-wrap:wrap;gap:6px">
@@ -628,38 +650,34 @@ tr:hover td{background:rgba(139,105,20,.03)}
   </div>
 </div>
 
-<!-- ── PIN Verification Modal ── -->
+<!-- PIN Verification Modal -->
 <div class="modal-bg" id="m-pin-verify" style="z-index:500">
   <div class="modal" style="max-width:380px">
     <div class="modal-title" style="background:linear-gradient(135deg,#1B2A4A,#2d4a7a)">🔐 PIN Verification</div>
     <div class="modal-body" style="text-align:center">
       <input type="hidden" id="pv-id"/>
-      <div style="font-size:46px;margin-bottom:8px">🔐</div>
+      <div style="font-size:48px;margin-bottom:8px">🔐</div>
       <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px" id="pv-label">Verify Delivery</div>
-      <div style="font-size:13px;color:var(--brown-m);margin-bottom:22px">Ask the retailer for their 4-digit PIN and enter it below</div>
-
-      <!-- 4 PIN digit boxes -->
+      <div style="font-size:13px;color:var(--brown-m);margin-bottom:22px;line-height:1.5">Ask the retailer for their 4-digit PIN and enter it below</div>
       <div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px">
         <input type="tel" id="pin-1" maxlength="1" inputmode="numeric" pattern="[0-9]"
-          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          style="width:60px;height:72px;text-align:center;font-size:32px;font-weight:800;border:3px solid var(--cream-dk);border-radius:14px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
           oninput="pinDigit(this,'pin-2')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
         <input type="tel" id="pin-2" maxlength="1" inputmode="numeric" pattern="[0-9]"
-          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          style="width:60px;height:72px;text-align:center;font-size:32px;font-weight:800;border:3px solid var(--cream-dk);border-radius:14px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
           oninput="pinDigit(this,'pin-3')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
         <input type="tel" id="pin-3" maxlength="1" inputmode="numeric" pattern="[0-9]"
-          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          style="width:60px;height:72px;text-align:center;font-size:32px;font-weight:800;border:3px solid var(--cream-dk);border-radius:14px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
           oninput="pinDigit(this,'pin-4')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
         <input type="tel" id="pin-4" maxlength="1" inputmode="numeric" pattern="[0-9]"
-          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          style="width:60px;height:72px;text-align:center;font-size:32px;font-weight:800;border:3px solid var(--cream-dk);border-radius:14px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
           oninput="pinDigit(this,null)" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
       </div>
-
       <div id="pv-err" class="alert-banner alert-error" style="display:none;margin-bottom:12px;text-align:left"></div>
-      <div id="pv-ok"  class="alert-banner alert-success" style="display:none;margin-bottom:12px;text-align:left"></div>
-
+      <div id="pv-ok" class="alert-banner alert-success" style="display:none;margin-bottom:12px;text-align:left"></div>
       <div class="modal-actions" style="flex-direction:column;gap:8px">
-        <button class="btn btn-tan" id="pv-btn" onclick="submitPin()" style="width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700">
-          🔐 Verify PIN & Complete Delivery
+        <button class="btn btn-tan" id="pv-btn" onclick="submitPin()" style="width:100%;justify-content:center;padding:15px;font-size:15px;font-weight:700;min-height:52px">
+          🔐 Verify PIN &amp; Complete Delivery
         </button>
         <button class="btn btn-ghost" onclick="closeModal('m-pin-verify')" style="width:100%;justify-content:center">Cancel</button>
       </div>
@@ -667,9 +685,14 @@ tr:hover td{background:rgba(139,105,20,.03)}
   </div>
 </div>
 
+<!-- Add User / Admin PW Modals -->
+<div class="modal-bg" id="m-add-user" style="z-index:400"><div class="modal" style="max-width:460px"><div class="modal-title">👤 Add New User</div><div class="modal-body"><div class="fg"><label>Full Name *</label><input id="au-name" placeholder="e.g. Kamal Perera"/></div><div class="fg"><label>Email *</label><input id="au-email" type="text" placeholder="kamal@nestle.lk"/></div><div class="fg"><label>Password *</label><input id="au-pass" type="password" placeholder="Min 4 characters"/></div><div class="fg"><label>Role *</label><select id="au-role"><option value="">Select role…</option><option value="retailer">Retailer</option><option value="order_team">Order Processing Team</option><option value="warehouse">Warehouse</option><option value="distributor">Distributor / Driver</option></select></div><div id="au-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-add-user')">Cancel</button><button class="btn btn-tan" onclick="saveNewUser()" id="au-btn">Create User</button></div></div></div></div>
+<div class="modal-bg" id="m-admin-pw" style="z-index:400"><div class="modal" style="max-width:380px"><div class="modal-title">🔑 Reset Password</div><div class="modal-body"><input type="hidden" id="apw-id"/><div class="fg"><label id="apw-label">New password</label><input id="apw-pass" type="password" placeholder="Min 4 characters"/></div><div id="apw-err" class="alert-banner alert-error" style="display:none;margin-bottom:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-admin-pw')">Cancel</button><button class="btn btn-tan" onclick="saveAdminPw()" id="apw-btn">Reset Password</button></div></div></div></div>
+
 <div class="toast" id="toast" style="background:var(--brown)"><span id="toast-msg"></span></div>
 
 <script>
+
 const API = 'https://nestle-dms-backend.onrender.com/api';
 
 // Inject Nestlé logo into every page section header
@@ -3392,6 +3415,137 @@ function delBadge(s) {
   };
   return `<span class="badge ${m[s]||'b-gray'}">${(s||'').replace('_',' ')}</span>`;
 }
+
+
+// ══ MOBILE ENHANCEMENTS ════════════════════════════════════════════
+
+// Build bottom nav (mobile)
+function buildBottomNav() {
+  const pages = ROLE_PAGES[user.role] || [];
+  const inner = document.getElementById('bottom-nav-inner');
+  if (!inner) return;
+  inner.innerHTML = pages.map((p,i) =>
+    `<button class="bnav-btn ${i===0?'active':''}" id="bnav-${p.id}" onclick="nav('${p.id}')">
+       <span class="bnav-icon">${p.ico}</span>
+       <span class="bnav-label">${p.lbl}</span>
+     </button>`
+  ).join('');
+}
+
+// Override buildNav to also build bottom nav
+const _origBuildNav = window.buildNav;
+window.buildNav = function() {
+  if (_origBuildNav) _origBuildNav();
+  buildBottomNav();
+};
+
+// Override nav to update bottom nav active state
+const _navBase = window.nav;
+window.nav = function(id) {
+  // Update desktop tabs
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const tabEl = document.getElementById('tab-'+id);
+  if (tabEl) tabEl.classList.add('active');
+  // Update bottom nav
+  document.querySelectorAll('.bnav-btn').forEach(b=>b.classList.remove('active'));
+  const bnavEl = document.getElementById('bnav-'+id);
+  if (bnavEl) bnavEl.classList.add('active');
+  // Map cleanup
+  if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
+  if (typeof tickInterval !== 'undefined' && tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+  if (mapInstance && id !== 'live-map') { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
+  return render(id);
+};
+
+// ══ MOBILE CARD RENDERERS ═══════════════════════════════════════════
+// These render .mcard-list equivalents alongside each table
+// The CSS shows mcard-list on mobile and hides table
+
+function renderMobileCards(containerId, items, renderer) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!items || !items.length) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">📋</div><div>No items found.</div></div>';
+    return;
+  }
+  container.innerHTML = items.map(renderer).join('');
+}
+
+// Inject mobile card wrappers into page after render
+function injectMobileCards() {
+  // Find all .tw table wrappers and inject a .mcard-list sibling
+  // This is called after setContent via MutationObserver
+}
+
+// Override setContent to also inject mobile cards
+const _origSetContent = window.setContent;
+window.setContent = function(html) {
+  _origSetContent(html);
+  injectSecLogos();
+};
+
+// Enhanced page renders that include .mcard-list inside the HTML
+// We patch into the existing pageMyOrders, pageAllOrders, pageDeliveries etc.
+// by overriding them to inject mobile-friendly card markup after the table
+
+function wrapTableWithMobileCards(cardItems) {
+  if (!cardItems || !cardItems.length) return '';
+  return `<div class="mcard-list">${cardItems.join('')}</div>`;
+}
+
+// Patch pageMyOrders to add mobile card list
+const _origPageMyOrders = window.pageMyOrders;
+window.pageMyOrders = async function() {
+  await _origPageMyOrders();
+  // Find the table and add mobile cards
+  injectOrderMobileCards();
+};
+
+function injectOrderMobileCards() {
+  // Get data from existing table rows
+  const rows = document.querySelectorAll('#main-content table tbody tr');
+  if (!rows.length) return;
+  const tws = document.querySelectorAll('#main-content .tw');
+  tws.forEach(tw => {
+    if (tw.querySelector('.mcard-list')) return; // already injected
+    const rows = tw.querySelectorAll('tbody tr');
+    if (!rows.length || rows[0].querySelector('.empty')) return;
+    const cards = Array.from(rows).map(row => {
+      const cells = Array.from(row.querySelectorAll('td'));
+      if (!cells.length || cells.length === 1) return '';
+      // Generic card from cells
+      const header = cells[0] ? cells[0].innerHTML : '';
+      const rest = cells.slice(1);
+      const ths = Array.from(tw.querySelectorAll('thead th')).slice(1);
+      let body = rest.map((cell, i) => {
+        const label = ths[i] ? ths[i].textContent.trim() : '';
+        const val = cell.innerHTML.trim();
+        if (!val || val === '—') return '';
+        return `<div class="mcard-row"><span class="mcard-label">${escapeHtml(label)}</span><span class="mcard-val">${val}</span></div>`;
+      }).filter(Boolean).join('');
+      return `<div class="mcard"><div class="mcard-header">${header}</div>${body}</div>`;
+    }).filter(Boolean);
+    if (cards.length) {
+      const div = document.createElement('div');
+      div.className = 'mcard-list';
+      div.innerHTML = cards.join('');
+      tw.appendChild(div);
+    }
+  });
+}
+
+// Auto-inject mobile cards after every page render
+const observer = new MutationObserver(() => {
+  injectOrderMobileCards();
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  const main = document.getElementById('main-content');
+  if (main) {
+    observer.observe(main, { childList: true, subtree: false });
+  }
+});
+
 </script>
 </body>
 </html>
