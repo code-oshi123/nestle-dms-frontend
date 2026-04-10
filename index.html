@@ -178,10 +178,14 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
   .kpi-l{font-size:11px;margin-top:4px;font-weight:600}
 
   /* ── Tables ── */
-  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}
-  table{min-width:520px}
-  th{padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:.5px}
-  td{padding:12px 12px;font-size:13px}
+  .tw{margin:0 -4px;padding:0;overflow:visible;}
+  table, thead, tbody, th, td, tr { display: block; }
+  table { min-width: 0; width: 100%; border: none; }
+  thead tr { display: none; }
+  tr { margin-bottom: 16px; border: 1.5px solid var(--cream-dk); border-radius: 12px; padding: 12px; box-shadow: var(--shadow-card); background: var(--white); }
+  td { position: relative; padding: 8px 4px; font-size: 13px; text-align: left; border-bottom: 1px solid rgba(217,200,154,.4); display: flex; flex-direction: column; gap: 4px; }
+  tr td:last-child { border-bottom: none; }
+  td::before { content: attr(data-label); font-size: 10px; font-weight: 700; color: var(--brown-l); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
   .btn-sm{padding:7px 12px;font-size:12px;font-weight:600;border-radius:8px}
 
   /* ── Forms ── */
@@ -671,6 +675,19 @@ tr:hover td{background:rgba(139,105,20,.03)}
 
 <script>
 const API = 'https://nestle-dms-backend.onrender.com/api';
+const observer = new MutationObserver(() => {
+  document.querySelectorAll('table').forEach(table => {
+    if (table.dataset.labelled) return;
+    const headers = Array.from(table.querySelectorAll('th')).map(th => th.textContent);
+    table.querySelectorAll('tbody tr').forEach(tr => {
+      Array.from(tr.querySelectorAll('td')).forEach((td, i) => {
+        if (headers[i]) td.setAttribute('data-label', headers[i]);
+      });
+    });
+    table.dataset.labelled = 'true';
+  });
+});
+observer.observe(document.body, { childList: true, subtree: true });
 
 // Inject Nestlé logo into every page section header
 function injectSecLogos() {
