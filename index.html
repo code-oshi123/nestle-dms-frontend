@@ -547,6 +547,30 @@ tr:hover td{background:rgba(139,105,20,.03)}
 /* kg auto-calc badge */
 .kg-badge{display:inline-flex;align-items:center;gap:6px;background:var(--cream-dk);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--brown);margin-top:6px;font-weight:500}
 .kg-badge strong{color:var(--navy)}
+
+/* ══ MOBILE CARD TABLE — replaces horizontal-scroll tables on phones ══ */
+.mc-list{display:none;flex-direction:column;gap:10px}
+.mc-card{background:var(--white);border:1.5px solid var(--cream-dk);border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,48,63,.06)}
+.mc-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
+.mc-card-title{font-size:14px;font-weight:700;color:var(--brown)}
+.mc-card-badge{flex-shrink:0}
+.mc-row{display:flex;align-items:flex-start;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--cream);gap:8px}
+.mc-row:last-child{border-bottom:none;padding-bottom:0}
+.mc-label{font-size:10px;font-weight:700;color:var(--brown-l);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;padding-top:2px;min-width:72px}
+.mc-val{font-size:13px;color:var(--brown);text-align:right;flex:1;font-weight:500}
+.mc-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--cream)}
+.mc-actions .btn,.mc-actions button{flex:1;min-width:0;justify-content:center;font-size:12px;padding:9px 10px}
+
+@media(max-width:768px){
+  /* Show card list, hide table */
+  .tw{display:none !important}
+  .mc-list{display:flex}
+}
+@media(min-width:769px){
+  /* Show table, hide card list */
+  .mc-list{display:none !important}
+  .tw{display:block}
+}
 </style>
 </head>
 <body>
@@ -1439,35 +1463,58 @@ async function pageMyOrders() {
     </div>
     ${rejectionBanner}
     ${receiptBanner}
-    <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
-      <tbody>${data.length ? data.map(o=>`
-        <tr>
-          <td><span class="mono">${o.id}</span></td>
-          <td>${o.city}</td>
-          <td>${o.items} items · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></td>
-            <td>${['consolidated','assigned','warehouse_ready','loaded','in-transit'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${o.id},'${o.city||''}','${o.retailerName||o.retailer||''}')">🗺️ Track</button>` : '—'}</td>
-          <td>${prioBadge(o.prio)}</td>
-          <td>${orderBadge(o.status)}</td>
-          <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
-            ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
-          </td>
-          <td>
-            ${o.receiptConfirmed
-              ? `<div style="display:flex;flex-direction:column;gap:3px">
-                   <span class="badge b-green">✅ Receipt Confirmed</span>
-                   <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.receiptAt||''}</span>
-                   ${o.receiptNote ? `<span style="font-size:11px;color:var(--brown-m);font-style:italic">"${escapeHtml(o.receiptNote)}"</span>` : ''}
-                 </div>`
-              : o.deliveryStatus === 'delivered'
-              ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">
-                   📦 Confirm Receipt
-                 </button>`
-              : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
-          </td>
-          <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
-        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
-    </table></div></div>
+    <div class="card">
+      <!-- Desktop table -->
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>Receipt</th><th>Date</th></tr></thead>
+        <tbody>${data.length ? data.map(o=>`
+          <tr>
+            <td><span class="mono">${o.id}</span></td>
+            <td>${o.city}</td>
+            <td>${o.items} · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></td>
+            <td>${prioBadge(o.prio)}</td>
+            <td>${orderBadge(o.status)}</td>
+            <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '—'}
+              ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
+            </td>
+            <td>${o.receiptConfirmed ? '<span class="badge b-green">✅ Confirmed</span>' : o.deliveryStatus==='delivered' ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">📦 Confirm</button>` : '—'}</td>
+            <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
+          </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet.</div></div></td></tr>'}</tbody>
+      </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${data.length ? data.map(o => `
+        <div class="mc-card" style="border-left:4px solid ${o.status==='rejected'?'var(--red)':o.status==='consolidated'?'var(--blue)':'var(--accent)'}">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">Order #${o.id} — ${escapeHtml(o.city)}</div>
+              <div style="font-size:11px;color:var(--brown-l);margin-top:2px">${o.created}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              ${orderBadge(o.status)}
+              ${prioBadge(o.prio)}
+            </div>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${o.items} items · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Delivery</span>
+            <span class="mc-val">${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l)">Not assigned</span>'}
+              ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
+            </span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Receipt</span>
+            <span class="mc-val">${o.receiptConfirmed ? '<span class="badge b-green">✅ Confirmed</span>' : o.deliveryStatus==='delivered' ? '<span class="badge b-orange">⏳ Pending</span>' : '<span style="color:var(--brown-l)">—</span>'}</span>
+          </div>
+          <div class="mc-actions">
+            ${['consolidated','assigned','warehouse_ready','loaded','in-transit'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${o.id},'${escapeHtml(o.city||'')}','${escapeHtml(o.retailerName||o.retailer||'')}')">🗺️ Track</button>` : ''}
+            ${o.deliveryStatus==='delivered' && !o.receiptConfirmed ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">📦 Confirm Receipt</button>` : ''}
+            ${o.status==='rejected' ? `<button class="btn btn-ghost btn-sm" onclick="editAndResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">✏️ Resubmit</button>` : ''}
+          </div>
+        </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "+ New Request" to start.</div></div>'}</div>
+    </div>
 
   <!-- Confirm Receipt Modal -->
   <div class="modal-bg" id="m-confirm-receipt" style="z-index:400">
@@ -1743,8 +1790,9 @@ async function pageAllOrders() {
 
     <div class="card">
       <div class="card-title">⏳ Pending Review <span class="badge b-orange" style="margin-left:8px">${pending.length}</span></div>
+      <!-- Desktop table -->
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
         <tbody>${pending.length ? pending.map(o=>`
           <tr>
             <td><span class="mono">${o.id}</span></td>
@@ -1757,10 +1805,32 @@ async function pageAllOrders() {
             <td><button class="btn btn-tan btn-sm" onclick="openConfirm('${o.id}','${o.retailer}','${o.city}',${o.items},${o.kg},'${o.prio}')">Review →</button></td>
           </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">✅</div><div>No pending orders — all reviewed!</div></div></td></tr>'}</tbody>
       </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${pending.length ? pending.map(o => `
+        <div class="mc-card" style="border-left:4px solid var(--orange)">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(o.retailer)}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">${escapeHtml(o.city)} · ${o.created}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+              ${prioBadge(o.prio)}
+              <span class="mono" style="font-size:11px">#${o.id}</span>
+            </div>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${o.items} items · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></span>
+          </div>
+          <div class="mc-actions">
+            <button class="btn btn-tan" onclick="openConfirm('${o.id}','${escapeHtml(o.retailer)}','${escapeHtml(o.city)}',${o.items},${o.kg},'${o.prio}')">📋 Review Order →</button>
+          </div>
+        </div>`).join('') : '<div class="empty"><div class="empty-icon">✅</div><div>No pending orders — all reviewed!</div></div>'}</div>
     </div>
 
     <div class="card">
       <div class="card-title">📁 Processed Orders <span class="badge b-gray" style="margin-left:8px">${processed.length}</span></div>
+      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Status</th><th>Reason / Reviewed By</th><th>Date</th></tr></thead>
         <tbody>${processed.length ? processed.map(o=>`
@@ -1771,13 +1841,44 @@ async function pageAllOrders() {
             <td>${orderBadge(o.status)}</td>
             <td style="font-size:12px;max-width:220px">
               ${o.status==='rejected'
-                ? `<div style="color:var(--red);font-weight:600">${o.rejectCategory ? (({'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'})[o.rejectCategory]||o.rejectCategory) : ''}</div>
-                   <div style="color:var(--brown-m);font-size:11px;margin-top:2px">${o.rejectReason||'—'}</div>`
+                ? `<div style="color:var(--red);font-weight:600">${o.rejectCategory ? (({'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'})[o.rejectCategory]||o.rejectCategory) : ''}</div><div style="color:var(--brown-m);font-size:11px;margin-top:2px">${o.rejectReason||'—'}</div>`
                 : `<span style="color:var(--brown-l)">${o.confirmedBy||'—'}</span>`}
             </td>
             <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>No processed orders yet.</div></div></td></tr>'}</tbody>
       </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${processed.length ? processed.map(o => {
+        const catMap = {'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'};
+        return `
+        <div class="mc-card" style="border-left:4px solid ${o.status==='rejected'?'var(--red)':o.status==='confirmed'?'var(--green)':'var(--blue)'}">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(o.retailer)}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">${escapeHtml(o.city)} · ${o.created}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              ${orderBadge(o.status)}
+              <span class="mono" style="font-size:11px">#${o.id}</span>
+            </div>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${o.items} · ${o.kg}kg</span>
+          </div>
+          ${o.status==='rejected' ? `
+          <div class="mc-row">
+            <span class="mc-label">Reason</span>
+            <span class="mc-val" style="color:var(--red);font-size:12px">
+              ${o.rejectCategory ? (catMap[o.rejectCategory]||o.rejectCategory) : ''}
+              ${o.rejectReason ? '<br><span style="color:var(--brown-m);font-weight:400">'+escapeHtml(o.rejectReason)+'</span>' : ''}
+            </span>
+          </div>` : `
+          <div class="mc-row">
+            <span class="mc-label">Reviewed</span>
+            <span class="mc-val" style="color:var(--brown-l)">${o.confirmedBy||'—'}</span>
+          </div>`}
+        </div>`;}).join('') : '<div class="empty"><div>No processed orders yet.</div></div>'}</div>
     </div>`);
 }
 
@@ -1897,30 +1998,59 @@ async function pageDeliveries() {
     <div class="alert-banner alert-success" style="margin-bottom:18px">
       🤖 <strong>Smart Auto-Routing</strong> — triggered every 3 orders. Auto-calculates weight, sorts by priority (Urgent→High→Normal), optimises route, selects smallest fitting vehicle, assigns driver — <em>all automatically</em>.
     </div>
-    <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Track</th><th>Receipt</th></tr></thead>
-      <tbody>${data.length ? data.map(d=>`
-        <tr>
-          <td><span class="mono">${d.id}</span></td>
-          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          <td>${d.items}</td>
-          <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
-          <td>${prioBadge(d.prio)}</td>
-          <td>${delBadge(d.status)}</td>
-          <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'<span style="color:var(--brown-l);font-size:12px">—</span>'}</td>
-          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-          <td>${['assigned','warehouse_ready','loaded','in-transit'].includes(d.status)?`<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')">🗺️ Track</button>`:'—'}</td>
-          <td>${d.receiptConfirmed
-            ? `<div style="display:flex;flex-direction:column;gap:2px">
-                 <span class="badge b-green">✅ Confirmed</span>
-                 <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${d.receiptAt||''}</span>
-               </div>`
-            : d.status==='delivered'
-            ? '<span class="badge b-orange">⏳ Awaiting</span>'
-            : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
-          </td>
-        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
-    </table></div></div>`);
+    <div class="card">
+      <!-- Desktop table -->
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Wt</th><th>Prio</th><th>Status</th><th>Driver</th><th>ETA</th><th>Track</th><th>Receipt</th></tr></thead>
+        <tbody>${data.length ? data.map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+            <td>${d.items}</td>
+            <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
+            <td>${prioBadge(d.prio)}</td>
+            <td>${delBadge(d.status)}</td>
+            <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'—'}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+            <td>${['assigned','warehouse_ready','loaded','in-transit'].includes(d.status)?`<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')">🗺️</button>`:'—'}</td>
+            <td>${d.receiptConfirmed?'<span class="badge b-green">✅</span>':d.status==='delivered'?'<span class="badge b-orange">⏳</span>':'—'}</td>
+          </tr>`).join('') : '<tr><td colspan="11"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
+      </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${data.length ? data.map(d => `
+        <div class="mc-card" style="border-left:4px solid ${d.status==='delivered'?'var(--green)':d.status==='in-transit'?'var(--orange)':d.status==='failed'?'var(--red)':'var(--blue)'}">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              ${delBadge(d.status)}
+              <span class="mono" style="font-size:11px">#${d.id}</span>
+            </div>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong> · ${prioBadge(d.prio)}</span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Driver</span>
+            <span class="mc-val">${d.driverName ? `<span class="badge b-navy">${escapeHtml(d.driverName)}</span>` : '<span style="color:var(--brown-l)">Not assigned</span>'}</span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">ETA</span>
+            <span class="mc-val" style="font-family:'DM Mono',monospace">${d.eta||'—'}</span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Receipt</span>
+            <span class="mc-val">${d.receiptConfirmed?'<span class="badge b-green">✅ Confirmed</span>':d.status==='delivered'?'<span class="badge b-orange">⏳ Awaiting</span>':'<span style="color:var(--brown-l)">—</span>'}</span>
+          </div>
+          ${['assigned','warehouse_ready','loaded','in-transit'].includes(d.status) ? `
+          <div class="mc-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${escapeHtml(d.city)}','${escapeHtml(d.retailer)}')">🗺️ Track Driver</button>
+          </div>` : ''}
+        </div>`).join('') : '<div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div>'}</div>
+    </div>`);
 }
 
 function pageConsolidate() {
@@ -1969,32 +2099,41 @@ async function pageWhStock() {
     </div>
     <div class="card">
       <div class="card-title">📋 Current Stock Levels</div>
+      <!-- Desktop table -->
       <div class="tw"><table>
-        <thead><tr><th>Product</th><th>Units Available</th><th>Weight Available</th><th>Weight/Unit</th><th>Watching</th><th>Update Stock</th></tr></thead>
+        <thead><tr><th>Product</th><th>Units</th><th>Weight</th><th>Wt/Unit</th><th>Watching</th><th>Update</th></tr></thead>
         <tbody>${stocks.length ? stocks.map(p=>`
           <tr>
             <td><strong>${escapeHtml(p.productName||'—')}</strong></td>
-            <td>
-              <span style="font-size:16px;font-weight:800;color:${p.availableUnits>10?'var(--green)':p.availableUnits>0?'var(--orange)':'var(--red)'}">
-                ${p.availableUnits||0}
-              </span>
-            </td>
+            <td><span style="font-size:16px;font-weight:800;color:${p.availableUnits>10?'var(--green)':p.availableUnits>0?'var(--orange)':'var(--red)'}">${p.availableUnits||0}</span></td>
             <td style="font-weight:700;color:var(--blue)">${p.availableKg?parseFloat(p.availableKg).toFixed(1)+'kg':'—'}</td>
             <td style="color:var(--brown-m)">${p.weightPerUnit?p.weightPerUnit+'kg/unit':'—'}</td>
-            <td>
-              ${parseInt(p.watchCount||0) > 0
-                ? `<span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount>1?'s':''} waiting</span>`
-                : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
-            </td>
+            <td>${parseInt(p.watchCount||0)>0?`<span class="badge b-orange">🔔 ${p.watchCount}</span>`:'—'}</td>
             <td style="display:flex;gap:6px;align-items:center">
-              <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}"
-                style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px"/>
-              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})">
-                ✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}
-              </button>
+              <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}" style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px"/>
+              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})">✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}</button>
             </td>
           </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
       </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${stocks.length ? stocks.map(p => `
+        <div class="mc-card" style="border-left:4px solid ${parseInt(p.availableUnits||0)>10?'var(--green)':parseInt(p.availableUnits||0)>0?'var(--orange)':'var(--red)'}">
+          <div class="mc-card-header">
+            <div class="mc-card-title" style="font-size:13px">${escapeHtml(p.productName||'—')}</div>
+            <span style="font-size:22px;font-weight:800;color:${parseInt(p.availableUnits||0)>10?'var(--green)':parseInt(p.availableUnits||0)>0?'var(--orange)':'var(--red)'}">${p.availableUnits||0}</span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Weight</span>
+            <span class="mc-val" style="font-weight:700;color:var(--blue)">${p.availableKg?parseFloat(p.availableKg).toFixed(1)+'kg':'—'} ${p.weightPerUnit?'('+p.weightPerUnit+'kg/unit)':''}</span>
+          </div>
+          ${parseInt(p.watchCount||0)>0?`<div class="mc-row"><span class="mc-label">Watching</span><span class="mc-val"><span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount>1?'s':''} waiting</span></span></div>`:''}
+          <div class="mc-actions" style="align-items:center">
+            <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}" style="width:90px;padding:10px 12px;border:2px solid var(--cream-dk);border-radius:8px;font-size:16px;font-family:'Inter',sans-serif;flex-shrink:0"/>
+            <button class="btn btn-tan" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})" style="flex:1">
+              ✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':'Stock'}
+            </button>
+          </div>
+        </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div>'}</div>
     </div>
     <div class="alert-banner alert-info">
       🔔 <strong>Auto-notify:</strong> When you update stock for a product, any retailer whose order was rejected as "Out of Stock" will be automatically notified that they can resubmit.
@@ -2023,28 +2162,56 @@ async function pageWhIncoming() {
       <div><div class="sec-title">Incoming Deliveries</div>
       <div class="sec-sub">Mark cargo ready → Driver notified · Mark vehicle loaded → Driver notified 🔔</div></div>
     </div>
-    <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody>${relevant.length ? relevant.map(d=>`
-        <tr>
-          <td><span class="mono">${d.id}</span></td>
-          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          <td>${d.items}</td>
-          <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
-          <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
-          <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
-          <td>${delBadge(d.status)}</td>
-          <td style="display:flex;gap:6px;flex-wrap:wrap">
-            ${d.status==='assigned'
-              ? `<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready</button>` : ''}
-            ${d.status==='warehouse_ready'
-              ? `<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Vehicle Loaded</button>` : ''}
-            ${d.status==='loaded'
-              ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
-            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')" style="margin-left:auto">🗺️ Track</button>
-          </td>
-        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
-    </table></div></div>`);
+    <div class="card">
+      <!-- Desktop table -->
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>${relevant.length ? relevant.map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+            <td>${d.items} · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></td>
+            <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
+            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
+            <td>${delBadge(d.status)}</td>
+            <td style="display:flex;gap:6px;flex-wrap:wrap">
+              ${d.status==='assigned'?`<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready</button>`:''}
+              ${d.status==='warehouse_ready'?`<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Loaded</button>`:''}
+              ${d.status==='loaded'?`<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting pickup</span>`:''}
+              <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')">🗺️</button>
+            </td>
+          </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
+      </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${relevant.length ? relevant.map(d => `
+        <div class="mc-card" style="border-left:4px solid ${d.status==='loaded'?'var(--primary)':d.status==='warehouse_ready'?'var(--accent)':'var(--blue)'}">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)} · <span class="mono">#${d.id}</span></div>
+            </div>
+            ${delBadge(d.status)}
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Cargo</span>
+            <span class="mc-val">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Driver</span>
+            <span class="mc-val"><span class="badge b-navy">${escapeHtml(d.driverName||'—')}</span></span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Vehicle</span>
+            <span class="mc-val"><span class="badge b-blue">${escapeHtml(d.vehicleId||'—')}</span></span>
+          </div>
+          <div class="mc-actions">
+            ${d.status==='assigned'?`<button class="btn btn-green" onclick="markReady('${d.id}')">✅ Mark Cargo Ready</button>`:''}
+            ${d.status==='warehouse_ready'?`<button class="btn btn-tan" onclick="markLoaded('${d.id}')">📦 Mark Vehicle Loaded</button>`:''}
+            ${d.status==='loaded'?`<div style="width:100%;text-align:center;font-size:13px;font-weight:700;color:var(--green);padding:8px">✓ Vehicle loaded — awaiting driver pickup</div>`:''}
+            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${escapeHtml(d.city)}','${escapeHtml(d.retailer)}')">🗺️ Track</button>
+          </div>
+        </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div>'}</div>
+    </div>`);
 }
 
 async function markReady(id) {
@@ -2064,19 +2231,44 @@ async function pageWhPrepare() {
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">All Delivery Status</div>
     <div class="sec-sub">Live view of all deliveries including in-transit and completed</div></div></div>
-    <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Status</th><th>ETA</th></tr></thead>
-      <tbody>${data.length ? data.map(d=>`
-        <tr>
-          <td><span class="mono">${d.id}</span></td>
-          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          
-          <td>${d.items} · ${d.kg}kg</td>
-          <td>${d.driverName||'—'}</td>
-          <td>${delBadge(d.status)}</td>
-          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-        </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
-    </table></div></div>`);
+    <div class="card">
+      <!-- Desktop table -->
+      <div class="tw"><table>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Status</th><th>ETA</th></tr></thead>
+        <tbody>${data.length ? data.map(d=>`
+          <tr>
+            <td><span class="mono">${d.id}</span></td>
+            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+            <td>${d.items} · ${d.kg}kg</td>
+            <td>${d.driverName||'—'}</td>
+            <td>${delBadge(d.status)}</td>
+            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
+      </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${data.length ? data.map(d => `
+        <div class="mc-card" style="border-left:4px solid ${d.status==='delivered'?'var(--green)':d.status==='in-transit'?'var(--orange)':d.status==='failed'?'var(--red)':'var(--blue)'}">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(d.retailer||'—')}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city||'—')} · <span class="mono">#${d.id}</span></div>
+            </div>
+            ${delBadge(d.status)}
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${d.items} · <strong style="color:var(--blue)">${d.kg}kg</strong></span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Driver</span>
+            <span class="mc-val">${d.driverName ? escapeHtml(d.driverName) : '<span style="color:var(--brown-l)">Not assigned</span>'}</span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">ETA</span>
+            <span class="mc-val" style="font-family:'DM Mono',monospace">${d.eta||'—'}</span>
+          </div>
+        </div>`).join('') : '<div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div>'}</div>
+    </div>`);
 }
 
 // ══ DISTRIBUTOR PAGES ═══════════════════════════
@@ -2423,6 +2615,7 @@ async function pageUpdStatus() {
       <div class="alert-banner alert-warn" style="margin-bottom:12px">
         These deliveries are assigned to you but the warehouse has not finished loading yet. You cannot update status until the vehicle is loaded.
       </div>
+      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th></tr></thead>
         <tbody>${waiting.map(d=>`
@@ -2435,27 +2628,75 @@ async function pageUpdStatus() {
           </tr>`).join('')}
         </tbody>
       </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${waiting.map(d => `
+        <div class="mc-card" style="border-left:4px solid var(--blue);opacity:.8">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)}</div>
+            </div>
+            ${delBadge(d.status)}
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${d.items} items</span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">ETA</span>
+            <span class="mc-val" style="font-family:'DM Mono',monospace">${d.eta||'—'}</span>
+          </div>
+        </div>`).join('')}</div>
     </div>` : ''}
     <div class="card">
       <div class="card-title">Active Stops <span class="badge b-orange" style="margin-left:8px">${active.length}</span></div>
+      <!-- Desktop table -->
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Current Status</th><th>Action</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th><th>Action</th></tr></thead>
         <tbody>${active.length ? active.map(d=>`
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td style="font-size:12px">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></td>
+            <td style="font-size:12px">${d.items} · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
             <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-              ${d.status==='in-transit' ? '<span style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:3px 8px;border-radius:20px">📡 GPS On</span>' : ''}
+              ${d.status==='in-transit'?'<span style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:3px 8px;border-radius:20px">📡 GPS</span>':''}
               <button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>
             </td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>All stops complete! 🎉</div></div></td></tr>'}</tbody>
       </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${active.length ? active.map(d => `
+        <div class="mc-card" style="border-left:4px solid ${d.status==='in-transit'?'var(--orange)':'var(--primary)'}">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)} · <span class="mono" style="font-size:11px">#${d.id}</span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+              ${delBadge(d.status)}
+              ${d.status==='in-transit'?'<span style="font-size:10px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:2px 8px;border-radius:20px">📡 GPS On</span>':''}
+            </div>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></span>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">ETA</span>
+            <span class="mc-val" style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent)">${d.eta||'—'}</span>
+          </div>
+          <div class="mc-actions">
+            <button class="btn btn-orange" style="width:100%" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">
+              ${d.status==='in-transit' ? '✅ Mark Delivered / Report Issue' : '🚛 Update Status →'}
+            </button>
+          </div>
+        </div>`).join('') : '<div class="empty"><div style="font-size:28px;margin-bottom:8px">🎉</div><div>All stops complete!</div></div>'}</div>
     </div>
     <div class="card">
       <div class="card-title">Completed <span class="badge b-green" style="margin-left:8px">${completed.length}</span></div>
+      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Status</th><th>Action</th></tr></thead>
         <tbody>${completed.length ? completed.map(d=>`
@@ -2467,6 +2708,25 @@ async function pageUpdStatus() {
             <td>${d.status==='failed'?`<button class="btn btn-blue btn-sm" onclick="rescheduleDelivery('${d.id}')">🔄 Reschedule</button>`:'—'}</td>
           </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div>No completed deliveries yet.</div></div></td></tr>'}</tbody>
       </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${completed.length ? completed.map(d => `
+        <div class="mc-card" style="border-left:4px solid ${d.status==='delivered'?'var(--green)':'var(--red)'}">
+          <div class="mc-card-header">
+            <div>
+              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
+              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)}</div>
+            </div>
+            ${delBadge(d.status)}
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Items</span>
+            <span class="mc-val">${d.items} items</span>
+          </div>
+          ${d.status==='failed' ? `
+          <div class="mc-actions">
+            <button class="btn btn-blue" style="width:100%" onclick="rescheduleDelivery('${d.id}')">🔄 Reschedule Delivery</button>
+          </div>` : ''}
+        </div>`).join('') : '<div class="empty"><div>No completed deliveries yet.</div></div>'}</div>
     </div>`);
 }
 
@@ -2977,6 +3237,7 @@ async function pageRetailers() {
     <div class="card">
       <div class="card-title">🏪 All Retailers <span class="badge b-gray" style="margin-left:8px">${retailers.length}</span></div>
       ${retailers.length ? `
+      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>Avatar</th><th>Name</th><th>Email</th><th>Added</th><th>Actions</th></tr></thead>
         <tbody>${retailers.map(r => `
@@ -2991,7 +3252,28 @@ async function pageRetailers() {
             </td>
           </tr>`).join('')}
         </tbody>
-      </table></div>` : '<div class="empty"><div class="empty-icon">🏪</div><div>No retailers yet. Click <strong>+ Add Retailer</strong>.</div></div>'}
+      </table></div>
+      <!-- Mobile cards -->
+      <div class="mc-list">${retailers.map(r => `
+        <div class="mc-card">
+          <div class="mc-card-header">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${escapeHtml(r.avatar||'?')}</div>
+              <div>
+                <div class="mc-card-title">${escapeHtml(r.name)}</div>
+                <div style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace;margin-top:2px">${escapeHtml(r.Email)}</div>
+              </div>
+            </div>
+          </div>
+          <div class="mc-row">
+            <span class="mc-label">Added</span>
+            <span class="mc-val" style="color:var(--brown-l)">${r.createdAt||'—'}</span>
+          </div>
+          <div class="mc-actions">
+            <button class="btn btn-ghost btn-sm" onclick="openRetailerResetPw(${r.id},'${escapeHtml(r.name)}')">🔑 Reset PW</button>
+            <button class="btn btn-red btn-sm" onclick="deleteRetailer(${r.id},'${escapeHtml(r.name)}')">✕ Remove</button>
+          </div>
+        </div>`).join('')}</div>` : '<div class="empty"><div class="empty-icon">🏪</div><div>No retailers yet. Click <strong>+ Add Retailer</strong>.</div></div>'}
     </div>
     <div class="modal-bg" id="m-add-retailer" style="z-index:400">
       <div class="modal" style="max-width:440px">
