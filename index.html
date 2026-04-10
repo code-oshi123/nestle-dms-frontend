@@ -2092,6 +2092,10 @@ async function doConsolidate() {
 // ══ WAREHOUSE PAGES ═════════════════════════════
 async function pageWhStock() {
   const stocks = await api('/stock');
+  if (!Array.isArray(stocks)) {
+    setContent(`<div class="alert-banner alert-error">❌ Failed to load stock: ${stocks.error||'Unknown error'}</div>`);
+    return;
+  }
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Stock Levels</div>
@@ -2111,7 +2115,7 @@ async function pageWhStock() {
             <td>${parseInt(p.watchCount||0)>0?`<span class="badge b-orange">🔔 ${p.watchCount}</span>`:'—'}</td>
             <td style="display:flex;gap:6px;align-items:center">
               <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}" style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px"/>
-              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})">✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}</button>
+              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0},${p.weightPerUnit||0})">✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}</button>
             </td>
           </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
       </table></div>
@@ -2129,7 +2133,7 @@ async function pageWhStock() {
           ${parseInt(p.watchCount||0)>0?`<div class="mc-row"><span class="mc-label">Watching</span><span class="mc-val"><span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount>1?'s':''} waiting</span></span></div>`:''}
           <div class="mc-actions" style="align-items:center">
             <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}" style="width:90px;padding:10px 12px;border:2px solid var(--cream-dk);border-radius:8px;font-size:16px;font-family:'Inter',sans-serif;flex-shrink:0"/>
-            <button class="btn btn-tan" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})" style="flex:1">
+            <button class="btn btn-tan" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0},${p.weightPerUnit||0})" style="flex:1">
               ✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':'Stock'}
             </button>
           </div>
@@ -2140,10 +2144,10 @@ async function pageWhStock() {
     </div>`);
 }
 
-async function updateStock(productId, productName, currentKg) {
+async function updateStock(productId, productName, currentKg, weightPerUnit) {
   const units = parseInt(document.getElementById('units-'+productId)?.value) || 0;
-  // Estimate kg from units using current ratio
-  const kg = currentKg > 0 ? currentKg : units;
+  const kg = weightPerUnit > 0 ? parseFloat((units * weightPerUnit).toFixed(2)) : (currentKg > 0 ? currentKg : units);
+ 
   const r = await api(`/stock/${productId}/update`, 'PUT', { availableUnits: units, availableKg: kg });
   if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
   const msg = r.restockedCount > 0
