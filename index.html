@@ -3211,16 +3211,18 @@ function loadLeaflet() {
 }
 
 // Stop map polling when navigating away
-const _origNav = window.nav;
 window.nav = function(id) {
   if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
   if (typeof tickInterval !== 'undefined' && tickInterval) { clearInterval(tickInterval); tickInterval = null; }
   if (mapInstance && id !== 'live-map') { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
-  // Only stop GPS if navigating away completely (not between driver tabs)
   const driverPages = ['my-routes','upd-status','live-map'];
   if (!driverPages.includes(id) && user && user.role === 'distributor') {
-    // still keep GPS running — driver might tab back
+    // still keep GPS running
   }
+  // ← UPDATE ACTIVE TAB
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  const activeTab = document.getElementById('tab-' + id);
+  if (activeTab) activeTab.classList.add('active');
   return render(id);
 };
 
