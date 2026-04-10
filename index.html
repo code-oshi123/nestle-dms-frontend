@@ -696,22 +696,37 @@
       cursor: pointer;
       border-bottom: 3px solid transparent;
       margin-bottom: -1px;
-      transition: color .15s, border-color .2s;
+      transition: color .15s, border-color .2s, background .15s;
       white-space: nowrap;
       display: flex;
       align-items: center;
       gap: 7px;
       text-transform: uppercase;
-      letter-spacing: .6px
+      letter-spacing: .6px;
+      position: relative
     }
 
     .tab:hover {
-      color: var(--brown)
+      color: var(--brown);
+      background: rgba(139, 105, 20, .05)
     }
 
     .tab.active {
-      color: var(--tan);
+      color: var(--tan-d);
       border-bottom: 3px solid var(--tan);
+      background: rgba(139, 105, 20, .08);
+      font-weight: 700
+    }
+
+    .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--tan);
+      border-radius: 3px 3px 0 0
     }
 
     /* ══ MAIN ════════════════════════════════════ */
@@ -2575,7 +2590,11 @@
 
     function nav(id) {
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      const el = document.getElementById('tab-' + id); if (el) el.classList.add('active');
+      const el = document.getElementById('tab-' + id);
+      if (el) {
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
       render(id);
     }
 
@@ -4552,10 +4571,15 @@ RULES:
       if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
       if (typeof tickInterval !== 'undefined' && tickInterval) { clearInterval(tickInterval); tickInterval = null; }
       if (mapInstance && id !== 'live-map') { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
-      // Only stop GPS if navigating away completely (not between driver tabs)
       const driverPages = ['my-routes', 'upd-status', 'live-map'];
       if (!driverPages.includes(id) && user && user.role === 'distributor') {
-        // still keep GPS running — driver might tab back
+        // still keep GPS running
+      }
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      const el = document.getElementById('tab-' + id);
+      if (el) {
+        el.classList.add('active');
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
       return render(id);
     };
