@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <title>Nestlé — Smart Delivery Management System</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
@@ -108,7 +108,7 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 .np-readall:hover{background:rgba(255,255,255,.25)}
 .np-x{background:none;border:none;font-size:20px;cursor:pointer;color:rgba(245,237,214,.7);line-height:1;padding:0 4px}
 .np-x:hover{color:var(--cream)}
-.np-list{overflow-y:auto;flex:1;background:var(--cream);-webkit-overflow-scrolling:touch}
+.np-list{overflow-y:auto;flex:1;background:var(--cream)}
 .np-empty{text-align:center;padding:40px 20px;color:var(--brown-l)}
 .np-empty-ico{font-size:28px;margin-bottom:8px}
 .ni{display:flex;gap:12px;padding:14px 18px;border-bottom:1px solid var(--cream-dk);cursor:pointer;transition:background .12s;position:relative}
@@ -145,266 +145,106 @@ body{font-family:'Jost',sans-serif;background:var(--parchment);color:var(--brown
 #live-map{width:100%;height:100%}
 .track-badge{display:inline-flex;align-items:center;gap:4px;background:#E8F5E9;color:#2E7D32;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600;animation:pulse-green 2s infinite}
 @keyframes pulse-green{0%,100%{opacity:1}50%{opacity:0.6}}
-/* ══════════════════════════════════════════════════════════
-   COMPREHENSIVE MOBILE RESPONSIVE — All Roles / All Pages
-   Breakpoints: 768px · 480px · 360px · tablet 769-1024px
-   ══════════════════════════════════════════════════════════ */
 @media(max-width:768px){
-  *{-webkit-tap-highlight-color:rgba(0,48,63,.12)}
-  button,a,[role="button"]{min-height:44px}
+  /* ── Topbar ── */
+  .topbar{padding:0 14px;height:56px}
+  .tlogo-wrap{width:36px;height:36px;padding:4px;border-radius:8px}
+  .ttitle{font-size:14px;letter-spacing:0;font-weight:700}
+  .tsub,.tdivider,.tuser-name,.tuser-role,.tuser-info{display:none}
+  .tbadge{width:30px;height:30px;font-size:12px;border-width:2px}
+  .tright{gap:10px}
 
-  /* ══ TOPBAR ══ */
-  .topbar{padding:0 12px 0;padding-top:env(safe-area-inset-top,0);
-          height:calc(56px + env(safe-area-inset-top,0px));gap:8px}
-  .tl{gap:10px;flex:1;min-width:0}
-  .tlogo-wrap{width:36px;height:36px;padding:4px;border-radius:8px;flex-shrink:0}
-  .ttitle{font-size:13px;letter-spacing:0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .tsub,.tdivider,.tuser-info{display:none}
-  .tr{gap:8px;flex-shrink:0}
-  .tav{width:32px;height:32px;font-size:10px}
-  .tout{padding:6px 12px;font-size:11px;border-radius:7px}
-  .bell-btn{width:36px;height:36px;font-size:15px}
-  .bell-badge{min-width:16px;height:16px;font-size:9px;top:-4px;right:-4px}
-
-  /* ══ TABS ══ */
-  .tabs{
-    padding:0;gap:0;overflow-x:auto;overflow-y:hidden;
-    scrollbar-width:none;-ms-overflow-style:none;
-    border-bottom:2px solid var(--cream-dk);
-    -webkit-overflow-scrolling:touch;
-    scroll-snap-type:x proximity;
-    position:sticky;
-    top:calc(56px + env(safe-area-inset-top,0px));
-    z-index:90;background:var(--white);
-  }
+  /* ── Tabs ── */
+  .tabs{padding:0;gap:0;overflow-x:auto;scrollbar-width:none;border-bottom:2px solid var(--cream-dk)}
   .tabs::-webkit-scrollbar{display:none}
-  .tab{
-    padding:11px 13px;font-size:10px;letter-spacing:.4px;
-    gap:4px;font-weight:700;flex-shrink:0;white-space:nowrap;
-    scroll-snap-align:start;min-height:44px;text-transform:uppercase;
-  }
-  .tab.active{border-bottom-width:3px;color:var(--accent);border-bottom-color:var(--accent)}
+  .tab{padding:12px 14px;font-size:11px;letter-spacing:.2px;gap:5px;font-weight:700}
+  .tab.active{border-bottom-width:3px}
 
-  /* ══ MAIN ══ */
-  .main{padding:12px 12px;padding-bottom:28px;max-width:100%}
-  .card{padding:14px;border-radius:12px;margin-bottom:12px;border-width:1.5px}
-  .card-title{font-size:14px;font-weight:700;margin-bottom:12px;gap:6px}
+  /* ── Main ── */
+  .main{padding:14px 12px;padding-bottom:100px}
+  .card{padding:16px;border-radius:12px;margin-bottom:14px;border-width:1.5px}
+  .card-title{font-size:15px;font-weight:700;margin-bottom:14px}
 
-  /* ══ SECTION HEADERS ══ */
-  .sec-hdr{flex-direction:column;align-items:stretch;gap:10px;margin-bottom:14px}
-  .sec-title{font-size:20px;font-weight:700;line-height:1.2}
-  .sec-sub{font-size:12px;margin-top:3px}
-  .sec-hdr .btn,.sec-hdr>button{width:100%;justify-content:center;padding:12px 16px;font-size:14px;min-height:48px}
+  /* ── Section header ── */
+  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:16px}
+  .sec-title{font-size:22px;font-weight:700}
+  .sec-sub{font-size:13px}
+  .sec-hdr .btn{width:100%;justify-content:center;padding:12px;font-size:14px}
 
-  /* ══ KPI CARDS ══ */
-  .kpi-row{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
-  .kpi{padding:12px 14px;border-left-width:4px;border-top:none !important}
-  .kpi-v{font-size:24px;font-weight:700;line-height:1}
-  .kpi-l{font-size:10px;margin-top:4px;font-weight:600;letter-spacing:.3px}
-  .kpi:hover{transform:none}
+  /* ── KPI cards ── */
+  .kpi-row{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .kpi{padding:14px;border-top-width:4px}
+  .kpi-v{font-size:26px;font-weight:700}
+  .kpi-l{font-size:11px;margin-top:4px;font-weight:600}
 
-  /* ══ TABLES ══ */
-  .tw{
-    overflow-x:auto;-webkit-overflow-scrolling:touch;
-    margin:0 -14px;padding:0 14px 4px;scrollbar-width:thin;
-  }
-  .tw::after{content:'';display:block;height:1px}
-  table{min-width:560px;font-size:13px}
-  th{padding:10px 10px;font-size:10px;font-weight:700;letter-spacing:.4px}
-  td{padding:11px 10px;font-size:12px;line-height:1.4}
-  tr:hover td{background:inherit}
-  .btn-sm{padding:7px 10px;font-size:11px;font-weight:700;border-radius:7px;min-height:34px}
-  /* Table action cells */
-  td[style*="display:flex"]{flex-wrap:wrap !important;gap:6px !important}
+  /* ── Tables ── */
+  .tw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px}
+  table{min-width:520px}
+  th{padding:10px 12px;font-size:10px;font-weight:700;letter-spacing:.5px}
+  td{padding:12px 12px;font-size:13px}
+  .btn-sm{padding:7px 12px;font-size:12px;font-weight:600;border-radius:8px}
 
-  /* ══ FORMS ══ */
-  .form-grid{grid-template-columns:1fr;gap:0}
-  .fg{margin-bottom:12px}
-  .fg label{font-size:11px;font-weight:700;margin-bottom:6px;letter-spacing:.5px}
-  .fg input,.fg select,.fg textarea{
-    font-size:16px;padding:13px 14px;border-width:2px;
-    border-radius:10px;min-height:48px;-webkit-appearance:none;
-  }
-  .fg select{padding-right:36px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%230D2028' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
-  .fg textarea{min-height:90px;resize:vertical}
-  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(220,174,29,.15)}
+  /* ── Forms ── */
+  .form-grid{grid-template-columns:1fr}
+  .fg{margin-bottom:14px}
+  .fg input,.fg select,.fg textarea{font-size:16px;padding:12px 14px;border-width:2px;border-radius:10px}
+  .fg label{font-size:11px;font-weight:700;margin-bottom:6px}
+  .fg input:focus,.fg select:focus{border-color:var(--tan);box-shadow:0 0 0 4px rgba(139,105,20,.15)}
 
-  /* ══ BUTTONS ══ */
-  .btn{font-size:13px;padding:11px 16px;font-weight:700;border-radius:10px;min-height:44px;gap:6px}
-  .btn-sm{font-size:11px;padding:7px 12px;border-radius:8px;min-height:34px}
-  .btn-tan{box-shadow:0 3px 10px rgba(0,48,63,.35)}
-  .btn:hover,.btn-red:hover,.btn-green:hover,.btn-orange:hover,.btn-blue:hover,.btn-tan:hover{transform:none}
+  /* ── Modals ── */
+  .modal-bg{padding:0;align-items:flex-end;background:rgba(0,0,0,.7)}
+  .modal{max-width:100%;width:100%;border-radius:20px 20px 0 0;max-height:94vh;border:none;border-top:3px solid var(--tan)}
+  .modal-title{padding:18px 20px;font-size:17px;font-weight:700}
+  .modal .modal-body{padding:16px 20px}
+  .modal-actions{flex-direction:column-reverse;gap:8px;padding:0 20px 20px}
+  .modal-actions .btn{width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700;border-radius:12px}
 
-  /* ══ MODALS — bottom-sheet style ══ */
-  .modal-bg{padding:0;align-items:flex-end;background:rgba(0,30,40,.78);backdrop-filter:blur(3px)}
-  .modal{
-    max-width:100%;width:100%;border-radius:22px 22px 0 0;
-    max-height:92vh;border:none;border-top:3px solid var(--accent);
-    overflow-y:auto;-webkit-overflow-scrolling:touch;
-  }
-  .modal-title{padding:16px 18px;font-size:16px;font-weight:700;border-radius:22px 22px 0 0}
-  .modal .modal-body{padding:16px 18px}
-  .modal-actions{flex-direction:column-reverse;gap:8px;padding:12px 18px 28px;margin-top:12px}
-  .modal-actions .btn{width:100%;justify-content:center;padding:14px 16px;font-size:15px;font-weight:700;border-radius:12px;min-height:52px}
-  /* Rejection / failure grids in modals → 2 cols */
-  #mc-cat-grid,#s-failtype-grid{grid-template-columns:1fr 1fr !important;gap:8px}
-  .reject-cat-btn,.fail-type-btn{padding:12px 8px !important;border-radius:12px !important;min-height:80px}
-  /* Order top 3-col → 1 col */
-  .modal .modal-body [style*="grid-template-columns:1fr 1fr 1fr"]{
-    display:grid;grid-template-columns:1fr !important;gap:8px !important;
-  }
+  /* ── Buttons ── */
+  .btn{font-size:13px;padding:10px 16px;font-weight:700;border-radius:10px}
+  .btn-tan{box-shadow:0 3px 10px rgba(139,105,20,.35)}
 
-  /* ══ NOTIFICATIONS PANEL ══ */
-  .np{
-    width:100%;right:0;left:0;
-    top:calc(56px + env(safe-area-inset-top,0px));
-    border-left:none;border-top:2px solid var(--accent);
-    max-height:calc(100vh - 56px);
-  }
-  .np-hdr{padding:12px 16px}
-  .np-title{font-size:14px}
-  .ni{padding:12px 14px;gap:10px}
-  .ni-ico{width:32px;height:32px;font-size:14px}
-  .ni-title{font-size:12px;font-weight:700}
-  .ni-msg{font-size:11px;-webkit-line-clamp:3;line-clamp:3}
-  .np-list{-webkit-overflow-scrolling:touch}
+  /* ── Map ── */
+  .map-container{height:300px;border-radius:10px;border-width:2px}
 
-  /* ══ MAP ══ */
-  .map-container{height:260px;border-radius:10px;border-width:1.5px}
-  .map-info-bar{padding:8px 12px;gap:8px;border-radius:7px;margin-bottom:8px;flex-wrap:wrap}
-  .map-info-bar span{font-size:11px}
-  #live-map{width:100%;height:100%;touch-action:none}
+  /* ── Notifications ── */
+  .np{width:100%;right:0;left:0;border-left:none;border-top:2px solid var(--tan)}
 
-  /* ══ LOGIN PAGE ══ */
-  #login{padding:0;align-items:flex-start;overflow-y:auto;padding-top:20px;padding-bottom:20px}
-  .lcard{padding:24px 18px 28px;border-radius:18px;margin:auto 16px;width:calc(100% - 32px);max-width:440px}
-  .llogo{margin-bottom:22px;padding-bottom:18px;gap:12px}
-  .llogo-img{width:46px;height:46px;border-radius:10px}
-  .lbrand{font-size:17px}
-  .lbrand span{font-size:9px}
-  .lh{font-size:22px;font-weight:700;margin-bottom:3px}
-  .ls{font-size:12px;margin-bottom:20px}
-  .fi{margin-bottom:14px}
-  .fi label{font-size:10px;font-weight:700;letter-spacing:.6px}
-  .fi input{font-size:16px;padding:13px 14px;border-radius:10px;min-height:48px}
-  .lbtn{padding:15px;font-size:15px;font-weight:700;border-radius:12px;min-height:52px;margin-top:4px}
-  .quick{margin-top:20px;padding-top:16px}
-  .qlbl{font-size:10px;letter-spacing:.6px;margin-bottom:10px}
-  .qbtns{grid-template-columns:1fr;gap:8px}
-  .qbtn{padding:13px 14px;gap:12px;border-width:1.5px;border-radius:12px;min-height:60px;align-items:center}
-  .qav{width:40px;height:40px;font-size:13px;font-weight:700;flex-shrink:0}
-  .qname{font-size:13px;font-weight:700}
-  .qrole{font-size:11px}
-  .lerr{font-size:13px;padding:11px 14px;border-radius:9px}
+  /* ── Login ── */
+  .lcard{padding:28px 20px;border-radius:20px;margin:16px}
+  .lh{font-size:24px;font-weight:700}
+  .ls{font-size:14px}
+  .qbtn{padding:12px 14px;gap:10px;border-width:1.5px;border-radius:12px}
+  .qbtns{grid-template-columns:1fr}
+  .qav{width:40px;height:40px;font-size:14px;font-weight:700}
+  .qname{font-size:14px;font-weight:700}
+  .qrole{font-size:12px}
 
-  /* ══ ALERT BANNERS ══ */
-  .alert-banner{font-size:12px;padding:11px 13px;line-height:1.65;border-width:1.5px;border-radius:10px;gap:8px}
+  /* ── Alert banners ── */
+  .alert-banner{font-size:13px;padding:12px 14px;line-height:1.6;border-width:1.5px;border-radius:10px}
 
-  /* ══ TOAST ══ */
-  .toast{
-    bottom:calc(env(safe-area-inset-bottom,0px) + 16px);
-    right:12px;left:12px;max-width:100%;
-    font-size:13px;padding:14px 16px;border-radius:14px;font-weight:600;
-    box-shadow:0 8px 28px rgba(0,0,0,.25);
-  }
+  /* ── Toast ── */
+  .toast{bottom:80px;right:12px;left:12px;max-width:100%;font-size:13px;padding:14px 16px;border-radius:14px;font-weight:600}
 
-  /* ══ BADGES ══ */
-  .badge{font-size:11px;padding:4px 10px;font-weight:700;border-radius:20px}
-  .mono{font-size:11px}
+  /* ── Badges ── */
+  .badge{font-size:12px;padding:4px 12px;font-weight:700}
 
-  /* ══ ROUTE BUILDER ══ */
-  .rb-stop{padding:11px 12px;border-radius:10px}
-  .rb-stop-hdr{gap:8px;margin-bottom:5px}
-  .rb-stop-name{font-size:12px}
-  .rb-stop-meta{gap:5px}
-  .rb-stop-actions{gap:5px;margin-top:6px}
-  .rb-eta-input{width:88px;font-size:11px;padding:5px 7px}
-  .rp-two-col{grid-template-columns:1fr !important}
-  .pool-card,.builder-card{padding:14px;border-radius:12px}
-  .pool-card-title{font-size:13px;margin-bottom:10px}
-  .builder-drop-zone{min-height:60px;padding:12px;font-size:12px}
-  .rt-city{font-size:13px;font-weight:700}
-  .rt-detail{font-size:11px}
-  .rt-eta-badge{font-size:10px;padding:2px 6px}
-  .route-card{padding:14px;border-radius:12px;margin-bottom:10px}
-
-  /* ══ EMPTY STATES ══ */
-  .empty{padding:32px 20px}
-  .empty-icon{font-size:28px;margin-bottom:8px}
-  .kg-badge{font-size:11px;padding:5px 10px;border-radius:5px}
-  .page-logo-banner{padding:10px 0 8px;margin-bottom:2px}
-  .page-logo-img{width:32px;height:32px}
-  .page-logo-text{font-size:13px}
-  .rejection-notice{padding:12px 14px;border-radius:10px;margin-bottom:14px}
-  .rejection-notice .rn-title{font-size:13px;margin-bottom:5px}
-  .rejection-notice .rn-reason{font-size:12px}
-  .rejection-notice .rn-hint{font-size:11px}
-
-  /* ══ AI ASSISTANT ══ */
-  .ai-suggestion-btn{font-size:11px !important;padding:5px 10px !important}
-
-  /* ══ DRIVER — Next Stop hero card ══ */
-  #next-stop-card{padding:16px !important}
-  #next-stop-card a[href*="google.com"]{font-size:14px !important;padding:12px !important;width:100% !important;box-sizing:border-box !important}
-
-  /* ══ GPS PANEL ══ */
-  #gps-status-panel{padding:12px 14px !important;flex-wrap:wrap !important}
-
-  /* ══ LIVE MAP cards grid ══ */
-  #map-info .card > div[style*="grid"]{grid-template-columns:repeat(auto-fill,minmax(min(290px,100%),1fr)) !important}
-
-  /* ══ STOCK TABLE inputs ══ */
-  input[id^="units-"]{width:70px !important;padding:5px 7px !important;font-size:13px !important}
-
-  /* ══ PROGRESS badges ══ */
-  [style*="display:flex;gap:10px;margin-top:10px"]{flex-wrap:wrap !important;row-gap:6px !important}
-  [style*="display:flex;gap:8px;flex-wrap:wrap"]{row-gap:6px !important}
-}
-
-/* ══ PHONE (≤480px) ══ */
-@media(max-width:480px){
-  .main{padding:10px 10px;padding-bottom:24px}
-  .card{padding:12px 12px;margin-bottom:10px}
-  .kpi-row{grid-template-columns:1fr 1fr;gap:7px}
-  .kpi{padding:11px 12px}.kpi-v{font-size:22px}.kpi-l{font-size:10px}
-  .sec-title{font-size:18px}
-  .tab{padding:10px 10px;font-size:9px;letter-spacing:.2px}
-  table{min-width:480px}
-  td{padding:9px 9px;font-size:11px}
-  th{padding:9px 9px;font-size:9px}
-  .btn{font-size:12px;padding:10px 13px}
-  .modal-title{font-size:15px;padding:14px 16px}
-  .modal .modal-body{padding:14px 16px}
-  .modal-actions{padding:10px 16px 24px}
-  .lcard{padding:20px 15px 24px;margin:auto 12px;width:calc(100% - 24px)}
-  .lh{font-size:20px}.lbtn{font-size:14px;padding:14px}
-  .qbtn{padding:12px 12px}
-  .map-container{height:220px}
-  #next-stop-card{padding:14px !important}
-}
-
-/* ══ SMALL PHONE (≤360px) ══ */
-@media(max-width:360px){
-  .main{padding:8px 8px}.card{padding:10px 10px}
-  .kpi-row{grid-template-columns:1fr 1fr;gap:6px}
-  .kpi{padding:10px 10px}.kpi-v{font-size:20px}
-  .tab{padding:9px 9px;font-size:9px}
-  .sec-title{font-size:17px}
-  .lcard{margin:auto 8px;width:calc(100% - 16px)}
-  .topbar{padding:0 10px}
-}
-
-/* ══ TABLET (769-1024px) ══ */
-@media(min-width:769px) and (max-width:1024px){
-  .main{padding:20px 20px;max-width:100%}
-  .kpi-row{grid-template-columns:repeat(2,1fr);gap:12px}
-  .form-grid{grid-template-columns:1fr 1fr}
+  /* ── Route timeline ── */
+  .rb-stop{padding:12px 14px}
   .rp-two-col{grid-template-columns:1fr}
-  table{font-size:13px}
-  td{padding:12px 12px}
+  .rt-city{font-size:14px;font-weight:700}
 }
 
-/* ══ DESKTOP (≥769px) ══ */
+/* ── Extra small phones ── */
+@media(max-width:380px){
+  .main{padding:10px 10px;padding-bottom:90px}
+  .card{padding:12px}
+  .tab{padding:10px 10px;font-size:10px}
+  .kpi-row{grid-template-columns:1fr 1fr}
+  .kpi-v{font-size:22px}
+  .sec-title{font-size:20px}
+}
+
+/* ── Desktop improvements — higher contrast ── */
 @media(min-width:769px){
   .badge{font-size:12px;padding:4px 12px;font-weight:700}
   .btn{font-weight:700}
@@ -547,30 +387,6 @@ tr:hover td{background:rgba(139,105,20,.03)}
 /* kg auto-calc badge */
 .kg-badge{display:inline-flex;align-items:center;gap:6px;background:var(--cream-dk);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--brown);margin-top:6px;font-weight:500}
 .kg-badge strong{color:var(--navy)}
-
-/* ══ MOBILE CARD TABLE — replaces horizontal-scroll tables on phones ══ */
-.mc-list{display:none;flex-direction:column;gap:10px}
-.mc-card{background:var(--white);border:1.5px solid var(--cream-dk);border-radius:12px;padding:14px 16px;box-shadow:0 1px 4px rgba(0,48,63,.06)}
-.mc-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px}
-.mc-card-title{font-size:14px;font-weight:700;color:var(--brown)}
-.mc-card-badge{flex-shrink:0}
-.mc-row{display:flex;align-items:flex-start;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--cream);gap:8px}
-.mc-row:last-child{border-bottom:none;padding-bottom:0}
-.mc-label{font-size:10px;font-weight:700;color:var(--brown-l);text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;padding-top:2px;min-width:72px}
-.mc-val{font-size:13px;color:var(--brown);text-align:right;flex:1;font-weight:500}
-.mc-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;padding-top:10px;border-top:1px solid var(--cream)}
-.mc-actions .btn,.mc-actions button{flex:1;min-width:0;justify-content:center;font-size:12px;padding:9px 10px}
-
-@media(max-width:768px){
-  /* Show card list, hide table */
-  .tw{display:none !important}
-  .mc-list{display:flex}
-}
-@media(min-width:769px){
-  /* Show table, hide card list */
-  .mc-list{display:none !important}
-  .tw{display:block}
-}
 </style>
 </head>
 <body>
@@ -812,6 +628,45 @@ tr:hover td{background:rgba(139,105,20,.03)}
   </div>
 </div>
 
+<!-- ── PIN Verification Modal ── -->
+<div class="modal-bg" id="m-pin-verify" style="z-index:500">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title" style="background:linear-gradient(135deg,#1B2A4A,#2d4a7a)">🔐 PIN Verification</div>
+    <div class="modal-body" style="text-align:center">
+      <input type="hidden" id="pv-id"/>
+      <div style="font-size:46px;margin-bottom:8px">🔐</div>
+      <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px" id="pv-label">Verify Delivery</div>
+      <div style="font-size:13px;color:var(--brown-m);margin-bottom:22px">Ask the retailer for their 4-digit PIN and enter it below</div>
+
+      <!-- 4 PIN digit boxes -->
+      <div style="display:flex;gap:12px;justify-content:center;margin-bottom:20px">
+        <input type="tel" id="pin-1" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-2')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-2" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-3')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-3" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,'pin-4')" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+        <input type="tel" id="pin-4" maxlength="1" inputmode="numeric" pattern="[0-9]"
+          style="width:58px;height:68px;text-align:center;font-size:30px;font-weight:800;border:3px solid var(--cream-dk);border-radius:12px;font-family:'DM Mono',monospace;color:var(--navy);outline:none;transition:all .2s"
+          oninput="pinDigit(this,null)" onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor=this.value?'#1B2A4A':'var(--cream-dk)'"/>
+      </div>
+
+      <div id="pv-err" class="alert-banner alert-error" style="display:none;margin-bottom:12px;text-align:left"></div>
+      <div id="pv-ok"  class="alert-banner alert-success" style="display:none;margin-bottom:12px;text-align:left"></div>
+
+      <div class="modal-actions" style="flex-direction:column;gap:8px">
+        <button class="btn btn-tan" id="pv-btn" onclick="submitPin()" style="width:100%;justify-content:center;padding:14px;font-size:15px;font-weight:700">
+          🔐 Verify PIN & Complete Delivery
+        </button>
+        <button class="btn btn-ghost" onclick="closeModal('m-pin-verify')" style="width:100%;justify-content:center">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" style="background:var(--brown)"><span id="toast-msg"></span></div>
 
 <script>
@@ -881,41 +736,7 @@ function enterApp() {
   loadRef();
   buildNav();
   startPoll();
-  applyMobileLayout();
 }
-
-// ── Responsive layout adjustments ──────────────
-function applyMobileLayout() {
-  const isMobile = window.innerWidth <= 768;
-  const isPhone  = window.innerWidth <= 480;
-
-  // AI Assistant grid
-  const aiLayout = document.getElementById('ai-layout');
-  if (aiLayout) aiLayout.style.gridTemplateColumns = isMobile ? '1fr' : '1fr 300px';
-
-  // AI chat height
-  const aiCard = document.getElementById('ai-chat-card');
-  if (aiCard) aiCard.style.height = isPhone ? '300px' : isMobile ? '380px' : '520px';
-
-  // AI side panel — hide on mobile
-  const aiTips = document.getElementById('ai-tips-card');
-  if (aiTips) aiTips.style.display = isMobile ? 'none' : 'block';
-  const aiOrder = document.getElementById('ai-order-confirm-card');
-  if (aiOrder && aiOrder.style.display !== 'none') aiOrder.style.display = isMobile ? 'none' : 'block';
-  const aiDel = document.getElementById('ai-delivery-card');
-  if (aiDel && aiDel.style.display !== 'none') aiDel.style.display = isMobile ? 'none' : 'block';
-
-  // Live map height
-  const liveMapWrap = document.getElementById('live-map-wrap');
-  if (liveMapWrap) liveMapWrap.style.height = isPhone ? '240px' : isMobile ? '300px' : '480px';
-
-  // Invalidate all maps
-  if (mapInstance) { try { mapInstance.invalidateSize(); } catch {} }
-}
-
-window.addEventListener('resize', () => {
-  applyMobileLayout();
-});
 
 function roleLabel(r) {
   return { retailer:'Retailer', order_team:'Order Processing Team',
@@ -930,7 +751,6 @@ function togglePanel() {
   panelOpen = !panelOpen;
   document.getElementById('np').classList.toggle('open', panelOpen);
   if (panelOpen) loadPanel();
-  setTimeout(() => { if (mapInstance) { try { mapInstance.invalidateSize(); } catch {} } }, 320);
 }
 
 async function loadPanel() {
@@ -988,16 +808,6 @@ function updateBadge(cnt) {
 
 function startPoll() { pollBadge(); pollTimer=setInterval(pollBadge,12000); }
 function stopPoll()  { if(pollTimer){ clearInterval(pollTimer); pollTimer=null; } }
-
-// ── Swipe right on notification panel to close ──
-(function(){
-  let sx = 0;
-  document.addEventListener('touchstart', e => { sx = e.changedTouches[0].clientX; }, {passive:true});
-  document.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - sx;
-    if (panelOpen && dx > 60) togglePanel();
-  }, {passive:true});
-})();
 
 // ══ NAV ═════════════════════════════════════════
 const ROLE_PAGES = {
@@ -1058,10 +868,10 @@ async function pageAiAssistant() {
       </div>
     </div>
 
-    <div id="ai-layout" style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
 
       <!-- Chat window -->
-      <div class="card" id="ai-chat-card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;height:520px">
+      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;height:520px">
         <!-- Chat messages -->
         <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
           <!-- Welcome message -->
@@ -1083,7 +893,7 @@ async function pageAiAssistant() {
         </div>
 
         <!-- Quick suggestions -->
-        <div id="ai-suggestions" style="padding:8px 12px;border-top:1px solid var(--cream-dk);display:flex;gap:6px;flex-wrap:wrap;background:var(--cream);overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+        <div id="ai-suggestions" style="padding:10px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:8px;flex-wrap:wrap;background:var(--cream)">
           <button onclick="sendAiMessage('Where is my latest delivery?')" class="ai-suggestion-btn"
             style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
             📍 Where is my delivery?
@@ -1104,7 +914,7 @@ async function pageAiAssistant() {
 
         <!-- Input -->
         <div style="padding:14px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:10px;align-items:center;background:var(--white)">
-          <input id="ai-input" type="text" inputmode="text" autocomplete="off" autocorrect="on" placeholder="Type your message…"
+          <input id="ai-input" type="text" placeholder="Type your message… e.g. 'Order 50 Nescafé to Kandy'"
             style="flex:1;padding:11px 16px;border:2px solid var(--cream-dk);border-radius:24px;font-family:'Jost',sans-serif;font-size:14px;color:var(--brown);outline:none;transition:border-color .2s"
             onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendAiInput()}"
             onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor='var(--cream-dk)'"/>
@@ -1135,7 +945,7 @@ async function pageAiAssistant() {
         </div>
 
         <!-- Tips card -->
-        <div id="ai-tips-card" style="background:var(--cream);border-radius:12px;padding:16px;border:1px solid var(--cream-dk)">
+        <div style="background:var(--cream);border-radius:12px;padding:16px;border:1px solid var(--cream-dk)">
           <div style="font-size:12px;font-weight:700;color:var(--tan);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">💡 Try Saying</div>
           <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--brown-m)">
             <div>📦 "Order 20 KitKat to Galle high priority"</div>
@@ -1463,58 +1273,46 @@ async function pageMyOrders() {
     </div>
     ${rejectionBanner}
     ${receiptBanner}
-    <div class="card">
-      <!-- Desktop table -->
-      <div class="tw"><table>
-        <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>Receipt</th><th>Date</th></tr></thead>
-        <tbody>${data.length ? data.map(o=>`
-          <tr>
-            <td><span class="mono">${o.id}</span></td>
-            <td>${o.city}</td>
-            <td>${o.items} · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></td>
-            <td>${prioBadge(o.prio)}</td>
-            <td>${orderBadge(o.status)}</td>
-            <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '—'}
-              ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
-            </td>
-            <td>${o.receiptConfirmed ? '<span class="badge b-green">✅ Confirmed</span>' : o.deliveryStatus==='delivered' ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">📦 Confirm</button>` : '—'}</td>
-            <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
-          </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet.</div></div></td></tr>'}</tbody>
-      </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${data.length ? data.map(o => `
-        <div class="mc-card" style="border-left:4px solid ${o.status==='rejected'?'var(--red)':o.status==='consolidated'?'var(--blue)':'var(--accent)'}">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">Order #${o.id} — ${escapeHtml(o.city)}</div>
-              <div style="font-size:11px;color:var(--brown-l);margin-top:2px">${o.created}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-              ${orderBadge(o.status)}
-              ${prioBadge(o.prio)}
-            </div>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${o.items} items · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Delivery</span>
-            <span class="mc-val">${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l)">Not assigned</span>'}
-              ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
-            </span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Receipt</span>
-            <span class="mc-val">${o.receiptConfirmed ? '<span class="badge b-green">✅ Confirmed</span>' : o.deliveryStatus==='delivered' ? '<span class="badge b-orange">⏳ Pending</span>' : '<span style="color:var(--brown-l)">—</span>'}</span>
-          </div>
-          <div class="mc-actions">
-            ${['consolidated','assigned','warehouse_ready','loaded','in-transit'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${o.id},'${escapeHtml(o.city||'')}','${escapeHtml(o.retailerName||o.retailer||'')}')">🗺️ Track</button>` : ''}
-            ${o.deliveryStatus==='delivered' && !o.receiptConfirmed ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">📦 Confirm Receipt</button>` : ''}
-            ${o.status==='rejected' ? `<button class="btn btn-ghost btn-sm" onclick="editAndResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">✏️ Resubmit</button>` : ''}
-          </div>
-        </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "+ New Request" to start.</div></div>'}</div>
-    </div>
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>🔐 Delivery PIN</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
+      <tbody>${data.length ? data.map(o=>`
+        <tr>
+          <td><span class="mono">${o.id}</span></td>
+          <td>${o.city}</td>
+          <td>${o.items} items · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></td>
+            <td>${['consolidated','assigned','warehouse_ready','loaded','in-transit'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${o.id},'${o.city||''}','${o.retailerName||o.retailer||''}')">🗺️ Track</button>` : '—'}</td>
+          <td>${prioBadge(o.prio)}</td>
+          <td>${orderBadge(o.status)}</td>
+          <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
+            ${o.driverName && o.deliveryStatus && !['pending','assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
+          </td>
+          <td>
+            ${o.deliveryPin && ['assigned','warehouse_ready','loaded','in-transit'].includes(o.deliveryStatus||'')
+              ? `<div style="background:#1B2A4A;border-radius:10px;padding:8px 14px;display:inline-block;text-align:center;min-width:110px">
+                   <div style="font-size:9px;font-weight:700;color:#D4A832;letter-spacing:1.5px;margin-bottom:3px">YOUR PIN</div>
+                   <div style="font-size:24px;font-weight:800;color:#FFFFFF;letter-spacing:8px;font-family:'DM Mono',monospace">${o.deliveryPin}</div>
+                   <div style="font-size:9px;color:rgba(217,200,154,.75);margin-top:3px">Show to driver on arrival</div>
+                 </div>`
+              : o.pinVerified
+              ? `<span class="badge b-green">🔐 PIN Verified ✅</span>`
+              : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+          </td>
+          <td>
+            ${o.receiptConfirmed
+              ? `<div style="display:flex;flex-direction:column;gap:3px">
+                   <span class="badge b-green">✅ Receipt Confirmed</span>
+                   <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.receiptAt||''}</span>
+                   ${o.receiptNote ? `<span style="font-size:11px;color:var(--brown-m);font-style:italic">"${escapeHtml(o.receiptNote)}"</span>` : ''}
+                 </div>`
+              : o.deliveryStatus === 'delivered'
+              ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">
+                   📦 Confirm Receipt
+                 </button>`
+              : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+          </td>
+          <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
+    </table></div></div>
 
   <!-- Confirm Receipt Modal -->
   <div class="modal-bg" id="m-confirm-receipt" style="z-index:400">
@@ -1790,9 +1588,8 @@ async function pageAllOrders() {
 
     <div class="card">
       <div class="card-title">⏳ Pending Review <span class="badge b-orange" style="margin-left:8px">${pending.length}</span></div>
-      <!-- Desktop table -->
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead>
         <tbody>${pending.length ? pending.map(o=>`
           <tr>
             <td><span class="mono">${o.id}</span></td>
@@ -1805,32 +1602,10 @@ async function pageAllOrders() {
             <td><button class="btn btn-tan btn-sm" onclick="openConfirm('${o.id}','${o.retailer}','${o.city}',${o.items},${o.kg},'${o.prio}')">Review →</button></td>
           </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">✅</div><div>No pending orders — all reviewed!</div></div></td></tr>'}</tbody>
       </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${pending.length ? pending.map(o => `
-        <div class="mc-card" style="border-left:4px solid var(--orange)">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(o.retailer)}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">${escapeHtml(o.city)} · ${o.created}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-              ${prioBadge(o.prio)}
-              <span class="mono" style="font-size:11px">#${o.id}</span>
-            </div>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${o.items} items · <strong style="color:var(--blue)">${o.kg?parseFloat(o.kg).toFixed(1)+'kg':'—'}</strong></span>
-          </div>
-          <div class="mc-actions">
-            <button class="btn btn-tan" onclick="openConfirm('${o.id}','${escapeHtml(o.retailer)}','${escapeHtml(o.city)}',${o.items},${o.kg},'${o.prio}')">📋 Review Order →</button>
-          </div>
-        </div>`).join('') : '<div class="empty"><div class="empty-icon">✅</div><div>No pending orders — all reviewed!</div></div>'}</div>
     </div>
 
     <div class="card">
       <div class="card-title">📁 Processed Orders <span class="badge b-gray" style="margin-left:8px">${processed.length}</span></div>
-      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Status</th><th>Reason / Reviewed By</th><th>Date</th></tr></thead>
         <tbody>${processed.length ? processed.map(o=>`
@@ -1841,44 +1616,13 @@ async function pageAllOrders() {
             <td>${orderBadge(o.status)}</td>
             <td style="font-size:12px;max-width:220px">
               ${o.status==='rejected'
-                ? `<div style="color:var(--red);font-weight:600">${o.rejectCategory ? (({'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'})[o.rejectCategory]||o.rejectCategory) : ''}</div><div style="color:var(--brown-m);font-size:11px;margin-top:2px">${o.rejectReason||'—'}</div>`
+                ? `<div style="color:var(--red);font-weight:600">${o.rejectCategory ? (({'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'})[o.rejectCategory]||o.rejectCategory) : ''}</div>
+                   <div style="color:var(--brown-m);font-size:11px;margin-top:2px">${o.rejectReason||'—'}</div>`
                 : `<span style="color:var(--brown-l)">${o.confirmedBy||'—'}</span>`}
             </td>
             <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>No processed orders yet.</div></div></td></tr>'}</tbody>
       </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${processed.length ? processed.map(o => {
-        const catMap = {'out_of_stock':'📦 Out of Stock','duplicate_order':'🔄 Duplicate','coverage_area':'🗺️ Coverage Area','suspicious_quantity':'⚠️ Suspicious Qty','credit_hold':'💳 Credit Hold','other':'📝 Other'};
-        return `
-        <div class="mc-card" style="border-left:4px solid ${o.status==='rejected'?'var(--red)':o.status==='confirmed'?'var(--green)':'var(--blue)'}">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(o.retailer)}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">${escapeHtml(o.city)} · ${o.created}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-              ${orderBadge(o.status)}
-              <span class="mono" style="font-size:11px">#${o.id}</span>
-            </div>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${o.items} · ${o.kg}kg</span>
-          </div>
-          ${o.status==='rejected' ? `
-          <div class="mc-row">
-            <span class="mc-label">Reason</span>
-            <span class="mc-val" style="color:var(--red);font-size:12px">
-              ${o.rejectCategory ? (catMap[o.rejectCategory]||o.rejectCategory) : ''}
-              ${o.rejectReason ? '<br><span style="color:var(--brown-m);font-weight:400">'+escapeHtml(o.rejectReason)+'</span>' : ''}
-            </span>
-          </div>` : `
-          <div class="mc-row">
-            <span class="mc-label">Reviewed</span>
-            <span class="mc-val" style="color:var(--brown-l)">${o.confirmedBy||'—'}</span>
-          </div>`}
-        </div>`;}).join('') : '<div class="empty"><div>No processed orders yet.</div></div>'}</div>
     </div>`);
 }
 
@@ -1996,61 +1740,32 @@ async function pageDeliveries() {
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">All Deliveries</div><div class="sec-sub">Auto-assigned when order is confirmed — live status across all roles</div></div></div>
     <div class="alert-banner alert-success" style="margin-bottom:18px">
-      🤖 <strong>Smart Auto-Routing</strong> — triggered every 3 orders. Auto-calculates weight, sorts by priority (Urgent→High→Normal), optimises route, selects smallest fitting vehicle, assigns driver — <em>all automatically</em>.
+      🤖 <strong>Smart Auto-Routing:</strong> Every 3 confirmed orders triggers auto-routing. The system: <strong>(1)</strong> auto-calculates cargo weight per order, <strong>(2)</strong> sorts stops by priority (Urgent → High → Normal), <strong>(3)</strong> optimises each tier with nearest-neighbour routing, <strong>(4)</strong> selects the <em>smallest vehicle</em> that fits the total cargo weight, and <strong>(5)</strong> assigns an available driver — all automatically.
     </div>
-    <div class="card">
-      <!-- Desktop table -->
-      <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Wt</th><th>Prio</th><th>Status</th><th>Driver</th><th>ETA</th><th>Track</th><th>Receipt</th></tr></thead>
-        <tbody>${data.length ? data.map(d=>`
-          <tr>
-            <td><span class="mono">${d.id}</span></td>
-            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td>${d.items}</td>
-            <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
-            <td>${prioBadge(d.prio)}</td>
-            <td>${delBadge(d.status)}</td>
-            <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'—'}</td>
-            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-            <td>${['assigned','warehouse_ready','loaded','in-transit'].includes(d.status)?`<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')">🗺️</button>`:'—'}</td>
-            <td>${d.receiptConfirmed?'<span class="badge b-green">✅</span>':d.status==='delivered'?'<span class="badge b-orange">⏳</span>':'—'}</td>
-          </tr>`).join('') : '<tr><td colspan="11"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
-      </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${data.length ? data.map(d => `
-        <div class="mc-card" style="border-left:4px solid ${d.status==='delivered'?'var(--green)':d.status==='in-transit'?'var(--orange)':d.status==='failed'?'var(--red)':'var(--blue)'}">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)}</div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-              ${delBadge(d.status)}
-              <span class="mono" style="font-size:11px">#${d.id}</span>
-            </div>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong> · ${prioBadge(d.prio)}</span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Driver</span>
-            <span class="mc-val">${d.driverName ? `<span class="badge b-navy">${escapeHtml(d.driverName)}</span>` : '<span style="color:var(--brown-l)">Not assigned</span>'}</span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">ETA</span>
-            <span class="mc-val" style="font-family:'DM Mono',monospace">${d.eta||'—'}</span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Receipt</span>
-            <span class="mc-val">${d.receiptConfirmed?'<span class="badge b-green">✅ Confirmed</span>':d.status==='delivered'?'<span class="badge b-orange">⏳ Awaiting</span>':'<span style="color:var(--brown-l)">—</span>'}</span>
-          </div>
-          ${['assigned','warehouse_ready','loaded','in-transit'].includes(d.status) ? `
-          <div class="mc-actions">
-            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${escapeHtml(d.city)}','${escapeHtml(d.retailer)}')">🗺️ Track Driver</button>
-          </div>` : ''}
-        </div>`).join('') : '<div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div>'}</div>
-    </div>`);
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Priority</th><th>Status</th><th>Driver</th><th>ETA</th><th>Track</th><th>Receipt</th></tr></thead>
+      <tbody>${data.length ? data.map(d=>`
+        <tr>
+          <td><span class="mono">${d.id}</span></td>
+          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          <td>${d.items}</td>
+          <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
+          <td>${prioBadge(d.prio)}</td>
+          <td>${delBadge(d.status)}</td>
+          <td>${d.driverName?`<span class="badge b-navy">${d.driverName}</span>`:'<span style="color:var(--brown-l);font-size:12px">—</span>'}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+          <td>${['assigned','warehouse_ready','loaded','in-transit'].includes(d.status)?`<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')">🗺️ Track</button>`:'—'}</td>
+          <td>${d.receiptConfirmed
+            ? `<div style="display:flex;flex-direction:column;gap:2px">
+                 <span class="badge b-green">✅ Confirmed</span>
+                 <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${d.receiptAt||''}</span>
+               </div>`
+            : d.status==='delivered'
+            ? '<span class="badge b-orange">⏳ Awaiting</span>'
+            : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
+          </td>
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">🚚</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
 }
 
 function pageConsolidate() {
@@ -2092,10 +1807,6 @@ async function doConsolidate() {
 // ══ WAREHOUSE PAGES ═════════════════════════════
 async function pageWhStock() {
   const stocks = await api('/stock');
-  if (!Array.isArray(stocks)) {
-    setContent(`<div class="alert-banner alert-error">❌ Failed to load stock: ${stocks.error||'Unknown error'}</div>`);
-    return;
-  }
   setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Stock Levels</div>
@@ -2103,51 +1814,42 @@ async function pageWhStock() {
     </div>
     <div class="card">
       <div class="card-title">📋 Current Stock Levels</div>
-      <!-- Desktop table -->
       <div class="tw"><table>
-        <thead><tr><th>Product</th><th>Units</th><th>Weight</th><th>Wt/Unit</th><th>Watching</th><th>Update</th></tr></thead>
+        <thead><tr><th>Product</th><th>Units Available</th><th>Weight Available</th><th>Weight/Unit</th><th>Watching</th><th>Update Stock</th></tr></thead>
         <tbody>${stocks.length ? stocks.map(p=>`
           <tr>
             <td><strong>${escapeHtml(p.productName||'—')}</strong></td>
-            <td><span style="font-size:16px;font-weight:800;color:${p.availableUnits>10?'var(--green)':p.availableUnits>0?'var(--orange)':'var(--red)'}">${p.availableUnits||0}</span></td>
+            <td>
+              <span style="font-size:16px;font-weight:800;color:${p.availableUnits>10?'var(--green)':p.availableUnits>0?'var(--orange)':'var(--red)'}">
+                ${p.availableUnits||0}
+              </span>
+            </td>
             <td style="font-weight:700;color:var(--blue)">${p.availableKg?parseFloat(p.availableKg).toFixed(1)+'kg':'—'}</td>
             <td style="color:var(--brown-m)">${p.weightPerUnit?p.weightPerUnit+'kg/unit':'—'}</td>
-            <td>${parseInt(p.watchCount||0)>0?`<span class="badge b-orange">🔔 ${p.watchCount}</span>`:'—'}</td>
+            <td>
+              ${parseInt(p.watchCount||0) > 0
+                ? `<span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount>1?'s':''} waiting</span>`
+                : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+            </td>
             <td style="display:flex;gap:6px;align-items:center">
-              <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}" style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px"/>
-              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0},${p.weightPerUnit||0})">✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}</button>
+              <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}"
+                style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px"/>
+              <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0})">
+                ✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':''}
+              </button>
             </td>
           </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
       </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${stocks.length ? stocks.map(p => `
-        <div class="mc-card" style="border-left:4px solid ${parseInt(p.availableUnits||0)>10?'var(--green)':parseInt(p.availableUnits||0)>0?'var(--orange)':'var(--red)'}">
-          <div class="mc-card-header">
-            <div class="mc-card-title" style="font-size:13px">${escapeHtml(p.productName||'—')}</div>
-            <span style="font-size:22px;font-weight:800;color:${parseInt(p.availableUnits||0)>10?'var(--green)':parseInt(p.availableUnits||0)>0?'var(--orange)':'var(--red)'}">${p.availableUnits||0}</span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Weight</span>
-            <span class="mc-val" style="font-weight:700;color:var(--blue)">${p.availableKg?parseFloat(p.availableKg).toFixed(1)+'kg':'—'} ${p.weightPerUnit?'('+p.weightPerUnit+'kg/unit)':''}</span>
-          </div>
-          ${parseInt(p.watchCount||0)>0?`<div class="mc-row"><span class="mc-label">Watching</span><span class="mc-val"><span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount>1?'s':''} waiting</span></span></div>`:''}
-          <div class="mc-actions" style="align-items:center">
-            <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits||0}" style="width:90px;padding:10px 12px;border:2px solid var(--cream-dk);border-radius:8px;font-size:16px;font-family:'Inter',sans-serif;flex-shrink:0"/>
-            <button class="btn btn-tan" onclick="updateStock('${p.id}','${escapeHtml(p.productName||'')}',${p.availableKg||0},${p.weightPerUnit||0})" style="flex:1">
-              ✅ Update ${parseInt(p.watchCount||0)>0?'& Notify 🔔':'Stock'}
-            </button>
-          </div>
-        </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div>'}</div>
     </div>
     <div class="alert-banner alert-info">
       🔔 <strong>Auto-notify:</strong> When you update stock for a product, any retailer whose order was rejected as "Out of Stock" will be automatically notified that they can resubmit.
     </div>`);
 }
 
-async function updateStock(productId, productName, currentKg, weightPerUnit) {
+async function updateStock(productId, productName, currentKg) {
   const units = parseInt(document.getElementById('units-'+productId)?.value) || 0;
-  const kg = weightPerUnit > 0 ? parseFloat((units * weightPerUnit).toFixed(2)) : (currentKg > 0 ? currentKg : units);
- 
+  // Estimate kg from units using current ratio
+  const kg = currentKg > 0 ? currentKg : units;
   const r = await api(`/stock/${productId}/update`, 'PUT', { availableUnits: units, availableKg: kg });
   if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
   const msg = r.restockedCount > 0
@@ -2166,56 +1868,28 @@ async function pageWhIncoming() {
       <div><div class="sec-title">Incoming Deliveries</div>
       <div class="sec-sub">Mark cargo ready → Driver notified · Mark vehicle loaded → Driver notified 🔔</div></div>
     </div>
-    <div class="card">
-      <!-- Desktop table -->
-      <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>${relevant.length ? relevant.map(d=>`
-          <tr>
-            <td><span class="mono">${d.id}</span></td>
-            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td>${d.items} · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></td>
-            <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
-            <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
-            <td>${delBadge(d.status)}</td>
-            <td style="display:flex;gap:6px;flex-wrap:wrap">
-              ${d.status==='assigned'?`<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready</button>`:''}
-              ${d.status==='warehouse_ready'?`<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Loaded</button>`:''}
-              ${d.status==='loaded'?`<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting pickup</span>`:''}
-              <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')">🗺️</button>
-            </td>
-          </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
-      </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${relevant.length ? relevant.map(d => `
-        <div class="mc-card" style="border-left:4px solid ${d.status==='loaded'?'var(--primary)':d.status==='warehouse_ready'?'var(--accent)':'var(--blue)'}">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)} · <span class="mono">#${d.id}</span></div>
-            </div>
-            ${delBadge(d.status)}
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Cargo</span>
-            <span class="mc-val">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Driver</span>
-            <span class="mc-val"><span class="badge b-navy">${escapeHtml(d.driverName||'—')}</span></span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Vehicle</span>
-            <span class="mc-val"><span class="badge b-blue">${escapeHtml(d.vehicleId||'—')}</span></span>
-          </div>
-          <div class="mc-actions">
-            ${d.status==='assigned'?`<button class="btn btn-green" onclick="markReady('${d.id}')">✅ Mark Cargo Ready</button>`:''}
-            ${d.status==='warehouse_ready'?`<button class="btn btn-tan" onclick="markLoaded('${d.id}')">📦 Mark Vehicle Loaded</button>`:''}
-            ${d.status==='loaded'?`<div style="width:100%;text-align:center;font-size:13px;font-weight:700;color:var(--green);padding:8px">✓ Vehicle loaded — awaiting driver pickup</div>`:''}
-            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${escapeHtml(d.city)}','${escapeHtml(d.retailer)}')">🗺️ Track</button>
-          </div>
-        </div>`).join('') : '<div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div>'}</div>
-    </div>`);
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${relevant.length ? relevant.map(d=>`
+        <tr>
+          <td><span class="mono">${d.id}</span></td>
+          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          <td>${d.items}</td>
+          <td style="font-weight:700;color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</td>
+          <td><span class="badge b-navy">${d.driverName||'—'}</span></td>
+          <td><span class="badge b-blue">${d.vehicleId||'—'}</span></td>
+          <td>${delBadge(d.status)}</td>
+          <td style="display:flex;gap:6px;flex-wrap:wrap">
+            ${d.status==='assigned'
+              ? `<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready</button>` : ''}
+            ${d.status==='warehouse_ready'
+              ? `<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Vehicle Loaded</button>` : ''}
+            ${d.status==='loaded'
+              ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')" style="margin-left:auto">🗺️ Track</button>
+          </td>
+        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
 }
 
 async function markReady(id) {
@@ -2235,44 +1909,19 @@ async function pageWhPrepare() {
   setContent(`
     <div class="sec-hdr"><div><div class="sec-title">All Delivery Status</div>
     <div class="sec-sub">Live view of all deliveries including in-transit and completed</div></div></div>
-    <div class="card">
-      <!-- Desktop table -->
-      <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Status</th><th>ETA</th></tr></thead>
-        <tbody>${data.length ? data.map(d=>`
-          <tr>
-            <td><span class="mono">${d.id}</span></td>
-            <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td>${d.items} · ${d.kg}kg</td>
-            <td>${d.driverName||'—'}</td>
-            <td>${delBadge(d.status)}</td>
-            <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
-          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
-      </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${data.length ? data.map(d => `
-        <div class="mc-card" style="border-left:4px solid ${d.status==='delivered'?'var(--green)':d.status==='in-transit'?'var(--orange)':d.status==='failed'?'var(--red)':'var(--blue)'}">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(d.retailer||'—')}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city||'—')} · <span class="mono">#${d.id}</span></div>
-            </div>
-            ${delBadge(d.status)}
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${d.items} · <strong style="color:var(--blue)">${d.kg}kg</strong></span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Driver</span>
-            <span class="mc-val">${d.driverName ? escapeHtml(d.driverName) : '<span style="color:var(--brown-l)">Not assigned</span>'}</span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">ETA</span>
-            <span class="mc-val" style="font-family:'DM Mono',monospace">${d.eta||'—'}</span>
-          </div>
-        </div>`).join('') : '<div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div>'}</div>
-    </div>`);
+    <div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Status</th><th>ETA</th></tr></thead>
+      <tbody>${data.length ? data.map(d=>`
+        <tr>
+          <td><span class="mono">${d.id}</span></td>
+          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
+          
+          <td>${d.items} · ${d.kg}kg</td>
+          <td>${d.driverName||'—'}</td>
+          <td>${delBadge(d.status)}</td>
+          <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
+        </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
+    </table></div></div>`);
 }
 
 // ══ DISTRIBUTOR PAGES ═══════════════════════════
@@ -2357,7 +2006,7 @@ async function pageMyRoutes() {
     const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent((rt.warehouse||'Colombo')+' Warehouse, Sri Lanka')}&destination=${destination}${waypoints ? '&waypoints='+waypoints : ''}&travelmode=driving`;
 
     return `
-    <div id="route-map-card" class="card" style="margin-bottom:18px;padding:0;overflow:hidden">
+    <div class="card" style="margin-bottom:18px;padding:0;overflow:hidden">
       <div style="padding:14px 18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--cream-dk)">
         <div>
           <div class="card-title" style="margin-bottom:4px">🗺️ Full Route Map</div>
@@ -2368,7 +2017,7 @@ async function pageMyRoutes() {
           🧭 Open in Google Maps
         </a>
       </div>
-      <div id="route-full-map" style="height:240px;width:100%;min-height:160px;touch-action:none"></div>
+      <div id="route-full-map" style="height:280px;width:100%"></div>
     </div>`;
   })() : '';
 
@@ -2434,8 +2083,11 @@ async function pageMyRoutes() {
               </div>
             </div>
             ${isNext && !isDone ? `
-              <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%;min-height:46px;font-size:14px;font-weight:700" onclick="openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}','${del ? del.status : ''}')">
-                ${del && del.status==='in-transit' ? '✅ Mark Delivered' : '🚛 Mark In Transit'}
+              <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%"
+                onclick="${del && del.status==='in-transit'
+                  ? `openPinVerify('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}')`
+                  : `openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer||'')}','${escapeHtml(sd.city||cities[i]||'')}','${del ? del.status : ''}')`}">
+                ${del && del.status==='in-transit' ? '🔐 Verify PIN & Deliver' : '🚛 Mark In Transit'}
               </button>` : ''}
           </div>
         </div>`;
@@ -2496,7 +2148,6 @@ async function pageMyRoutes() {
   // ── Init Leaflet route map after content renders
   if (myRoutes.length && document.getElementById('route-full-map')) {
     await loadLeaflet();
-    await new Promise(r => setTimeout(r, 100));
     const rt = myRoutes[0];
     const stopsData = rt.stops_data ? JSON.parse(rt.stops_data) : [];
     const CITY_COORDS = {
@@ -2510,7 +2161,7 @@ async function pageMyRoutes() {
       'Kandy':[7.2906,80.6337],'Kurunegala':[7.4875,80.3647],
     };
     const whCoord = WH_COORDS[rt.warehouse] || [6.9271,79.8612];
-    const routeMap = L.map('route-full-map', { zoomControl:true, scrollWheelZoom:false, tap:true, tapTolerance:15 });
+    const routeMap = L.map('route-full-map', { zoomControl:true, scrollWheelZoom:false });
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution:'© OpenStreetMap', maxZoom:18
     }).addTo(routeMap);
@@ -2594,7 +2245,7 @@ async function pageUpdStatus() {
   const gpsActive = gpsInterval !== null || gpsWatcher !== null;
   const gpsPanel = `
     <div id="gps-status-panel" style="background:${gpsActive ? '#064e3b' : '#1e1b4b'};border-radius:12px;padding:16px 20px;margin-bottom:16px;border:2px solid ${gpsActive ? '#10b981' : '#6366f1'}">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;row-gap:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:14px;height:14px;border-radius:50%;background:${gpsActive ? '#10b981' : '#6b7280'};${gpsActive ? 'animation:truckPulse 1.2s infinite' : ''}"></div>
           <div>
@@ -2619,7 +2270,6 @@ async function pageUpdStatus() {
       <div class="alert-banner alert-warn" style="margin-bottom:12px">
         These deliveries are assigned to you but the warehouse has not finished loading yet. You cannot update status until the vehicle is loaded.
       </div>
-      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th></tr></thead>
         <tbody>${waiting.map(d=>`
@@ -2632,75 +2282,29 @@ async function pageUpdStatus() {
           </tr>`).join('')}
         </tbody>
       </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${waiting.map(d => `
-        <div class="mc-card" style="border-left:4px solid var(--blue);opacity:.8">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)}</div>
-            </div>
-            ${delBadge(d.status)}
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${d.items} items</span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">ETA</span>
-            <span class="mc-val" style="font-family:'DM Mono',monospace">${d.eta||'—'}</span>
-          </div>
-        </div>`).join('')}</div>
     </div>` : ''}
     <div class="card">
       <div class="card-title">Active Stops <span class="badge b-orange" style="margin-left:8px">${active.length}</span></div>
-      <!-- Desktop table -->
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Status</th><th>Action</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>ETA</th><th>Current Status</th><th>Action</th></tr></thead>
         <tbody>${active.length ? active.map(d=>`
           <tr>
             <td><span class="mono">${d.id}</span></td>
             <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-            <td style="font-size:12px">${d.items} · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></td>
+            <td style="font-size:12px">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></td>
             <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta||'—'}</td>
             <td>${delBadge(d.status)}</td>
             <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-              ${d.status==='in-transit'?'<span style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:3px 8px;border-radius:20px">📡 GPS</span>':''}
-              <button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>
+              ${d.status==='in-transit' ? '<span style="font-size:11px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:3px 8px;border-radius:20px">📡 GPS On</span>' : ''}
+              ${d.status==='in-transit'
+                ? `<button class="btn btn-tan btn-sm" onclick="openPinVerify('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}')">🔐 Verify PIN</button>`
+                : `<button class="btn btn-orange btn-sm" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">Update →</button>`}
             </td>
           </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>All stops complete! 🎉</div></div></td></tr>'}</tbody>
       </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${active.length ? active.map(d => `
-        <div class="mc-card" style="border-left:4px solid ${d.status==='in-transit'?'var(--orange)':'var(--primary)'}">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)} · <span class="mono" style="font-size:11px">#${d.id}</span></div>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-              ${delBadge(d.status)}
-              ${d.status==='in-transit'?'<span style="font-size:10px;font-weight:700;color:#0f766e;background:#E8F5E9;padding:2px 8px;border-radius:20px">📡 GPS On</span>':''}
-            </div>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${d.items} items · <strong style="color:var(--blue)">${d.kg?parseFloat(d.kg).toFixed(1)+'kg':'—'}</strong></span>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">ETA</span>
-            <span class="mc-val" style="font-family:'DM Mono',monospace;font-weight:700;color:var(--accent)">${d.eta||'—'}</span>
-          </div>
-          <div class="mc-actions">
-            <button class="btn btn-orange" style="width:100%" onclick="openStatus('${d.id}','${escapeHtml(d.retailer)}','${escapeHtml(d.city)}','${d.status}')">
-              ${d.status==='in-transit' ? '✅ Mark Delivered / Report Issue' : '🚛 Update Status →'}
-            </button>
-          </div>
-        </div>`).join('') : '<div class="empty"><div style="font-size:28px;margin-bottom:8px">🎉</div><div>All stops complete!</div></div>'}</div>
     </div>
     <div class="card">
       <div class="card-title">Completed <span class="badge b-green" style="margin-left:8px">${completed.length}</span></div>
-      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Status</th><th>Action</th></tr></thead>
         <tbody>${completed.length ? completed.map(d=>`
@@ -2712,25 +2316,6 @@ async function pageUpdStatus() {
             <td>${d.status==='failed'?`<button class="btn btn-blue btn-sm" onclick="rescheduleDelivery('${d.id}')">🔄 Reschedule</button>`:'—'}</td>
           </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div>No completed deliveries yet.</div></div></td></tr>'}</tbody>
       </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${completed.length ? completed.map(d => `
-        <div class="mc-card" style="border-left:4px solid ${d.status==='delivered'?'var(--green)':'var(--red)'}">
-          <div class="mc-card-header">
-            <div>
-              <div class="mc-card-title">${escapeHtml(d.retailer)}</div>
-              <div style="font-size:12px;color:var(--brown-l);margin-top:2px">📍 ${escapeHtml(d.city)}</div>
-            </div>
-            ${delBadge(d.status)}
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Items</span>
-            <span class="mc-val">${d.items} items</span>
-          </div>
-          ${d.status==='failed' ? `
-          <div class="mc-actions">
-            <button class="btn btn-blue" style="width:100%" onclick="rescheduleDelivery('${d.id}')">🔄 Reschedule Delivery</button>
-          </div>` : ''}
-        </div>`).join('') : '<div class="empty"><div>No completed deliveries yet.</div></div>'}</div>
     </div>`);
 }
 
@@ -2939,8 +2524,8 @@ async function pageLiveMap() {
       <span class="track-badge" id="live-badge">● LIVE</span>
     </div>
     <div id="map-info-top" style="margin-bottom:10px"></div>
-    <div class="map-container" id="live-map-wrap" style="height:480px">
-      <div id="live-map" style="touch-action:none"></div>
+    <div class="map-container" style="height:480px">
+      <div id="live-map"></div>
     </div>
     <div id="map-info" style="margin-top:16px"></div>
   `);
@@ -2972,11 +2557,10 @@ async function pageLiveMap() {
     'Dehiwala':[6.8519,79.8674],'Nugegoda':[6.8728,79.8880],'Kiribathgoda':[7.0003,80.0170],
   };
 
-  mapInstance = L.map('live-map', {tap:true, tapTolerance:15}).setView([7.8731, 80.7718], 8);
+  mapInstance = L.map('live-map').setView([7.8731, 80.7718], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution:'© OpenStreetMap contributors', maxZoom:18
   }).addTo(mapInstance);
-  setTimeout(() => { if(mapInstance) mapInstance.invalidateSize(); }, 200);
 
   // Accuracy circles & destination markers stored separately
   const accuracyCircles = {};
@@ -3125,7 +2709,7 @@ async function pageLiveMap() {
     document.getElementById('map-info').innerHTML = `
       <div class="card">
         <div class="card-title" style="font-size:17px;font-weight:800;color:#1B2A4A">🚛 Active Drivers on the Road — ${data.length}</div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(290px,100%),1fr));gap:14px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px">
           ${data.map(d => {
             const kmh = d.speed ? Math.round(parseFloat(d.speed)*3.6) : null;
             const acc = d.accuracy ? Math.round(parseFloat(d.accuracy)) : null;
@@ -3215,18 +2799,16 @@ function loadLeaflet() {
 }
 
 // Stop map polling when navigating away
+const _origNav = window.nav;
 window.nav = function(id) {
   if (mapPollInterval) { clearInterval(mapPollInterval); mapPollInterval = null; }
   if (typeof tickInterval !== 'undefined' && tickInterval) { clearInterval(tickInterval); tickInterval = null; }
   if (mapInstance && id !== 'live-map') { mapInstance.remove(); mapInstance = null; mapMarkers = {}; }
+  // Only stop GPS if navigating away completely (not between driver tabs)
   const driverPages = ['my-routes','upd-status','live-map'];
   if (!driverPages.includes(id) && user && user.role === 'distributor') {
-    // still keep GPS running
+    // still keep GPS running — driver might tab back
   }
-  // ← UPDATE ACTIVE TAB
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  const activeTab = document.getElementById('tab-' + id);
-  if (activeTab) activeTab.classList.add('active');
   return render(id);
 };
 
@@ -3243,7 +2825,6 @@ async function pageRetailers() {
     <div class="card">
       <div class="card-title">🏪 All Retailers <span class="badge b-gray" style="margin-left:8px">${retailers.length}</span></div>
       ${retailers.length ? `
-      <!-- Desktop table -->
       <div class="tw"><table>
         <thead><tr><th>Avatar</th><th>Name</th><th>Email</th><th>Added</th><th>Actions</th></tr></thead>
         <tbody>${retailers.map(r => `
@@ -3258,28 +2839,7 @@ async function pageRetailers() {
             </td>
           </tr>`).join('')}
         </tbody>
-      </table></div>
-      <!-- Mobile cards -->
-      <div class="mc-list">${retailers.map(r => `
-        <div class="mc-card">
-          <div class="mc-card-header">
-            <div style="display:flex;align-items:center;gap:12px">
-              <div style="width:44px;height:44px;border-radius:50%;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">${escapeHtml(r.avatar||'?')}</div>
-              <div>
-                <div class="mc-card-title">${escapeHtml(r.name)}</div>
-                <div style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace;margin-top:2px">${escapeHtml(r.Email)}</div>
-              </div>
-            </div>
-          </div>
-          <div class="mc-row">
-            <span class="mc-label">Added</span>
-            <span class="mc-val" style="color:var(--brown-l)">${r.createdAt||'—'}</span>
-          </div>
-          <div class="mc-actions">
-            <button class="btn btn-ghost btn-sm" onclick="openRetailerResetPw(${r.id},'${escapeHtml(r.name)}')">🔑 Reset PW</button>
-            <button class="btn btn-red btn-sm" onclick="deleteRetailer(${r.id},'${escapeHtml(r.name)}')">✕ Remove</button>
-          </div>
-        </div>`).join('')}</div>` : '<div class="empty"><div class="empty-icon">🏪</div><div>No retailers yet. Click <strong>+ Add Retailer</strong>.</div></div>'}
+      </table></div>` : '<div class="empty"><div class="empty-icon">🏪</div><div>No retailers yet. Click <strong>+ Add Retailer</strong>.</div></div>'}
     </div>
     <div class="modal-bg" id="m-add-retailer" style="z-index:400">
       <div class="modal" style="max-width:440px">
@@ -3397,8 +2957,6 @@ async function loadProductsForOrderForm() {
 function setContent(html) {
   document.getElementById('main-content').innerHTML = html;
   injectSecLogos();
-  setTimeout(applyMobileLayout, 0);
-  if (mapInstance) { try { mapInstance.invalidateSize(); } catch {} }
   // DO NOT stop GPS here — GPS must keep running across page changes
   // GPS is only stopped when: driver marks Delivered/Failed, or logs out
 }
@@ -3419,6 +2977,75 @@ function calcKg() {
     badge.style.border = '1px solid #90CAF9';
   } else {
     badge.style.display = 'none';
+  }
+}
+
+// ── PIN VERIFICATION ─────────────────────────
+function pinDigit(el, nextId) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+  if (el.value && nextId) document.getElementById(nextId)?.focus();
+  // Auto-submit when all 4 filled
+  const pin = ['pin-1','pin-2','pin-3','pin-4'].map(i => document.getElementById(i)?.value||'').join('');
+  if (pin.length === 4) setTimeout(submitPin, 200);
+}
+
+function openPinVerify(deliveryId, retailer, city) {
+  document.getElementById('pv-id').value = deliveryId;
+  document.getElementById('pv-label').textContent = `${retailer} — ${city}`;
+  ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.value=''; el.style.borderColor='var(--cream-dk)'; el.style.background='white'; el.disabled=false; }
+  });
+  document.getElementById('pv-err').style.display = 'none';
+  document.getElementById('pv-ok').style.display  = 'none';
+  const btn = document.getElementById('pv-btn');
+  btn.disabled = false;
+  btn.textContent = '🔐 Verify PIN & Complete Delivery';
+  btn.style.background = '';
+  openModal('m-pin-verify');
+  setTimeout(() => document.getElementById('pin-1')?.focus(), 350);
+}
+
+async function submitPin() {
+  const id  = document.getElementById('pv-id').value;
+  const pin = ['pin-1','pin-2','pin-3','pin-4'].map(i => document.getElementById(i)?.value||'').join('');
+  if (pin.length !== 4) return;
+
+  const btn = document.getElementById('pv-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying…';
+  document.getElementById('pv-err').style.display = 'none';
+
+  const r = await api(`/deliveries/${id}/verify-pin`, 'POST', { pin });
+
+  if (r.ok) {
+    // Success — green boxes
+    ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.borderColor='#16a34a'; el.style.background='#F0FFF4'; el.disabled=true; }
+    });
+    document.getElementById('pv-ok').innerHTML = '✅ PIN verified! Delivery marked as complete.';
+    document.getElementById('pv-ok').style.display = 'flex';
+    btn.textContent = '✅ Complete!';
+    btn.style.background = '#16a34a';
+    stopGps();
+    setTimeout(() => {
+      closeModal('m-pin-verify');
+      toast('✅ PIN Verified — Delivery Complete! All 4 parties notified 🔔', '#16a34a');
+      pollBadge();
+      pageUpdStatus();
+    }, 1600);
+  } else {
+    // Error — red boxes, clear for retry
+    ['pin-1','pin-2','pin-3','pin-4'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.style.borderColor='#B71C1C'; el.style.background='#FFF5F5'; el.value=''; }
+    });
+    document.getElementById('pv-err').textContent = r.error || 'Incorrect PIN. Please try again.';
+    document.getElementById('pv-err').style.display = 'flex';
+    btn.disabled = r.locked || false;
+    btn.textContent = r.locked ? '🔒 Locked — Contact OPT' : '🔐 Try Again';
+    if (!r.locked) setTimeout(() => document.getElementById('pin-1')?.focus(), 100);
   }
 }
 
@@ -3635,7 +3262,7 @@ function openTrackMap(deliveryId, city, retailer) {
             <span id="map-driver-name">Locating driver…</span>
             <span id="map-last-update"></span>
           </div>
-          <div class="map-container" id="track-map" style="height:min(400px,55vh);touch-action:none"></div>
+          <div class="map-container" id="track-map"></div>
         </div>
         <div class="modal-actions">
           <button class="btn btn-ghost" onclick="closeTrackMap()">Close</button>
@@ -3669,11 +3296,10 @@ function initMap(deliveryId, city) {
   };
   const destCoord = CITY_COORDS[city] || [7.8731, 80.7718]; // Sri Lanka centre fallback
 
-  mapInstance = L.map('track-map', {tap:true, tapTolerance:15}).setView([7.8731, 80.7718], 8);
+  mapInstance = L.map('track-map').setView([7.8731, 80.7718], 8);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }).addTo(mapInstance);
-  setTimeout(() => { if(mapInstance) mapInstance.invalidateSize(); }, 150);
 
   // Destination marker (pin)
   const destIcon = L.divIcon({ html:'<div style="font-size:24px">📍</div>', iconSize:[24,24], iconAnchor:[12,24], className:'' });
