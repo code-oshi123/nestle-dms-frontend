@@ -783,13 +783,13 @@
       background: rgba(217,200,154,.08)
     }
 
-    /* Active indicator bar at the top of each button */
+    /* Active indicator — 3px tan bar at top, matching desktop border-bottom */
     .mob-nav-btn::before {
       content: '';
       position: absolute;
       top: 0;
-      left: 18%;
-      right: 18%;
+      left: 0;
+      right: 0;
       height: 3px;
       border-radius: 0 0 3px 3px;
       background: var(--tan);
@@ -798,6 +798,11 @@
     }
 
     .mob-nav-btn.active::before { opacity: 1 }
+
+    /* Active button gets the same warm tan background tint as desktop */
+    .mob-nav-btn.active {
+      background: rgba(139, 105, 20, .08)
+    }
 
     .mob-nav-ico {
       font-size: 22px;
@@ -812,8 +817,9 @@
       font-size: 10px;
       font-weight: 600;
       letter-spacing: .3px;
+      /* Match desktop inactive: var(--brown-l) feel but on dark bg */
       color: rgba(245,237,214,.45);
-      transition: color .15s;
+      transition: color .15s, font-weight .15s;
       text-align: center;
       line-height: 1.2;
       max-width: 72px;
@@ -822,7 +828,11 @@
       text-overflow: ellipsis
     }
 
-    .mob-nav-btn.active .mob-nav-lbl { color: var(--goldL) }
+    /* Active label: same tan-d colour & bold as desktop .tab.active */
+    .mob-nav-btn.active .mob-nav-lbl {
+      color: var(--tan-l);
+      font-weight: 700
+    }
 
     /* ══ MAIN ════════════════════════════════════ */
     .main {
