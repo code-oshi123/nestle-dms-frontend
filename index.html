@@ -3503,16 +3503,15 @@ RULES:
       <tbody>${data.length ? data.map(o => `
         <tr>
           <td><span class="mono">${o.id}</span></td>
-          <td>${o.city}</td>
+          <td>${o.city}${['consolidated', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(o.status) ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="openTrackMap(${o.id},'${o.city || ''}','${o.retailerName || o.retailer || ''}')">🗺️ Track</button>` : ''}</td>
           <td>${o.items} items · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
-            <td>${['consolidated', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(o.status) ? `<button class="btn btn-ghost btn-sm" onclick="openTrackMap(${o.id},'${o.city || ''}','${o.retailerName || o.retailer || ''}')">🗺️ Track</button>` : '—'}</td>
           <td>${prioBadge(o.prio)}</td>
           <td>${orderBadge(o.status)}</td>
           <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
             ${o.driverName && o.deliveryStatus && !['pending', 'assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
           </td>
           <td>
-            ${o.deliveryPin && ['assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(o.deliveryStatus || '')
+            ${o.deliveryPin && ['pending', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(o.deliveryStatus || '')
           ? `<div style="background:#1B2A4A;border-radius:10px;padding:8px 14px;display:inline-block;text-align:center;min-width:110px">
                    <div style="font-size:9px;font-weight:700;color:#D4A832;letter-spacing:1.5px;margin-bottom:3px">YOUR PIN</div>
                    <div style="font-size:24px;font-weight:800;color:#FFFFFF;letter-spacing:8px;font-family:'DM Mono',monospace">${o.deliveryPin}</div>
