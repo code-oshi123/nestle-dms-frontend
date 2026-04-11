@@ -2966,14 +2966,38 @@
       document.getElementById('nav-tabs').innerHTML = pages.map((p, i) =>
         `<button class="tab ${i === 0 ? 'active' : ''}" id="tab-${p.id}" onclick="nav('${p.id}')">${p.ico} ${p.lbl}</button>`
       ).join('');
-      // Mobile bottom nav
-      document.getElementById('mob-nav').innerHTML = pages.map((p, i) =>
-        `<button class="mob-nav-btn ${i === 0 ? 'active' : ''}" id="mob-tab-${p.id}" onclick="nav('${p.id}')">
-          <span class="mob-nav-ico">${p.ico}</span>
-          <span class="mob-nav-lbl">${p.lbl}</span>
+      // Mobile bottom nav — fully inline styles, no CSS class dependency
+      document.getElementById('mob-nav').innerHTML = pages.map((p) =>
+        `<button id="mob-tab-${p.id}" onclick="nav('${p.id}')"
+          style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 10px;background:none;border:none;border-top:3px solid transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:60px">
+          <span id="mob-ico-${p.id}" style="font-size:22px;line-height:1;display:block">${p.ico}</span>
+          <span id="mob-lbl-${p.id}" style="font-family:'Jost',sans-serif;font-size:10px;font-weight:600;color:rgba(245,237,214,.4);text-align:center;line-height:1.2;white-space:nowrap">${p.lbl}</span>
         </button>`
       ).join('');
-      if (pages.length) render(pages[0].id);
+      if (pages.length) {
+        applyMobActive(pages[0].id);
+        render(pages[0].id);
+      }
+    }
+
+    function applyMobActive(activeId) {
+      (ROLE_PAGES[user.role] || []).forEach(p => {
+        const btn = document.getElementById('mob-tab-' + p.id);
+        const ico = document.getElementById('mob-ico-' + p.id);
+        const lbl = document.getElementById('mob-lbl-' + p.id);
+        if (!btn) return;
+        if (p.id === activeId) {
+          btn.style.borderTop = '3px solid #D4A832';
+          btn.style.background = 'rgba(212,168,50,.18)';
+          if (ico) ico.style.transform = 'scale(1.2)';
+          if (lbl) { lbl.style.color = '#D4A832'; lbl.style.fontWeight = '700'; }
+        } else {
+          btn.style.borderTop = '3px solid transparent';
+          btn.style.background = 'none';
+          if (ico) ico.style.transform = 'scale(1)';
+          if (lbl) { lbl.style.color = 'rgba(245,237,214,.4)'; lbl.style.fontWeight = '600'; }
+        }
+      });
     }
 
     function nav(id) {
@@ -2984,10 +3008,8 @@
         el.classList.add('active');
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
-      // Sync mobile bottom nav
-      document.querySelectorAll('.mob-nav-btn').forEach(t => t.classList.remove('active'));
-      const mob = document.getElementById('mob-tab-' + id);
-      if (mob) mob.classList.add('active');
+      // Sync mobile bottom nav via direct inline styles
+      applyMobActive(id);
       render(id);
     }
 
