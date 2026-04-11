@@ -1352,164 +1352,101 @@
       }
     }
 
-    /* ══ AI ASSISTANT — fixed full-screen mobile ═════ */
+    /* ══ AI ASSISTANT — mobile layout ══════════════ */
     @media(max-width:768px) {
 
-      /* Remove ALL .main padding when AI is active so we get edge-to-edge */
-      .ai-page-active {
-        padding: 0 !important;
-        overflow: hidden !important
-      }
-
-      /* The entire AI UI is a fixed overlay that fills the screen
-         between topbar (58px) and bottom nav (60px)               */
-      .ai-page-active > .sec-hdr {
-        display: none !important          /* hide the header — save every pixel */
-      }
-
-      /* Outer wrapper: fixed, fills gap between topbar and bottom nav */
+      /* Full-width single column — hide side panel */
       .ai-wrap {
-        position: fixed !important;
-        top: 58px !important;             /* below topbar */
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 60px !important;          /* above bottom nav */
         display: flex !important;
         flex-direction: column !important;
-        gap: 0 !important;
-        background: var(--parchment) !important;
-        z-index: 10 !important
+        gap: 12px !important
       }
 
-      /* Thin header row inside the AI panel — visible on mobile only */
-      .ai-inner-hdr {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        padding: 8px 14px !important;
-        background: var(--white) !important;
-        border-bottom: 1px solid var(--cream-dk) !important;
-        flex-shrink: 0 !important
-      }
-
-      /* Chat card fills ALL remaining height */
+      /* Chat window: fill available vertical space */
       .ai-chat-win {
-        flex: 1 1 0 !important;
-        height: 0 !important;
-        min-height: 0 !important;
-        border-radius: 0 !important;
-        border: none !important;
-        box-shadow: none !important;
-        overflow: hidden !important;
-        display: flex !important;
-        flex-direction: column !important
+        height: calc(100dvh - 230px) !important;
+        height: calc(100vh - 230px) !important;
+        min-height: 300px !important
       }
 
-      /* Messages scroll area */
-      #ai-chat-messages {
-        flex: 1 1 0 !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-        padding: 14px 12px !important
-      }
-
-      /* Suggestion chips — single scrollable row */
+      /* Suggestion chips: horizontal scroll, no wrap */
       .ai-chips {
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         -webkit-overflow-scrolling: touch !important;
         scrollbar-width: none !important;
-        padding: 8px 12px !important;
-        gap: 8px !important;
-        flex-shrink: 0 !important;
-        background: var(--cream) !important
+        padding: 10px 12px !important;
+        gap: 8px !important
       }
       .ai-chips::-webkit-scrollbar { display: none }
 
+      /* Each chip — bigger tap target */
       .ai-chip {
-        padding: 8px 14px !important;
+        padding: 9px 14px !important;
         font-size: 13px !important;
         white-space: nowrap !important;
         flex-shrink: 0 !important;
-        min-height: 40px !important;
-        touch-action: manipulation !important
+        min-height: 42px !important
       }
 
-      /* Input bar — always visible at bottom of chat card */
-      .ai-input-bar {
-        padding: 10px 12px !important;
-        gap: 10px !important;
-        flex-shrink: 0 !important;
-        background: var(--white) !important
-      }
+      /* Input bar */
+      .ai-input-bar { padding: 10px 12px !important; gap: 8px !important }
 
-      /* 16px stops iOS from zooming on focus */
+      /* 16px prevents iOS auto-zoom on focus */
       .ai-input {
         font-size: 16px !important;
-        padding: 12px 14px !important;
-        min-height: 48px !important
+        padding: 13px 16px !important;
+        min-height: 50px !important
       }
 
+      /* Send button — large tap target */
       .ai-send {
-        width: 48px !important;
-        height: 48px !important;
+        width: 50px !important;
+        height: 50px !important;
         font-size: 20px !important;
         flex-shrink: 0 !important
       }
 
-      /* Show inner mobile header, hide outer desktop header */
-      .ai-inner-hdr { display: flex !important }
-
-      /* Hide the desktop side panel entirely */
-      .ai-wrap > div:last-child { display: none !important }
-
-      /* Message bubbles — wider, readable */
-      .ai-bubble-ai  { max-width: 88% !important }
-      .ai-bubble-usr { max-width: 88% !important }
-      .ai-bubble-ai  > div:first-child {
-        font-size: 14px !important;
-        line-height: 1.65 !important;
-        padding: 11px 13px !important
-      }
-      .ai-bubble-usr > div:first-child {
-        font-size: 14px !important;
-        line-height: 1.55 !important;
-        padding: 10px 13px !important
-      }
-      .ai-ts { font-size: 11px !important }
-
-      /* Order confirm card — slides up from bottom nav */
+      /* Order confirm card — full width, prominent */
       .ai-order-card {
-        position: fixed !important;
-        bottom: 68px !important;
-        left: 10px !important;
-        right: 10px !important;
-        z-index: 130 !important;
-        border-radius: 16px !important;
-        padding: 16px !important;
         border-width: 2.5px !important;
-        box-shadow: 0 -4px 24px rgba(0,0,0,.2), 0 8px 32px rgba(0,0,0,.15) !important
+        border-radius: 16px !important;
+        padding: 18px !important
       }
+
+      /* Confirm/Cancel buttons — large tap targets */
       .ai-order-card .btn {
-        min-height: 46px !important;
+        min-height: 48px !important;
         font-size: 14px !important;
         font-weight: 700 !important
       }
 
-      /* Delivery info card */
+      /* Delivery card */
       .ai-delivery-card {
-        position: fixed !important;
-        bottom: 68px !important;
-        left: 10px !important;
-        right: 10px !important;
-        z-index: 129 !important;
         border-radius: 16px !important;
-        padding: 16px !important;
-        box-shadow: 0 -4px 24px rgba(0,0,0,.15) !important
+        padding: 18px !important
       }
 
-      /* Tips card — not shown on mobile */
+      /* Tips card — hide on mobile to save space (shown only if no cards active) */
       .ai-tips-card { display: none !important }
+
+      /* Message bubbles — wider on narrow screens */
+      .ai-bubble-ai  { max-width: 90% !important }
+      .ai-bubble-usr { max-width: 90% !important }
+
+      /* Bubble text — slightly larger for readability */
+      .ai-bubble-ai  > div:first-child { font-size: 14px !important; line-height: 1.65 !important; padding: 12px 14px !important }
+      .ai-bubble-usr > div:first-child { font-size: 14px !important; line-height: 1.55 !important; padding: 11px 14px !important }
+
+      /* Timestamp */
+      .ai-ts { font-size: 11px !important }
+
+      /* Status badge in header */
+      .ai-online { padding: 5px 12px !important; font-size: 12px !important }
+
+      /* sec-hdr on AI page — compact */
+      .ai-hdr .sec-title { font-size: 20px !important }
+      .ai-hdr .sec-sub   { font-size: 12px !important }
     }
 
     /* ── Extra small phones (≤380px) ─────────────── */
@@ -2987,7 +2924,6 @@
 
     async function pageAiAssistant() {
       aiChatHistory = [];
-      document.getElementById('main-content').classList.add('ai-page-active');
       setContent(`
     <div class="sec-hdr ai-hdr">
       <div>
@@ -3001,21 +2937,6 @@
     </div>
 
     <div class="ai-wrap" style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
-
-      <!-- Mobile inner header (shown only on mobile via CSS) -->
-      <div class="ai-inner-hdr" style="display:none">
-        <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:20px">🤖</span>
-          <div>
-            <div style="font-size:15px;font-weight:700;color:var(--brown);font-family:'Cormorant Garamond',serif">AI Assistant</div>
-            <div style="font-size:11px;color:var(--brown-m)">Just type — I'll help you</div>
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px;background:#E8F5E9;border-radius:20px;padding:4px 10px">
-          <div style="width:7px;height:7px;border-radius:50%;background:#16a34a;animation:truckPulse 1.5s infinite"></div>
-          <span style="font-size:11px;font-weight:700;color:#16a34a">Online</span>
-        </div>
-      </div>
 
       <!-- Chat window -->
       <div class="card ai-chat-win" style="padding:0;overflow:hidden;display:flex;flex-direction:column;height:520px">
@@ -5115,7 +5036,6 @@ RULES:
     }
 
     function setContent(html) {
-      document.getElementById('main-content').classList.remove('ai-page-active');
       document.getElementById('main-content').innerHTML = html;
       injectSecLogos();
       // DO NOT stop GPS here — GPS must keep running across page changes
