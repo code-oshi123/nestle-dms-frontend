@@ -744,6 +744,86 @@
       border-radius: 3px 3px 0 0
     }
 
+    /* ══ MOBILE BOTTOM NAV (hidden on desktop) ══════ */
+    .mob-nav {
+      display: none; /* shown only in @media(max-width:768px) */
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 150;
+      background: linear-gradient(180deg, rgba(61,43,10,.97) 0%, #2a1c06 100%);
+      border-top: 1px solid rgba(217,200,154,.18);
+      box-shadow: 0 -4px 24px rgba(0,0,0,.35);
+      /* Respect iPhone home-bar */
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      justify-content: space-around;
+      align-items: stretch
+    }
+
+    .mob-nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      padding: 10px 4px 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      transition: background .15s;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      min-height: 60px
+    }
+
+    .mob-nav-btn:active {
+      background: rgba(217,200,154,.08)
+    }
+
+    /* Active indicator bar at the top of each button */
+    .mob-nav-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 18%;
+      right: 18%;
+      height: 3px;
+      border-radius: 0 0 3px 3px;
+      background: var(--tan);
+      opacity: 0;
+      transition: opacity .2s
+    }
+
+    .mob-nav-btn.active::before { opacity: 1 }
+
+    .mob-nav-ico {
+      font-size: 22px;
+      line-height: 1;
+      transition: transform .15s
+    }
+
+    .mob-nav-btn.active .mob-nav-ico { transform: scale(1.12) }
+
+    .mob-nav-lbl {
+      font-family: 'Jost', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      color: rgba(245,237,214,.45);
+      transition: color .15s;
+      text-align: center;
+      line-height: 1.2;
+      max-width: 72px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .mob-nav-btn.active .mob-nav-lbl { color: var(--goldL) }
+
     /* ══ MAIN ════════════════════════════════════ */
     .main {
       padding: 28px;
@@ -1304,6 +1384,19 @@
       #mc-cat-grid,
       #s-failtype-grid {
         grid-template-columns: 1fr 1fr
+      }
+
+      /* ── Bottom navigation bar (mobile) ─────────── */
+
+      /* Hide the horizontal top tab strip on mobile */
+      .tabs { display: none !important }
+
+      /* Show the fixed bottom nav */
+      .mob-nav { display: flex !important }
+
+      /* Push main content above the bottom bar + safe area */
+      .main {
+        padding-bottom: calc(72px + env(safe-area-inset-bottom, 12px))
       }
 
       /* ── AI Assistant — mobile-first layout ──────── */
@@ -2461,6 +2554,7 @@
     </div>
 
     <div class="tabs" id="nav-tabs"></div>
+    <div class="mob-nav" id="mob-nav"></div>
     <div class="main" id="main-content"></div>
   </div>
 
@@ -2853,19 +2947,32 @@
 
     function buildNav() {
       const pages = ROLE_PAGES[user.role] || [];
+      // Desktop top tabs
       document.getElementById('nav-tabs').innerHTML = pages.map((p, i) =>
         `<button class="tab ${i === 0 ? 'active' : ''}" id="tab-${p.id}" onclick="nav('${p.id}')">${p.ico} ${p.lbl}</button>`
+      ).join('');
+      // Mobile bottom nav
+      document.getElementById('mob-nav').innerHTML = pages.map((p, i) =>
+        `<button class="mob-nav-btn ${i === 0 ? 'active' : ''}" id="mob-tab-${p.id}" onclick="nav('${p.id}')">
+          <span class="mob-nav-ico">${p.ico}</span>
+          <span class="mob-nav-lbl">${p.lbl}</span>
+        </button>`
       ).join('');
       if (pages.length) render(pages[0].id);
     }
 
     function nav(id) {
+      // Sync desktop top tabs
       document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
       const el = document.getElementById('tab-' + id);
       if (el) {
         el.classList.add('active');
         el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       }
+      // Sync mobile bottom nav
+      document.querySelectorAll('.mob-nav-btn').forEach(t => t.classList.remove('active'));
+      const mob = document.getElementById('mob-tab-' + id);
+      if (mob) mob.classList.add('active');
       render(id);
     }
 
