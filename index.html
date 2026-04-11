@@ -768,74 +768,48 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
-      padding: 10px 4px 10px;
+      padding: 10px 4px;
       background: none;
       border: none;
+      border-top: 3px solid transparent;
       cursor: pointer;
       position: relative;
-      transition: background .15s;
+      transition: background .15s, border-top-color .15s;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
-      min-height: 60px
+      min-height: 60px;
+      box-sizing: border-box
     }
 
-    .mob-nav-btn:active {
-      background: rgba(217,200,154,.10)
-    }
+    .mob-nav-btn:active { background: rgba(217,200,154,.10) }
 
-    /* 3px gold bar at top — mirrors desktop border-bottom on .tab.active */
-    .mob-nav-btn::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      border-radius: 0 0 3px 3px;
-      background: var(--goldL);       /* same gold as --goldL: #D4A832 */
-      transform: scaleX(0);
-      transition: transform .2s cubic-bezier(.34,1.56,.64,1)
-    }
-
-    .mob-nav-btn.active::before {
-      transform: scaleX(1)
-    }
-
-    /* Warm background tint — stronger so it's visible on the dark bar */
     .mob-nav-btn.active {
-      background: rgba(212, 168, 50, .15)
+      border-top-color: #D4A832;
+      background: rgba(212,168,50,.18)
     }
 
     .mob-nav-ico {
       font-size: 22px;
       line-height: 1;
-      transition: transform .2s cubic-bezier(.34,1.56,.64,1), filter .2s
+      display: block;
+      transition: transform .2s
     }
 
-    /* Active icon: scale up + golden glow — clearly highlights current page */
-    .mob-nav-btn.active .mob-nav-ico {
-      transform: scale(1.18);
-      filter: drop-shadow(0 0 6px rgba(212,168,50,.7))
-    }
+    .mob-nav-btn.active .mob-nav-ico { transform: scale(1.2) }
 
     .mob-nav-lbl {
       font-family: 'Jost', sans-serif;
       font-size: 10px;
       font-weight: 600;
-      letter-spacing: .3px;
-      color: rgba(245,237,214,.40);   /* dim for inactive */
+      color: rgba(245,237,214,.4);
       transition: color .15s, font-weight .15s;
       text-align: center;
       line-height: 1.2;
-      max-width: 72px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis
+      white-space: nowrap
     }
 
-    /* Active label: bright gold + bold — same weight as desktop .tab.active */
     .mob-nav-btn.active .mob-nav-lbl {
-      color: var(--goldL);
+      color: #D4A832;
       font-weight: 700
     }
 
@@ -2966,38 +2940,20 @@
       document.getElementById('nav-tabs').innerHTML = pages.map((p, i) =>
         `<button class="tab ${i === 0 ? 'active' : ''}" id="tab-${p.id}" onclick="nav('${p.id}')">${p.ico} ${p.lbl}</button>`
       ).join('');
-      // Mobile bottom nav — fully inline styles, no CSS class dependency
-      document.getElementById('mob-nav').innerHTML = pages.map((p) =>
-        `<button id="mob-tab-${p.id}" onclick="nav('${p.id}')"
-          style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 10px;background:none;border-left:none;border-right:none;border-bottom:none;border-top:3px solid transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:60px;box-sizing:border-box">
-          <span id="mob-ico-${p.id}" style="font-size:22px;line-height:1;display:block">${p.ico}</span>
-          <span id="mob-lbl-${p.id}" style="font-family:'Jost',sans-serif;font-size:10px;font-weight:600;color:rgba(245,237,214,.4);text-align:center;line-height:1.2;white-space:nowrap">${p.lbl}</span>
+      // Mobile bottom nav
+      document.getElementById('mob-nav').innerHTML = pages.map((p, i) =>
+        `<button class="mob-nav-btn${i === 0 ? ' active' : ''}" id="mob-tab-${p.id}" onclick="nav('${p.id}')">
+          <span class="mob-nav-ico">${p.ico}</span>
+          <span class="mob-nav-lbl">${p.lbl}</span>
         </button>`
       ).join('');
-      if (pages.length) {
-        applyMobActive(pages[0].id);
-        render(pages[0].id);
-      }
+      if (pages.length) render(pages[0].id);
     }
 
     function applyMobActive(activeId) {
-      (ROLE_PAGES[user.role] || []).forEach(p => {
-        const btn = document.getElementById('mob-tab-' + p.id);
-        const ico = document.getElementById('mob-ico-' + p.id);
-        const lbl = document.getElementById('mob-lbl-' + p.id);
-        if (!btn) return;
-        if (p.id === activeId) {
-          btn.style.borderTopColor = '#D4A832'; btn.style.borderTopWidth = '3px'; btn.style.borderTopStyle = 'solid';
-          btn.style.background = 'rgba(212,168,50,.18)';
-          if (ico) ico.style.transform = 'scale(1.2)';
-          if (lbl) { lbl.style.color = '#D4A832'; lbl.style.fontWeight = '700'; }
-        } else {
-          btn.style.borderTopColor = 'transparent'; btn.style.borderTopWidth = '3px'; btn.style.borderTopStyle = 'solid';
-          btn.style.background = 'none';
-          if (ico) ico.style.transform = 'scale(1)';
-          if (lbl) { lbl.style.color = 'rgba(245,237,214,.4)'; lbl.style.fontWeight = '600'; }
-        }
-      });
+      document.querySelectorAll('.mob-nav-btn').forEach(btn => btn.classList.remove('active'));
+      const active = document.getElementById('mob-tab-' + activeId);
+      if (active) active.classList.add('active');
     }
 
     function nav(id) {
