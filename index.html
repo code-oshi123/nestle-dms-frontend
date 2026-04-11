@@ -768,49 +768,42 @@
       align-items: center;
       justify-content: center;
       gap: 4px;
-      padding: 10px 4px;
-      background: none;
-      border: none;
-      border-top: 3px solid transparent;
+      padding: 10px 4px 8px;
+      background: transparent !important;
+      border: 0 !important;
+      outline: 0 !important;
       cursor: pointer;
-      position: relative;
-      transition: background .15s, border-top-color .15s;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
       min-height: 60px;
-      box-sizing: border-box
-    }
-
-    .mob-nav-btn:active { background: rgba(217,200,154,.10) }
-
-    .mob-nav-btn.active {
-      border-top-color: #D4A832;
-      background: rgba(212,168,50,.18)
+      box-sizing: border-box;
+      position: relative
     }
 
     .mob-nav-ico {
       font-size: 22px;
       line-height: 1;
-      display: block;
-      transition: transform .2s
+      display: block
     }
-
-    .mob-nav-btn.active .mob-nav-ico { transform: scale(1.2) }
 
     .mob-nav-lbl {
       font-family: 'Jost', sans-serif;
       font-size: 10px;
       font-weight: 600;
       color: rgba(245,237,214,.4);
-      transition: color .15s, font-weight .15s;
       text-align: center;
       line-height: 1.2;
       white-space: nowrap
     }
 
-    .mob-nav-btn.active .mob-nav-lbl {
-      color: #D4A832;
-      font-weight: 700
+    /* Active bar — a real visible child div, shown/hidden by JS */
+    .mob-nav-bar {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: #D4A832;
+      border-radius: 0 0 3px 3px;
+      display: none
     }
 
     /* ══ MAIN ════════════════════════════════════ */
@@ -2940,20 +2933,36 @@
       document.getElementById('nav-tabs').innerHTML = pages.map((p, i) =>
         `<button class="tab ${i === 0 ? 'active' : ''}" id="tab-${p.id}" onclick="nav('${p.id}')">${p.ico} ${p.lbl}</button>`
       ).join('');
-      // Mobile bottom nav
-      document.getElementById('mob-nav').innerHTML = pages.map((p, i) =>
-        `<button class="mob-nav-btn${i === 0 ? ' active' : ''}" id="mob-tab-${p.id}" onclick="nav('${p.id}')">
-          <span class="mob-nav-ico">${p.ico}</span>
-          <span class="mob-nav-lbl">${p.lbl}</span>
+      // Mobile bottom nav — active bar is a real <div> child, JS shows/hides it
+      document.getElementById('mob-nav').innerHTML = pages.map((p) =>
+        `<button class="mob-nav-btn" id="mob-tab-${p.id}" onclick="nav('${p.id}')">
+          <div class="mob-nav-bar" id="mob-bar-${p.id}"></div>
+          <span class="mob-nav-ico" id="mob-ico-${p.id}">${p.ico}</span>
+          <span class="mob-nav-lbl" id="mob-lbl-${p.id}">${p.lbl}</span>
         </button>`
       ).join('');
-      if (pages.length) render(pages[0].id);
+      if (pages.length) { applyMobActive(pages[0].id); render(pages[0].id); }
     }
 
     function applyMobActive(activeId) {
-      document.querySelectorAll('.mob-nav-btn').forEach(btn => btn.classList.remove('active'));
-      const active = document.getElementById('mob-tab-' + activeId);
-      if (active) active.classList.add('active');
+      (ROLE_PAGES[user.role] || []).forEach(p => {
+        const bar = document.getElementById('mob-bar-' + p.id);
+        const ico = document.getElementById('mob-ico-' + p.id);
+        const lbl = document.getElementById('mob-lbl-' + p.id);
+        const btn = document.getElementById('mob-tab-' + p.id);
+        if (!btn) return;
+        if (p.id === activeId) {
+          if (bar) bar.style.display = 'block';
+          btn.style.background = 'rgba(212,168,50,0.18)';
+          if (ico) ico.style.transform = 'scale(1.2)';
+          if (lbl) { lbl.style.color = '#D4A832'; lbl.style.fontWeight = '700'; }
+        } else {
+          if (bar) bar.style.display = 'none';
+          btn.style.background = 'transparent';
+          if (ico) ico.style.transform = 'scale(1)';
+          if (lbl) { lbl.style.color = 'rgba(245,237,214,0.4)'; lbl.style.fontWeight = '600'; }
+        }
+      });
     }
 
     function nav(id) {
