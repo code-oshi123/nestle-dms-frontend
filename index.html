@@ -1305,6 +1305,148 @@
       #s-failtype-grid {
         grid-template-columns: 1fr 1fr
       }
+
+      /* ── AI Assistant — mobile-first layout ──────── */
+
+      /* Stack the 2-column grid into a single column */
+      .ai-layout {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important
+      }
+
+      /* Chat window fills viewport height minus topbar + tabs + input bar */
+      .ai-chat-window {
+        height: calc(100dvh - 210px) !important;
+        height: calc(100vh - 210px) !important;
+        min-height: 320px !important;
+        border-radius: 16px !important
+      }
+
+      /* Message bubbles — slightly wider on narrow screens */
+      .ai-msg-bubble-ai   { max-width: 92% !important }
+      .ai-msg-bubble-user { max-width: 92% !important }
+
+      /* AI bubble text a touch bigger for readability */
+      .ai-bubble-text {
+        font-size: 14px !important;
+        line-height: 1.65 !important;
+        padding: 13px 15px !important
+      }
+
+      /* User bubble text */
+      .ai-user-text {
+        font-size: 14px !important;
+        line-height: 1.55 !important;
+        padding: 11px 15px !important
+      }
+
+      /* Avatar — slightly larger tap feedback area */
+      .ai-avatar {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 17px !important
+      }
+
+      /* Timestamp labels */
+      .ai-ts { font-size: 11px !important }
+
+      /* Suggestions strip — horizontal scroll, no wrap */
+      .ai-suggestions-strip {
+        padding: 10px 14px !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important
+      }
+
+      .ai-suggestions-strip::-webkit-scrollbar { display: none }
+
+      /* Each chip — bigger tap target */
+      .ai-suggestion-chip {
+        padding: 9px 14px !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        min-height: 40px !important;
+        border-radius: 22px !important
+      }
+
+      /* Input bar */
+      .ai-input-bar {
+        padding: 12px 14px !important;
+        gap: 10px !important
+      }
+
+      /* Text input — 16px stops iOS auto-zoom */
+      .ai-input-field {
+        font-size: 16px !important;
+        padding: 13px 16px !important;
+        min-height: 50px !important;
+        border-radius: 26px !important
+      }
+
+      /* Send button — min 48×48 tap target */
+      .ai-send-btn {
+        width: 50px !important;
+        height: 50px !important;
+        font-size: 20px !important
+      }
+
+      /* Side panel — reordered on mobile */
+      .ai-side-panel {
+        display: contents !important  /* children flow into the grid naturally */
+      }
+
+      /* Order confirm card — full width, prominent */
+      .ai-order-card {
+        border-radius: 16px !important;
+        padding: 18px !important;
+        border-width: 2.5px !important
+      }
+
+      .ai-order-card-title { font-size: 15px !important }
+
+      .ai-order-row { font-size: 14px !important; line-height: 2 !important }
+
+      .ai-order-actions { gap: 10px !important }
+
+      .ai-order-actions .btn {
+        min-height: 48px !important;
+        font-size: 14px !important;
+        font-weight: 700 !important
+      }
+
+      /* Delivery card — full width */
+      .ai-delivery-card {
+        border-radius: 16px !important;
+        padding: 18px !important
+      }
+
+      .ai-delivery-title { font-size: 15px !important; margin-bottom: 12px !important }
+
+      .ai-delivery-row { font-size: 13.5px !important; line-height: 2 !important }
+
+      /* Tips card — compact, collapsible feel */
+      .ai-tips-card {
+        border-radius: 14px !important;
+        padding: 14px 16px !important
+      }
+
+      .ai-tips-title { font-size: 12.5px !important }
+
+      .ai-tip-item { font-size: 13px !important; padding: 6px 0 !important; border-bottom: 1px solid rgba(217,200,154,.35) !important }
+
+      .ai-tip-item:last-child { border-bottom: none !important }
+
+      /* Online badge in sec-hdr */
+      .ai-status-badge {
+        font-size: 12.5px !important;
+        padding: 6px 14px !important
+      }
+
+      /* Typing indicator dots */
+      .ai-typing-dot { width: 9px !important; height: 9px !important }
     }
 
     /* ── Extra small phones (≤380px) ─────────────── */
@@ -2758,23 +2900,24 @@
         <div class="sec-title">🤖 AI Assistant</div>
         <div class="sec-sub">Order anything, check delivery status, get help — just type naturally</div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;background:#E8F5E9;border-radius:20px;padding:5px 14px">
+      <div class="ai-status-badge" style="display:flex;align-items:center;gap:6px;background:#E8F5E9;border-radius:20px;padding:5px 14px">
         <div style="width:8px;height:8px;border-radius:50%;background:#16a34a;animation:truckPulse 1.5s infinite"></div>
         <span style="font-size:12px;font-weight:700;color:#16a34a">AI Online</span>
       </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
+    <div class="ai-layout" style="display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start">
 
       <!-- Chat window -->
-      <div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;height:520px">
+      <div class="card ai-chat-window" style="padding:0;overflow:hidden;display:flex;flex-direction:column;height:520px">
+
         <!-- Chat messages -->
-        <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <div id="ai-chat-messages" style="flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px">
           <!-- Welcome message -->
           <div style="display:flex;gap:10px;align-items:flex-start">
-            <div style="width:36px;height:36px;border-radius:50%;background:#1B2A4A;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>
-            <div style="max-width:80%">
-              <div style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px;font-size:13px;color:#1B2A4A;line-height:1.6">
+            <div class="ai-avatar" style="width:36px;height:36px;border-radius:50%;background:#1B2A4A;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>
+            <div class="ai-msg-bubble-ai" style="max-width:80%">
+              <div class="ai-bubble-text" style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px;font-size:13px;color:#1B2A4A;line-height:1.6">
                 Hello <strong>${user.name}</strong>! 👋 I'm your Nestlé Smart DMS assistant.<br><br>
                 I can help you:<br>
                 • <strong>Place orders</strong> — just tell me what you need<br>
@@ -2783,39 +2926,43 @@
                 • <strong>Answer questions</strong> — about products, prices, availability<br><br>
                 What can I help you with today?
               </div>
-              <div style="font-size:10px;color:var(--brown-l);margin-top:4px;padding:0 4px">AI Assistant · just now</div>
+              <div class="ai-ts" style="font-size:10px;color:var(--brown-l);margin-top:4px;padding:0 4px">AI Assistant · just now</div>
             </div>
           </div>
         </div>
 
-        <!-- Quick suggestions -->
-        <div id="ai-suggestions" style="padding:10px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:8px;flex-wrap:wrap;background:var(--cream)">
-          <button onclick="sendAiMessage('Where is my latest delivery?')" class="ai-suggestion-btn"
-            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
-            📍 Where is my delivery?
+        <!-- Quick suggestion chips -->
+        <div id="ai-suggestions" class="ai-suggestions-strip" style="padding:10px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:8px;flex-wrap:wrap;background:var(--cream)">
+          <button onclick="sendAiMessage('Where is my latest delivery?')" class="ai-suggestion-chip"
+            style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;flex-shrink:0">
+            📍 Track delivery
           </button>
-          <button onclick="sendAiMessage('I need 30 boxes of Milo to Colombo urgently')" class="ai-suggestion-btn"
-            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
-            🛒 Place an order
+          <button onclick="sendAiMessage('I need 30 boxes of Milo to Colombo urgently')" class="ai-suggestion-chip"
+            style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;flex-shrink:0">
+            🛒 Place order
           </button>
-          <button onclick="sendAiMessage('What is the status of my orders?')" class="ai-suggestion-btn"
-            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
-            📋 Check order status
+          <button onclick="sendAiMessage('What is the status of my orders?')" class="ai-suggestion-chip"
+            style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;flex-shrink:0">
+            📋 Order status
           </button>
-          <button onclick="sendAiMessage('Show me all my pending orders')" class="ai-suggestion-btn"
-            style="padding:6px 12px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif">
-            ⏳ Pending orders
+          <button onclick="sendAiMessage('Show me all my pending orders')" class="ai-suggestion-chip"
+            style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;flex-shrink:0">
+            ⏳ Pending
+          </button>
+          <button onclick="sendAiMessage('When will my delivery arrive?')" class="ai-suggestion-chip"
+            style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;white-space:nowrap;flex-shrink:0">
+            ⏰ ETA
           </button>
         </div>
 
-        <!-- Input -->
-        <div style="padding:14px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:10px;align-items:center;background:var(--white)">
-          <input id="ai-input" type="text" placeholder="Type your message… e.g. 'Order 50 Nescafé to Kandy'"
-            style="flex:1;padding:11px 16px;border:2px solid var(--cream-dk);border-radius:24px;font-family:'Jost',sans-serif;font-size:14px;color:var(--brown);outline:none;transition:border-color .2s"
+        <!-- Input bar -->
+        <div class="ai-input-bar" style="padding:12px 14px;border-top:1px solid var(--cream-dk);display:flex;gap:10px;align-items:center;background:var(--white)">
+          <input id="ai-input" type="text" class="ai-input-field" placeholder="Ask me anything… e.g. 'Order 50 Nescafé to Kandy'"
+            style="flex:1;padding:11px 16px;border:2px solid var(--cream-dk);border-radius:24px;font-family:'Jost',sans-serif;font-size:14px;color:var(--brown);outline:none;transition:border-color .2s;min-height:46px"
             onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendAiInput()}"
             onfocus="this.style.borderColor='var(--tan)'" onblur="this.style.borderColor='var(--cream-dk)'"/>
-          <button onclick="sendAiInput()" id="ai-send-btn"
-            style="width:44px;height:44px;border-radius:50%;background:#1B2A4A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:all .15s"
+          <button onclick="sendAiInput()" id="ai-send-btn" class="ai-send-btn"
+            style="width:46px;height:46px;border-radius:50%;background:#1B2A4A;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;transition:all .15s"
             onmouseover="this.style.background='#D4A832'" onmouseout="this.style.background='#1B2A4A'">
             ➤
           </button>
@@ -2823,33 +2970,38 @@
       </div>
 
       <!-- Side panel -->
-      <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="ai-side-panel" style="display:flex;flex-direction:column;gap:12px">
+
         <!-- Pending order confirmation card -->
-        <div id="ai-order-confirm-card" style="display:none;background:var(--white);border:2px solid var(--tan);border-radius:12px;padding:16px">
-          <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px">🛒 Order to Submit</div>
-          <div id="ai-order-details" style="font-size:13px;color:var(--brown);line-height:1.8;margin-bottom:12px"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-green" style="flex:1;font-size:13px" onclick="confirmAiOrder()">✅ Confirm</button>
-            <button class="btn btn-ghost" style="font-size:13px" onclick="cancelAiOrder()">✕</button>
+        <div id="ai-order-confirm-card" class="ai-order-card" style="display:none;background:var(--white);border:2px solid var(--tan);border-radius:14px;padding:16px">
+          <div class="ai-order-card-title" style="font-size:14px;font-weight:700;color:var(--navy);margin-bottom:12px;display:flex;align-items:center;gap:6px">
+            🛒 Confirm Your Order
+          </div>
+          <div id="ai-order-details" class="ai-order-row" style="font-size:13px;color:var(--brown);line-height:1.9;margin-bottom:14px"></div>
+          <div class="ai-order-actions" style="display:flex;gap:8px">
+            <button class="btn btn-green" style="flex:1;font-size:13px;font-weight:700" onclick="confirmAiOrder()">✅ Confirm</button>
+            <button class="btn btn-ghost" style="font-size:13px;font-weight:700;min-width:48px" onclick="cancelAiOrder()">✕ Cancel</button>
           </div>
         </div>
 
         <!-- Live delivery card -->
-        <div id="ai-delivery-card" style="display:none;background:var(--white);border:2px solid #1565C0;border-radius:12px;padding:16px">
-          <div style="font-size:13px;font-weight:700;color:#1565C0;margin-bottom:10px">🚛 Live Delivery</div>
-          <div id="ai-delivery-details" style="font-size:12px;color:var(--brown);line-height:1.8"></div>
+        <div id="ai-delivery-card" class="ai-delivery-card" style="display:none;background:var(--white);border:2px solid #1565C0;border-radius:14px;padding:16px">
+          <div class="ai-delivery-title" style="font-size:14px;font-weight:700;color:#1565C0;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+            🚛 Live Delivery
+          </div>
+          <div id="ai-delivery-details" class="ai-delivery-row" style="font-size:12.5px;color:var(--brown);line-height:1.9"></div>
         </div>
 
         <!-- Tips card -->
-        <div style="background:var(--cream);border-radius:12px;padding:16px;border:1px solid var(--cream-dk)">
-          <div style="font-size:12px;font-weight:700;color:var(--tan);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">💡 Try Saying</div>
-          <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--brown-m)">
-            <div>📦 "Order 20 KitKat to Galle high priority"</div>
-            <div>📍 "Where is my order #5?"</div>
-            <div>🔄 "Resubmit my last rejected order"</div>
-            <div>📋 "List all my orders this week"</div>
-            <div>⏰ "When will my delivery arrive?"</div>
-            <div>🚛 "How far is my driver?"</div>
+        <div class="ai-tips-card" style="background:var(--cream);border-radius:12px;padding:16px;border:1px solid var(--cream-dk)">
+          <div class="ai-tips-title" style="font-size:12px;font-weight:700;color:var(--tan);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">💡 Try Saying</div>
+          <div style="display:flex;flex-direction:column">
+            <div class="ai-tip-item" style="font-size:12px;color:var(--brown-m);padding:5px 0">📦 "Order 20 KitKat to Galle high priority"</div>
+            <div class="ai-tip-item" style="font-size:12px;color:var(--brown-m);padding:5px 0">📍 "Where is my order #5?"</div>
+            <div class="ai-tip-item" style="font-size:12px;color:var(--brown-m);padding:5px 0">🔄 "Resubmit my last rejected order"</div>
+            <div class="ai-tip-item" style="font-size:12px;color:var(--brown-m);padding:5px 0">📋 "List all my orders this week"</div>
+            <div class="ai-tip-item" style="font-size:12px;color:var(--brown-m);padding:5px 0">⏰ "When will my delivery arrive?"</div>
+            <div class="ai-tip-item" style="font-size:12px;color:var(--brown-m);padding:5px 0">🚛 "How far is my driver?"</div>
           </div>
         </div>
       </div>
@@ -2870,12 +3022,12 @@
       div.style.cssText = `display:flex;gap:10px;align-items:flex-start;${isUser ? 'flex-direction:row-reverse' : ''}`;
 
       const avatar = isUser
-        ? `<div style="width:36px;height:36px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">${user.avatar || 'U'}</div>`
-        : `<div style="width:36px;height:36px;border-radius:50%;background:#1B2A4A;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>`;
+        ? `<div class="ai-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--tan);color:var(--cream);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0">${user.avatar || 'U'}</div>`
+        : `<div class="ai-avatar" style="width:36px;height:36px;border-radius:50%;background:#1B2A4A;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🤖</div>`;
 
       const bubble = isUser
-        ? `<div style="max-width:80%"><div style="background:#1B2A4A;color:white;border-radius:12px 0 12px 12px;padding:10px 14px;font-size:13px;line-height:1.5">${escapeHtml(text)}</div><div style="font-size:10px;color:var(--brown-l);margin-top:4px;text-align:right;padding:0 4px">${time}</div></div>`
-        : `<div style="max-width:85%"><div style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px;font-size:13px;color:#1B2A4A;line-height:1.6">${isHtml ? text : escapeHtml(text)}</div><div style="font-size:10px;color:var(--brown-l);margin-top:4px;padding:0 4px">AI Assistant · ${time}</div></div>`;
+        ? `<div class="ai-msg-bubble-user" style="max-width:80%"><div class="ai-user-text" style="background:#1B2A4A;color:white;border-radius:12px 0 12px 12px;padding:10px 14px;font-size:13px;line-height:1.5">${escapeHtml(text)}</div><div class="ai-ts" style="font-size:10px;color:var(--brown-l);margin-top:4px;text-align:right;padding:0 4px">${time}</div></div>`
+        : `<div class="ai-msg-bubble-ai" style="max-width:85%"><div class="ai-bubble-text" style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px;font-size:13px;color:#1B2A4A;line-height:1.6">${isHtml ? text : escapeHtml(text)}</div><div class="ai-ts" style="font-size:10px;color:var(--brown-l);margin-top:4px;padding:0 4px">AI Assistant · ${time}</div></div>`;
 
       div.innerHTML = avatar + bubble;
       container.appendChild(div);
