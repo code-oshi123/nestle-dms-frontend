@@ -2969,7 +2969,7 @@
       // Mobile bottom nav — fully inline styles, no CSS class dependency
       document.getElementById('mob-nav').innerHTML = pages.map((p) =>
         `<button id="mob-tab-${p.id}" onclick="nav('${p.id}')"
-          style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 10px;background:none;border:none;border-top:3px solid transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:60px">
+          style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px 10px;background:none;border-left:none;border-right:none;border-bottom:none;border-top:3px solid transparent;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;min-height:60px;box-sizing:border-box">
           <span id="mob-ico-${p.id}" style="font-size:22px;line-height:1;display:block">${p.ico}</span>
           <span id="mob-lbl-${p.id}" style="font-family:'Jost',sans-serif;font-size:10px;font-weight:600;color:rgba(245,237,214,.4);text-align:center;line-height:1.2;white-space:nowrap">${p.lbl}</span>
         </button>`
@@ -2987,12 +2987,12 @@
         const lbl = document.getElementById('mob-lbl-' + p.id);
         if (!btn) return;
         if (p.id === activeId) {
-          btn.style.borderTop = '3px solid #D4A832';
+          btn.style.borderTopColor = '#D4A832'; btn.style.borderTopWidth = '3px'; btn.style.borderTopStyle = 'solid';
           btn.style.background = 'rgba(212,168,50,.18)';
           if (ico) ico.style.transform = 'scale(1.2)';
           if (lbl) { lbl.style.color = '#D4A832'; lbl.style.fontWeight = '700'; }
         } else {
-          btn.style.borderTop = '3px solid transparent';
+          btn.style.borderTopColor = 'transparent'; btn.style.borderTopWidth = '3px'; btn.style.borderTopStyle = 'solid';
           btn.style.background = 'none';
           if (ico) ico.style.transform = 'scale(1)';
           if (lbl) { lbl.style.color = 'rgba(245,237,214,.4)'; lbl.style.fontWeight = '600'; }
