@@ -2560,6 +2560,13 @@
               <div class="qrole">Distributor</div>
             </div>
           </button>
+          <button class="qbtn" onclick="quick('salesrep@nestle.lk','sales123')">
+            <div class="qav" style="background:#00897B">SR</div>
+            <div>
+              <div class="qname">Sales Rep</div>
+              <div class="qrole">Field Sales</div>
+            </div>
+          </button>
         </div>
       </div>
     </div>
@@ -2927,7 +2934,7 @@
       return {
         retailer: 'Retailer', order_team: 'Order Processing Team',
         warehouse: 'Warehouse', distributor: 'Distributor',
-        admin: 'System Administrator'
+        admin: 'System Administrator', sales_rep: 'Sales Representative'
       }[r] || r;
     }
 
@@ -3002,6 +3009,7 @@
       order_team: [{ id: 'all-orders', ico: '📋', lbl: 'Pending Review' }, { id: 'deliveries', ico: '🚚', lbl: 'All Deliveries' }, { id: 'retailers', ico: '🏪', lbl: 'Retailers' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       warehouse: [{ id: 'wh-incoming', ico: '📦', lbl: 'Incoming' }, { id: 'wh-prepare', ico: '🏭', lbl: 'Cargo Status' }, { id: 'wh-stock', ico: '📋', lbl: 'Stock Levels' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       distributor: [{ id: 'my-routes', ico: '🛣️', lbl: 'My Routes' }, { id: 'upd-status', ico: '✅', lbl: 'Update Status' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
+      sales_rep: [{ id: 'sr-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'sr-orders', ico: '📋', lbl: 'All Orders' }, { id: 'sr-retailers', ico: '🏪', lbl: 'Retailers' }],
     };
 
     function buildNav() {
@@ -3068,6 +3076,9 @@
       if (id === 'live-map') await pageLiveMap();
       if (id === 'retailers') await pageRetailers();
       if (id === 'admin-users') await pageAdminUsers();
+      if (id === 'sr-dashboard') await pageSrDashboard();
+      if (id === 'sr-orders') await pageSrOrders();
+      if (id === 'sr-retailers') await pageSrRetailers();
     }
 
     // ══ AI ASSISTANT ════════════════════════════════
@@ -3422,7 +3433,10 @@ RULES:
 
     // ══ RETAILER PAGES ═══════════════════════════════
     async function pageMyOrders() {
-      const data = await api(`/orders?role=retailer&userId=${user.id}`);
+      const [data, reminder] = await Promise.all([
+        api(`/orders?role=retailer&userId=${user.id}`),
+        api('/order-reminder').catch(() => null)
+      ]);
 
       const rejected = data.filter(o => o.status === 'rejected');
       const awaitingReceipt = data.filter(o => o.deliveryStatus === 'delivered' && !o.receiptConfirmed);
@@ -3491,19 +3505,40 @@ RULES:
       Please confirm receipt below to complete the delivery process.
     </div>` : '';
 
+      // ── Order reminder banner ──
+      let reminderBanner = '';
+      if (reminder && !reminder.error) {
+        if (reminder.isOverdue) {
+          const daysLate = Math.abs(reminder.daysUntilDue);
+          reminderBanner = `
+    <div class="alert-banner" style="background:#FFF3E0;border:1.5px solid #FFB74D;color:#E65100;margin-bottom:18px;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>⏰ <strong>Your ${reminder.frequency} order is overdue</strong> — ${daysLate} day${daysLate !== 1 ? 's' : ''} late. Time to restock!</span>
+      <button class="btn btn-tan btn-sm" onclick="nav('req-order')">Place Order →</button>
+    </div>`;
+        } else if (reminder.daysUntilDue !== null && reminder.daysUntilDue <= 2) {
+          reminderBanner = `
+    <div class="alert-banner" style="background:#E8F5E9;border:1.5px solid #A5D6A7;color:#1B5E20;margin-bottom:18px;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span>📅 <strong>Your next order is due in ${reminder.daysUntilDue} day${reminder.daysUntilDue !== 1 ? 's' : ''}</strong> (${reminder.frequency} schedule).</span>
+      <button class="btn btn-tan btn-sm" onclick="nav('req-order')">Order Now →</button>
+    </div>`;
+        }
+      }
+
       setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">My Orders</div><div class="sec-sub">Track your submitted orders and confirm deliveries</div></div>
       <button class="btn btn-tan" onclick="nav('req-order')">+ New Request</button>
     </div>
+    ${reminderBanner}
     ${rejectionBanner}
     ${receiptBanner}
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>City</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>🔐 Delivery PIN</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
+      <thead><tr><th>ID</th><th>City</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>🔐 Delivery PIN</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
       <tbody>${data.length ? data.map(o => `
         <tr>
           <td><span class="mono">${o.id}</span></td>
           <td>${o.city}${['consolidated', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(o.status) ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="openTrackMap(${o.id},'${o.city || ''}','${o.retailerName || o.retailer || ''}')">🗺️ Track</button>` : ''}</td>
+          <td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
           <td>${o.items} items · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
           <td>${prioBadge(o.prio)}</td>
           <td>${orderBadge(o.status)}</td>
@@ -3535,10 +3570,31 @@ RULES:
             : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
           </td>
           <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
-        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
+        </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
     </table></div></div>
 
   <!-- Confirm Receipt Modal -->
+  <!-- ── STOCK / PARTIAL ORDER MODAL ── -->
+  <div class="modal-bg" id="m-stock" style="z-index:400">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-title" id="ms-title">⚠️ Limited Stock Available</div>
+      <div class="modal-body">
+        <div id="ms-body" style="font-size:14px;color:var(--brown);margin-bottom:20px;line-height:1.6"></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn btn-tan" id="ms-partial-btn" onclick="placePartialOrder()" style="display:none">
+            📦 Place Partial Order
+          </button>
+          <button class="btn" id="ms-wait-btn"
+            style="background:#E8F5E9;color:#1B5E20;border:1.5px solid #A5D6A7;font-weight:600"
+            onclick="joinWaitingList()">
+            📋 Join Waiting List
+          </button>
+          <button class="btn btn-ghost" onclick="closeModal('m-stock')">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-bg" id="m-confirm-receipt" style="z-index:400">
     <div class="modal" style="max-width:460px">
       <div class="modal-title">📦 Confirm Delivery Receipt</div>
@@ -3629,17 +3685,30 @@ RULES:
           <div class="field-err" id="err-city">Please select a city.</div>
         </div>
         <div class="fg">
+          <label>Area <span style="color:var(--red)">*</span></label>
+          <select id="i-area">
+            <option value="">Select area…</option>
+            <option>Colombo 1</option><option>Colombo 2</option><option>Colombo 3</option>
+            <option>Colombo 4</option><option>Colombo 5</option><option>Colombo 6</option>
+            <option>Colombo 7</option><option>Colombo 8</option><option>Colombo 9</option>
+            <option>Colombo 10</option><option>Colombo 11</option><option>Colombo 12</option>
+            <option>Colombo 13</option><option>Colombo 14</option><option>Colombo 15</option>
+          </select>
+          <div class="field-err" id="err-area">Please select an area.</div>
+        </div>
+        <div class="fg">
           <label>Product <span style="color:var(--red)">*</span></label>
-          <select id="i-product" onchange="calcKg()">
+          <select id="i-product" onchange="calcKg();checkStockRealtime()">
             <option value="">Select product…</option>
           </select>
           <div class="field-err" id="err-product">Please select a product.</div>
         </div>
         <div class="fg">
           <label>Items (whole number) <span style="color:var(--red)">*</span></label>
-          <input id="i-items" type="number" min="1" step="1" placeholder="e.g. 24" oninput="validateItems(this);calcKg()"/>
+          <input id="i-items" type="number" min="1" step="1" placeholder="e.g. 24" oninput="validateItems(this);calcKg();checkStockRealtime()"/>
           <div class="field-err" id="err-items">Items must be a positive whole number (no decimals or negatives).</div>
           <div id="kg-badge" class="kg-badge" style="display:none">⚖️ Total weight: <strong id="kg-val">0</strong> kg</div>
+          <div id="stock-badge" style="display:none;margin-top:6px;font-size:12px;font-weight:600;padding:6px 10px;border-radius:6px;line-height:1.4"></div>
         </div>
         <div class="fg">
           <label>Priority</label>
@@ -3709,6 +3778,7 @@ RULES:
 
     async function submitOrder() {
       const cityEl = document.getElementById('i-city');
+      const areaEl = document.getElementById('i-area');
       const itemsEl = document.getElementById('i-items');
       const productEl = document.getElementById('i-product');
       const prio = document.getElementById('i-prio').value;
@@ -3723,6 +3793,14 @@ RULES:
         valid = false;
       } else {
         document.getElementById('err-city').classList.remove('show');
+      }
+
+      // Area
+      if (!areaEl.value) {
+        document.getElementById('err-area').classList.add('show');
+        valid = false;
+      } else {
+        document.getElementById('err-area').classList.remove('show');
       }
 
       // Product — required (so backend can check the right stock row)
@@ -3755,12 +3833,23 @@ RULES:
       errBox.style.display = 'none';
 
       const productName = (productEl.options[productEl.selectedIndex]?.textContent || '').trim();
-      const specifics = productName; // keeps payload explicit for receivers
+      const specifics = productName;
+
+      // ── Real-time stock gate: if last check shows insufficient, open modal instead of posting
+      if (window._stockCheck && window._stockCheck.productId === productIdNum) {
+        const avail = parseInt(window._stockCheck.availableUnits);
+        if (avail <= 0 || itemsNum > avail) {
+          window._pendingOrder = { productIdNum, productName, cityEl, areaEl, prio, notes, itemsNum, specifics };
+          showStockModal(window._stockCheck, itemsNum);
+          return;
+        }
+      }
 
       const r = await api('/orders', 'POST', {
         retailerId: user.id,
         retailerName: user.name,
         city: cityEl.value,
+        area: areaEl.value,
         productId: productIdNum,
         productName,
         specifics,
@@ -3775,9 +3864,17 @@ RULES:
       });
 
       if (r.stockError) {
-        errBox.textContent = `❌ Stock unavailable: ${r.error}. Please reduce your order or try again later.`;
-        errBox.style.display = 'flex';
-        toast(`❌ ${r.error}`, '#B71C1C');
+        // Refresh stock info and open modal so retailer can choose partial / waiting list
+        const fresh = await api(`/stock/${productIdNum}`).catch(() => null);
+        if (fresh && !fresh.error) {
+          window._stockCheck = { ...fresh, productId: productIdNum };
+          window._pendingOrder = { productIdNum, productName, cityEl, areaEl, prio, notes, itemsNum, specifics };
+          showStockModal(window._stockCheck, itemsNum);
+        } else {
+          errBox.textContent = `❌ Stock unavailable: ${r.error}. Please reduce your order quantity.`;
+          errBox.style.display = 'flex';
+          toast(`❌ ${r.error}`, '#B71C1C');
+        }
         return;
       }
       if (r.error) {
@@ -3813,29 +3910,30 @@ RULES:
     <div class="card">
       <div class="card-title">⏳ Pending Review <span class="badge b-orange" style="margin-left:8px">${pending.length}</span></div>
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Area</th><th>Items</th><th>Priority</th><th>Status</th><th>Submitted</th><th>Action</th></tr></thead>
         <tbody>${pending.length ? pending.map(o => `
           <tr>
             <td><span class="mono">${o.id}</span></td>
             <td><strong>${o.retailer}</strong></td>
             <td>${o.city}</td>
+            <td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
             <td>${o.items} · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
             <td>${prioBadge(o.prio)}</td>
             <td>${orderBadge(o.status)}</td>
             <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
             <td><button class="btn btn-tan btn-sm" onclick="openConfirm('${o.id}','${o.retailer}','${o.city}',${o.items},${o.kg},'${o.prio}')">Review →</button></td>
-          </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">✅</div><div>No pending orders — all reviewed!</div></div></td></tr>'}</tbody>
+          </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">✅</div><div>No pending orders — all reviewed!</div></div></td></tr>'}</tbody>
       </table></div>
     </div>
 
     <div class="card">
       <div class="card-title">📁 Processed Orders <span class="badge b-gray" style="margin-left:8px">${processed.length}</span></div>
       <div class="tw"><table>
-        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Status</th><th>Reason / Reviewed By</th><th>Date</th></tr></thead>
+        <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Area</th><th>Items</th><th>Status</th><th>Reason / Reviewed By</th><th>Date</th></tr></thead>
         <tbody>${processed.length ? processed.map(o => `
           <tr>
             <td><span class="mono">${o.id}</span></td>
-            <td>${o.retailer}</td><td>${o.city}</td>
+            <td>${o.retailer}</td><td>${o.city}</td><td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
             <td>${o.items} · ${o.kg}kg</td>
             <td>${orderBadge(o.status)}</td>
             <td style="font-size:12px;max-width:220px">
@@ -3845,7 +3943,7 @@ RULES:
           : `<span style="color:var(--brown-l)">${o.confirmedBy || '—'}</span>`}
             </td>
             <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
-          </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div>No processed orders yet.</div></div></td></tr>'}</tbody>
+          </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div>No processed orders yet.</div></div></td></tr>'}</tbody>
       </table></div>
     </div>`);
     }
@@ -4034,52 +4132,71 @@ RULES:
       setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Stock Levels</div>
-      <div class="sec-sub">Update stock levels — retailers watching out-of-stock products are notified automatically 🔔</div></div>
+      <div class="sec-sub">Update stock — retailers on the waiting list and rejected orders are auto-notified 🔔</div></div>
     </div>
     <div class="card">
       <div class="card-title">📋 Current Stock Levels</div>
       <div class="tw"><table>
-        <thead><tr><th>Product</th><th>Units Available</th><th>Weight Available</th><th>Weight/Unit</th><th>Watching</th><th>Update Stock</th></tr></thead>
-        <tbody>${stocks.length ? stocks.map(p => `
-          <tr>
-            <td><strong>${escapeHtml(p.productName || '—')}</strong></td>
+        <thead><tr><th>Product</th><th>Units Available</th><th>Weight Available</th><th>Weight/Unit</th><th>Low Stock Threshold</th><th>Demand</th><th>Update Stock</th></tr></thead>
+        <tbody>${stocks.length ? stocks.map(p => {
+          const units     = parseInt(p.availableUnits) || 0;
+          const threshold = parseInt(p.lowStockThreshold) || 50;
+          const isLow     = units > 0 && units <= threshold;
+          const isOut     = units <= 0;
+          const totalDemand = parseInt(p.waitingCount || 0) + parseInt(p.watchCount || 0);
+          return `
+          <tr style="${isOut ? 'background:#FFF5F5' : isLow ? 'background:#FFFDE7' : ''}">
             <td>
-              <span style="font-size:16px;font-weight:800;color:${p.availableUnits > 10 ? 'var(--green)' : p.availableUnits > 0 ? 'var(--orange)' : 'var(--red)'}">
-                ${p.availableUnits || 0}
+              <strong>${escapeHtml(p.productName || '—')}</strong>
+              ${isOut  ? '<span class="badge b-red"   style="margin-left:6px;font-size:10px">OUT</span>'  : ''}
+              ${isLow && !isOut ? '<span class="badge b-orange" style="margin-left:6px;font-size:10px">LOW</span>' : ''}
+            </td>
+            <td>
+              <span style="font-size:16px;font-weight:800;color:${isOut ? 'var(--red)' : isLow ? 'var(--orange)' : 'var(--green)'}">
+                ${units}
               </span>
             </td>
             <td style="font-weight:700;color:var(--blue)">${p.availableKg ? parseFloat(p.availableKg).toFixed(1) + 'kg' : '—'}</td>
             <td style="color:var(--brown-m)">${p.weightPerUnit ? p.weightPerUnit + 'kg/unit' : '—'}</td>
             <td>
-              ${parseInt(p.watchCount || 0) > 0
-          ? `<span class="badge b-orange">🔔 ${p.watchCount} retailer${p.watchCount > 1 ? 's' : ''} waiting</span>`
-          : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+              <input type="number" min="0" id="threshold-${p.id}" value="${threshold}"
+                style="width:70px;padding:5px 7px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:12px"/>
+              <span style="font-size:11px;color:var(--brown-l);margin-left:4px">units</span>
             </td>
-            <td style="display:flex;gap:6px;align-items:center">
-              <input type="number" min="0" id="units-${p.id}" value="${p.availableUnits || 0}"
+            <td>
+              ${totalDemand > 0
+                ? `<div style="display:flex;flex-direction:column;gap:3px">
+                    ${parseInt(p.waitingCount || 0) > 0 ? `<span class="badge b-navy" style="font-size:10px">⏳ ${p.waitingCount} waiting list</span>` : ''}
+                    ${parseInt(p.watchCount  || 0) > 0 ? `<span class="badge b-orange" style="font-size:10px">🔔 ${p.watchCount} resubmit</span>` : ''}
+                   </div>`
+                : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+            </td>
+            <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <input type="number" min="0" id="units-${p.id}" value="${units}"
                 style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px"/>
               <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName || '')}',${p.availableKg || 0})">
-                ✅ Update ${parseInt(p.watchCount || 0) > 0 ? '& Notify 🔔' : ''}
+                ✅ Update${totalDemand > 0 ? ' & Notify 🔔' : ''}
               </button>
             </td>
-          </tr>`).join('') : '<tr><td colspan="6"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
+          </tr>`}).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
       </table></div>
     </div>
     <div class="alert-banner alert-info">
-      🔔 <strong>Auto-notify:</strong> When you update stock for a product, any retailer whose order was rejected as "Out of Stock" will be automatically notified that they can resubmit.
+      🔔 <strong>Auto-notify:</strong> Updating stock notifies retailers on the waiting list <em>and</em> those with rejected "Out of Stock" orders so they can resubmit.
     </div>`);
     }
 
     async function updateStock(productId, productName, currentKg) {
-      const units = parseInt(document.getElementById('units-' + productId)?.value) || 0;
-      // Estimate kg from units using current ratio
-      const kg = currentKg > 0 ? currentKg : units;
-      const r = await api(`/stock/${productId}/update`, 'PUT', { availableUnits: units, availableKg: kg });
+      const units     = parseInt(document.getElementById('units-' + productId)?.value) || 0;
+      const threshold = parseInt(document.getElementById('threshold-' + productId)?.value) || 50;
+      const kg        = currentKg > 0 ? currentKg : units;
+      const r = await api(`/stock/${productId}/update`, 'PUT', { availableUnits: units, availableKg: kg, lowStockThreshold: threshold });
       if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
-      const msg = r.restockedCount > 0
-        ? `✅ Stock updated — ${r.restockedCount} retailer${r.restockedCount > 1 ? 's' : ''} notified 🔔`
+      const notified = (r.restockedCount || 0) + (r.waitingListNotified || 0);
+      const msg = notified > 0
+        ? `✅ Stock updated — ${notified} retailer${notified > 1 ? 's' : ''} notified 🔔`
         : `✅ ${productName} stock updated to ${units} units`;
-      toast(msg, r.restockedCount > 0 ? '#0f766e' : '#16a34a');
+      toast(msg, notified > 0 ? '#0f766e' : '#16a34a');
       pollBadge();
       pageWhStock();
     }
@@ -5110,6 +5227,61 @@ RULES:
     async function saveRetailerPw() { const id = document.getElementById('rpw-id').value; const pass = document.getElementById('rpw-pass').value; const errEl = document.getElementById('rpw-err'); if (!pass || pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('rpw-btn'); btn.disabled = true; btn.textContent = 'Resetting…'; const r = await api(`/retailers/${id}/reset-password`, 'PUT', { password: pass }); btn.disabled = false; btn.textContent = 'Reset Password'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-retailer-pw'); toast('✅ Password reset successfully'); }
     async function deleteRetailer(id, name) { if (!confirm(`Remove retailer "${name}"?`)) return; const r = await api(`/retailers/${id}`, 'DELETE'); if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; } toast(`✅ Retailer "${name}" removed`); await pageRetailers(); }
 
+    // ══ SALES REP ════════════════════════════════════
+    async function pageSrDashboard() {
+      const d = await api('/sales-rep/dashboard');
+      if (d.error) { setContent(`<div class="alert-banner alert-error">❌ ${d.error}</div>`); return; }
+      setContent(`
+        <div class="sec-hdr"><div><div class="sec-title">Sales Rep Dashboard</div>
+        <div class="sec-sub">Live order summary across all regions</div></div></div>
+        <div class="kpi-row" style="grid-template-columns:repeat(5,1fr)">
+          <div class="kpi"><div class="kpi-v">${d.totalOrders}</div><div class="kpi-l">Total Orders</div></div>
+          <div class="kpi" style="border-top-color:var(--orange)"><div class="kpi-v">${d.pendingOrders}</div><div class="kpi-l">Pending</div></div>
+          <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-v">${d.confirmedOrders}</div><div class="kpi-l">Confirmed</div></div>
+          <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${d.deliveredOrders}</div><div class="kpi-l">Delivered</div></div>
+          <div class="kpi" style="border-top-color:var(--red)"><div class="kpi-v">${d.rejectedOrders}</div><div class="kpi-l">Rejected</div></div>
+        </div>`);
+    }
+    async function pageSrOrders() {
+      const data = await api('/orders');
+      if (data.error) { setContent(`<div class="alert-banner alert-error">❌ ${data.error}</div>`); return; }
+      setContent(`
+        <div class="sec-hdr"><div><div class="sec-title">All Orders</div>
+        <div class="sec-sub">Read-only view of all orders across all regions</div></div>
+        <span class="badge b-gray" style="font-size:13px;padding:6px 14px">${data.length} orders</span></div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Area</th><th>Items</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>${data.length ? data.map(o => `
+            <tr>
+              <td><span class="mono">${o.id}</span></td>
+              <td><strong>${o.retailer}</strong></td>
+              <td>${o.city}</td>
+              <td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
+              <td>${o.items} · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
+              <td>${prioBadge(o.prio)}</td>
+              <td>${orderBadge(o.status)}</td>
+              <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
+            </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div>No orders found.</div></div></td></tr>'}
+          </tbody></table></div></div>`);
+    }
+    async function pageSrRetailers() {
+      const data = await api('/retailers/list');
+      if (data.error) { setContent(`<div class="alert-banner alert-error">❌ ${data.error}</div>`); return; }
+      setContent(`
+        <div class="sec-hdr"><div><div class="sec-title">Retailers</div>
+        <div class="sec-sub">All retailers who have placed orders</div></div>
+        <span class="badge b-gray" style="font-size:13px;padding:6px 14px">${data.length} retailers</span></div>
+        <div class="card"><div class="tw"><table>
+          <thead><tr><th>Retailer Name</th><th>City</th><th>Area</th></tr></thead>
+          <tbody>${data.length ? data.map(r => `
+            <tr>
+              <td><strong>${escapeHtml(r.retailerName)}</strong></td>
+              <td>${r.city || '—'}</td>
+              <td style="font-size:12px;color:var(--brown-m)">${r.area || '—'}</td>
+            </tr>`).join('') : '<tr><td colspan="3"><div class="empty"><div>No retailers found.</div></div></td></tr>'}
+          </tbody></table></div></div>`);
+    }
+
     // ══ ADMIN — USER MANAGEMENT ══════════════════════
     async function pageAdminUsers() { const users = await api('/users'); if (users.error) { setContent(`<div class="alert-banner alert-error">❌ ${users.error}</div>`); return; } const RL = { retailer: 'Retailer', order_team: 'Order Team', warehouse: 'Warehouse', distributor: 'Distributor' }; const RC = { retailer: 'b-teal', order_team: 'b-blue', warehouse: 'b-navy', distributor: 'b-orange' }; setContent(`<div class="sec-hdr"><div><div class="sec-title">User Management</div><div class="sec-sub">Add, view and remove system users</div></div><button class="btn btn-tan" onclick="openAddUser()">+ Add User</button></div><div class="card"><div class="card-title">👥 All Users <span class="badge b-gray" style="margin-left:8px">${users.length}</span></div><div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead><tbody>${users.length ? users.map(u => `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td style="font-family:'DM Mono',monospace;font-size:12px">${escapeHtml(u.Email)}</td><td><span class="badge ${RC[u.role] || 'b-gray'}">${RL[u.role] || u.role}</span></td><td style="font-size:12px;color:var(--brown-l)">${u.createdAt || '—'}</td><td style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="openAdminResetPw(${u.id},'${escapeHtml(u.name)}')">🔑 Reset PW</button>${u.id !== user.id ? `<button class="btn btn-red btn-sm" onclick="deleteUser(${u.id},'${escapeHtml(u.name)}')">✕ Remove</button>` : '<span style="font-size:11px;color:var(--brown-l);padding:4px 8px">(you)</span>'}</td></tr>`).join('') : '<tr><td colspan="5"><div class="empty"><div>No users found.</div></div></td></tr>'}</tbody></table></div></div><div class="modal-bg" id="m-add-user" style="z-index:400"><div class="modal" style="max-width:460px"><div class="modal-title">👤 Add New User</div><div class="modal-body"><div class="fg"><label>Full Name *</label><input id="au-name" placeholder="e.g. Kamal Perera"/></div><div class="fg"><label>Email *</label><input id="au-email" type="text" placeholder="kamal@nestle.lk"/></div><div class="fg"><label>Password *</label><input id="au-pass" type="password" placeholder="Min 4 characters"/></div><div class="fg"><label>Role *</label><select id="au-role"><option value="">Select role…</option><option value="retailer">Retailer</option><option value="order_team">Order Processing Team</option><option value="warehouse">Warehouse</option><option value="distributor">Distributor / Driver</option></select></div><div id="au-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-add-user')">Cancel</button><button class="btn btn-tan" onclick="saveNewUser()" id="au-btn">Create User</button></div></div></div></div><div class="modal-bg" id="m-admin-pw" style="z-index:400"><div class="modal" style="max-width:380px"><div class="modal-title">🔑 Reset Password</div><div class="modal-body"><input type="hidden" id="apw-id"/><div class="fg"><label id="apw-label">New password</label><input id="apw-pass" type="password" placeholder="Min 4 characters"/></div><div id="apw-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-admin-pw')">Cancel</button><button class="btn btn-tan" onclick="saveAdminPw()" id="apw-btn">Reset Password</button></div></div></div></div>`); }
     function openAddUser() { ['au-name', 'au-email', 'au-pass'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('au-role').value = ''; document.getElementById('au-err').style.display = 'none'; const btn = document.getElementById('au-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Create User'; } openModal('m-add-user'); }
@@ -5210,6 +5382,133 @@ RULES:
       } else {
         badge.style.display = 'none';
       }
+    }
+
+    // ── REAL-TIME STOCK CHECK ────────────────────
+    window._stockCheck   = null;
+    window._pendingOrder = null;
+    let _stockDebounce   = null;
+
+    function checkStockRealtime() {
+      clearTimeout(_stockDebounce);
+      _stockDebounce = setTimeout(async () => {
+        const productId = parseInt(document.getElementById('i-product')?.value);
+        const itemsVal  = parseInt(document.getElementById('i-items')?.value);
+        const badge     = document.getElementById('stock-badge');
+        if (!badge) return;
+
+        if (!productId || !itemsVal || itemsVal <= 0) {
+          badge.style.display = 'none';
+          window._stockCheck = null;
+          return;
+        }
+
+        try {
+          const s = await api(`/stock/${productId}`);
+          if (s.error) { badge.style.display = 'none'; return; }
+          window._stockCheck = { ...s, productId };
+
+          const avail     = parseInt(s.availableUnits);
+          const threshold = parseInt(s.lowStockThreshold || 50);
+          badge.style.display = 'block';
+
+          if (avail <= 0) {
+            Object.assign(badge.style, { background:'#FFEBEE', color:'#B71C1C', border:'1px solid #FFCDD2' });
+            badge.innerHTML = `❌ Out of stock — 0 units available`;
+          } else if (itemsVal > avail) {
+            Object.assign(badge.style, { background:'#FFF3E0', color:'#E65100', border:'1px solid #FFB74D' });
+            badge.innerHTML = `⚠️ Only <strong>${avail}</strong> units available — you requested <strong>${itemsVal}</strong>`;
+          } else if (avail <= threshold) {
+            Object.assign(badge.style, { background:'#FFF8E1', color:'#F57F17', border:'1px solid #FFE082' });
+            badge.innerHTML = `⚠️ Low stock — <strong>${avail}</strong> units left · your request: ${itemsVal}`;
+          } else {
+            Object.assign(badge.style, { background:'#E8F5E9', color:'#1B5E20', border:'1px solid #A5D6A7' });
+            badge.innerHTML = `✅ In stock — <strong>${avail}</strong> units available`;
+          }
+        } catch { badge.style.display = 'none'; }
+      }, 400);
+    }
+
+    function showStockModal(stockInfo, requestedQty) {
+      const avail    = parseInt(stockInfo.availableUnits);
+      const prodName = escapeHtml(stockInfo.productName || 'this product');
+      const isOut    = avail <= 0;
+
+      document.getElementById('ms-title').textContent = isOut ? '❌ Out of Stock' : '⚠️ Limited Stock Available';
+      document.getElementById('ms-body').innerHTML = isOut
+        ? `<strong>${prodName}</strong> is currently out of stock.<br><br>Join the waiting list and we will notify you as soon as stock is replenished.`
+        : `Only <strong>${avail} units</strong> of <strong>${prodName}</strong> are available.<br>You requested <strong>${requestedQty} units</strong>.<br><br>You can place a partial order for the available quantity, or join the waiting list for the full amount.`;
+
+      const partialBtn = document.getElementById('ms-partial-btn');
+      if (!isOut && avail > 0) {
+        partialBtn.style.display = 'block';
+        partialBtn.textContent   = `📦 Place Partial Order (${avail} units)`;
+      } else {
+        partialBtn.style.display = 'none';
+      }
+
+      const waitBtn = document.getElementById('ms-wait-btn');
+      waitBtn.textContent = `📋 Join Waiting List for ${requestedQty} units`;
+
+      openModal('m-stock');
+    }
+
+    async function placePartialOrder() {
+      const s   = window._stockCheck;
+      const o   = window._pendingOrder;
+      if (!s || !o) { closeModal('m-stock'); return; }
+
+      const avail = parseInt(s.availableUnits);
+      closeModal('m-stock');
+
+      const r = await api('/orders', 'POST', {
+        retailerId:   user.id,
+        retailerName: user.name,
+        city:         o.cityEl.value,
+        area:         o.areaEl.value,
+        productId:    o.productIdNum,
+        productName:  o.productName,
+        specifics:    o.specifics,
+        items:        avail,
+        kg: (() => {
+          const wt = productWeights[o.productIdNum] || 0;
+          return wt > 0 ? parseFloat((wt * avail).toFixed(2)) : 0;
+        })(),
+        priority:    o.prio,
+        notes:       o.notes,
+        isPartial:   true,
+        originalQty: o.itemsNum
+      });
+
+      if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+      toast(`✅ Partial order ${r.id} placed (${avail} of ${o.itemsNum} units) — OPT notified 🔔`);
+      window._stockCheck = null; window._pendingOrder = null;
+      pollBadge(); nav('my-orders');
+    }
+
+    async function joinWaitingList() {
+      const s = window._stockCheck;
+      const o = window._pendingOrder;
+      if (!s || !o) { closeModal('m-stock'); return; }
+
+      closeModal('m-stock');
+      const r = await api('/waiting-list', 'POST', {
+        retailerId:   user.id,
+        retailerName: user.name,
+        productId:    o.productIdNum,
+        productName:  o.productName || s.productName,
+        requestedQty: o.itemsNum
+      });
+
+      if (r.error && !r.error.includes('already on')) {
+        toast(`❌ ${r.error}`, '#B71C1C'); return;
+      }
+      if (r.error && r.error.includes('already on')) {
+        toast(`ℹ️ You are already on the waiting list for this product`); return;
+      }
+      toast(`📋 Added to waiting list — you'll be notified when stock is replenished 🔔`);
+      window._stockCheck = null; window._pendingOrder = null;
+      pollBadge(); nav('my-orders');
     }
 
     // ── PIN VERIFICATION ─────────────────────────
