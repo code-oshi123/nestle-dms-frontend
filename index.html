@@ -117,6 +117,10 @@
       animation: slideUp .5s cubic-bezier(.34, 1.56, .64, 1)
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -3664,15 +3668,27 @@ RULES:
     }
 
     async function pageReqOrder() {
+      const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
       setContent(`
-    <div class="sec-hdr"><div><div class="sec-title">Request Delivery Order</div>
-    <div class="sec-sub">Submit a new order — the Order Processing Team will be notified immediately 🔔</div></div></div>
-    <div class="alert-banner alert-info" style="max-width:580px;margin-bottom:14px">
-      ⚖️ <strong>Auto weight calculation:</strong> Select a product and enter quantity — the system automatically calculates total cargo weight and uses it to assign the best-fit vehicle when routing.
+    <div class="sec-hdr">
+      <div><div class="sec-title">Request Delivery Order</div>
+      <div class="sec-sub">Add multiple products in one submission — your Sales Rep will be notified 🔔</div></div>
     </div>
-    <div class="card" style="max-width:580px">
+    <div class="alert-banner alert-info" style="max-width:680px;margin-bottom:14px">
+      ⚖️ <strong>Smart ordering:</strong> Pick your delivery date — priority is set automatically. Add as many products as you need in one go.
+    </div>
+    <div class="card" style="max-width:680px">
+      <div class="card-title">📋 Order Details</div>
       <div class="form-grid">
-        <div class="fg"><label>Your Name</label><input value="${user.name}" disabled/></div>
+        <div class="fg">
+          <label>Order Date <span style="color:var(--red)">*</span></label>
+          <input type="date" id="i-order-date" min="${todayStr}" value="${todayStr}" onchange="updateDatePriority()" style="font-family:'Jost',sans-serif"/>
+          <div id="priority-badge" style="margin-top:6px;font-size:12px;font-weight:600;padding:6px 10px;border-radius:6px;background:#E8F5E9;color:#1B5E20;display:inline-block">🟢 Standard — select your priority below</div>
+        </div>
+        <div class="fg">
+          <label>Priority</label>
+          <select id="i-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+        </div>
         <div class="fg">
           <label>City <span style="color:var(--red)">*</span></label>
           <select id="i-city">
@@ -3696,66 +3712,61 @@ RULES:
           </select>
           <div class="field-err" id="err-area">Please select an area.</div>
         </div>
-        <div class="fg">
-          <label>Product <span style="color:var(--red)">*</span></label>
-          <select id="i-product" onchange="calcKg();checkStockRealtime()">
-            <option value="">Select product…</option>
-          </select>
-          <div class="field-err" id="err-product">Please select a product.</div>
-        </div>
-        <div class="fg">
-          <label>Items (whole number) <span style="color:var(--red)">*</span></label>
-          <input id="i-items" type="number" min="1" step="1" placeholder="e.g. 24" oninput="validateItems(this);calcKg();checkStockRealtime()"/>
-          <div class="field-err" id="err-items">Items must be a positive whole number (no decimals or negatives).</div>
-          <div id="kg-badge" class="kg-badge" style="display:none">⚖️ Total weight: <strong id="kg-val">0</strong> kg</div>
-          <div id="stock-badge" style="display:none;margin-top:6px;font-size:12px;font-weight:600;padding:6px 10px;border-radius:6px;line-height:1.4"></div>
-        </div>
-        <div class="fg">
-          <label>Priority</label>
-          <select id="i-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
-        </div>
-        <div class="fg">
+        <div class="fg" style="grid-column:1/-1">
           <label>Notes</label>
-          <input id="i-notes" placeholder="Special instructions…"/>
+          <input id="i-notes" placeholder="Special instructions for all products…"/>
         </div>
       </div>
-      <div id="submit-err" class="alert-banner alert-error" style="display:none;margin-top:4px"></div>
-      <button class="btn btn-tan" onclick="submitOrder()" style="margin-top:8px">Submit Request → OPT notified 🔔</button>
+
+      <div style="margin-top:20px">
+        <div style="font-weight:700;color:var(--brown);margin-bottom:10px;font-size:14px">📦 Products to Order</div>
+        <div id="order-lines"></div>
+        <button class="btn btn-ghost" onclick="addOrderLine()" style="margin-top:10px;width:100%;border:1.5px dashed var(--cream-dk)">
+          + Add Another Product
+        </button>
+      </div>
+
+      <div id="order-summary" style="display:none;background:var(--cream);border-radius:10px;padding:14px;margin-top:16px">
+        <div style="font-weight:700;font-size:13px;color:var(--brown);margin-bottom:8px">📊 Order Summary</div>
+        <div style="display:flex;gap:20px;font-size:13px;color:var(--brown-m);flex-wrap:wrap">
+          <span>📦 <strong id="sum-lines">0</strong> product lines</span>
+          <span>🔢 <strong id="sum-items">0</strong> total items</span>
+          <span>⚖️ <strong id="sum-kg">0.0</strong> kg total</span>
+        </div>
+      </div>
+
+      <div id="submit-err" class="alert-banner alert-error" style="display:none;margin-top:12px"></div>
+      <button class="btn btn-tan" onclick="submitBulkOrder()" style="margin-top:16px;width:100%;font-size:15px;padding:14px">
+        Submit Order(s) → Sales Rep notified 🔔
+      </button>
     </div>`);
 
-      await loadProductsForOrderForm();
+      window._lineCounter = 0;
+      await loadAllProducts();
+      addOrderLine();
+      updateDatePriority();
 
-      // ── Check if this is a resubmit — pre-fill form
+      // ── Resubmit pre-fill (first line)
       const resubmitData = sessionStorage.getItem('resubmit');
       if (resubmitData) {
         try {
           const rd = JSON.parse(resubmitData);
           sessionStorage.removeItem('resubmit');
-          if (rd.city) {
-            const cityEl = document.getElementById('i-city');
-            if (cityEl) cityEl.value = rd.city;
-          }
-          if (rd.items) {
-            const itemsEl = document.getElementById('i-items');
-            if (itemsEl) { itemsEl.value = rd.items; calcKg(); }
-          }
-          if (rd.prio) {
-            const prioEl = document.getElementById('i-prio');
-            if (prioEl) prioEl.value = rd.prio;
-          }
-          // Show resubmit notice
-          const errBox = document.getElementById('submit-err');
-          if (errBox) {
-            errBox.textContent = '';
-            errBox.style.display = 'none';
-          }
-          const notice = document.createElement('div');
-          notice.className = 'alert-banner alert-info';
-          notice.style.marginBottom = '14px';
-          notice.innerHTML = `🔄 <strong>Resubmitting Order #${rd.fromOrderId}</strong> — form pre-filled with your previous details. ${rd.edit ? 'Make your changes and submit.' : 'Review and submit when ready.'}`;
-          const card = document.querySelector('#main-content .card');
-          if (card) card.insertAdjacentElement('beforebegin', notice);
-        } catch (e) { sessionStorage.removeItem('resubmit'); }
+          setTimeout(() => {
+            if (rd.city) { const el = document.getElementById('i-city'); if (el) el.value = rd.city; }
+            if (rd.prio) { const el = document.getElementById('i-prio'); if (el) el.value = rd.prio; }
+            const lp = document.getElementById('line-1-product');
+            if (lp && rd.productId) lp.value = rd.productId;
+            const li = document.getElementById('line-1-items');
+            if (li && rd.items) { li.value = rd.items; checkStockLine(1); updateLineSummary(); }
+            const notice = document.createElement('div');
+            notice.className = 'alert-banner alert-info';
+            notice.style.marginBottom = '14px';
+            notice.innerHTML = `🔄 <strong>Resubmitting Order #${rd.fromOrderId}</strong> — pre-filled. Review and submit when ready.`;
+            const card = document.querySelector('#main-content .card');
+            if (card) card.insertAdjacentElement('beforebegin', notice);
+          }, 120);
+        } catch { sessionStorage.removeItem('resubmit'); }
       }
     }
 
@@ -5231,38 +5242,96 @@ RULES:
     async function pageSrDashboard() {
       const d = await api('/sales-rep/dashboard');
       if (d.error) { setContent(`<div class="alert-banner alert-error">❌ ${d.error}</div>`); return; }
+      const cityLabel = d.city ? `— ${d.city}` : '';
       setContent(`
-        <div class="sec-hdr"><div><div class="sec-title">Sales Rep Dashboard</div>
-        <div class="sec-sub">Live order summary across all regions</div></div></div>
+        <div class="sec-hdr"><div><div class="sec-title">Sales Rep Dashboard ${cityLabel}</div>
+        <div class="sec-sub">Live order summary for your assigned area</div></div>
+        <button class="btn btn-tan" onclick="nav('sr-orders')">Review Pending Orders →</button></div>
+        ${!d.city ? `<div class="alert-banner" style="background:#FFF3E0;border:1.5px solid #FFB74D;color:#E65100;margin-bottom:16px">⚠️ No city assigned to your account. Contact admin to set your <strong>assignedCity</strong>.</div>` : ''}
         <div class="kpi-row" style="grid-template-columns:repeat(5,1fr)">
           <div class="kpi"><div class="kpi-v">${d.totalOrders}</div><div class="kpi-l">Total Orders</div></div>
-          <div class="kpi" style="border-top-color:var(--orange)"><div class="kpi-v">${d.pendingOrders}</div><div class="kpi-l">Pending</div></div>
+          <div class="kpi" style="border-top-color:var(--orange)"><div class="kpi-v">${d.pendingOrders}</div><div class="kpi-l">Awaiting Review</div></div>
           <div class="kpi" style="border-top-color:var(--blue)"><div class="kpi-v">${d.confirmedOrders}</div><div class="kpi-l">Confirmed</div></div>
           <div class="kpi" style="border-top-color:var(--green)"><div class="kpi-v">${d.deliveredOrders}</div><div class="kpi-l">Delivered</div></div>
           <div class="kpi" style="border-top-color:var(--red)"><div class="kpi-v">${d.rejectedOrders}</div><div class="kpi-l">Rejected</div></div>
-        </div>`);
+        </div>
+        ${d.pendingOrders >= 3
+          ? `<div class="alert-banner" style="background:#E8F5E9;border:1.5px solid #A5D6A7;color:#1B5E20;margin-top:16px">
+              ✅ <strong>${d.pendingOrders} orders pending</strong> — you can now confirm orders. Auto-route assigns after every 3rd confirmation.
+             </div>`
+          : `<div class="alert-banner alert-info" style="margin-top:16px">
+              ⏳ <strong>${d.pendingOrders}/3 orders pending</strong> — waiting for ${3 - d.pendingOrders} more order(s) before you can confirm.
+             </div>`}
+      `);
     }
+
     async function pageSrOrders() {
-      const data = await api('/orders');
+      const data = await api('/orders?role=sales_rep');
       if (data.error) { setContent(`<div class="alert-banner alert-error">❌ ${data.error}</div>`); return; }
+      const canConfirm = data.length >= 3;
       setContent(`
-        <div class="sec-hdr"><div><div class="sec-title">All Orders</div>
-        <div class="sec-sub">Read-only view of all orders across all regions</div></div>
-        <span class="badge b-gray" style="font-size:13px;padding:6px 14px">${data.length} orders</span></div>
+        <div class="sec-hdr">
+          <div><div class="sec-title">Pending Orders — Your City</div>
+          <div class="sec-sub">Confirm or reject orders · Auto-route assigns to distributor after every 3rd confirmation</div></div>
+          <span class="badge ${canConfirm ? 'b-green' : 'b-orange'}" style="font-size:13px;padding:6px 14px">
+            ${data.length} pending ${canConfirm ? '✅ Ready to confirm' : `(need ${3 - data.length} more)`}
+          </span>
+        </div>
+        ${canConfirm
+          ? `<div class="alert-banner" style="background:#E8F5E9;border:1.5px solid #A5D6A7;color:#1B5E20;margin-bottom:16px">
+              ✅ You have <strong>${data.length} pending orders</strong> — confirm buttons are now active. Every 3rd confirmed order auto-assigns the route to your city's distributor 🚛
+             </div>`
+          : `<div class="alert-banner alert-info" style="margin-bottom:16px">
+              ⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city before you can confirm.
+             </div>`}
         <div class="card"><div class="tw"><table>
-          <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Area</th><th>Items</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
+          <thead><tr><th>ID</th><th>Retailer</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Actions</th></tr></thead>
           <tbody>${data.length ? data.map(o => `
             <tr>
               <td><span class="mono">${o.id}</span></td>
-              <td><strong>${o.retailer}</strong></td>
-              <td>${o.city}</td>
+              <td><strong>${escapeHtml(o.retailer)}</strong></td>
               <td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
-              <td>${o.items} · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
+              <td>${o.items} items · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
               <td>${prioBadge(o.prio)}</td>
-              <td>${orderBadge(o.status)}</td>
+              <td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--brown-m)">${o.orderDate || '—'}</td>
               <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
-            </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div>No orders found.</div></div></td></tr>'}
-          </tbody></table></div></div>`);
+              <td>
+                ${canConfirm
+                  ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+                      <button class="btn btn-green btn-sm" onclick="doSrConfirm(${o.id})">✅ Confirm</button>
+                      <button class="btn btn-red btn-sm" onclick="doSrReject(${o.id},'${escapeHtml(o.retailer)}')">✕ Reject</button>
+                    </div>`
+                  : `<span style="font-size:11px;color:var(--brown-l)">Waiting for 3+ orders</span>`}
+              </td>
+            </tr>`).join('')
+            : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No pending orders for your city.</div></div></td></tr>'}
+          </tbody></table></div></div>
+
+        <div class="modal-bg" id="m-sr-reject" style="z-index:400">
+          <div class="modal" style="max-width:420px">
+            <div class="modal-title">✕ Reject Order</div>
+            <div class="modal-body">
+              <input type="hidden" id="sr-reject-id"/>
+              <div class="fg"><label>Rejection Category *</label>
+                <select id="sr-reject-cat">
+                  <option value="">Select category…</option>
+                  <option value="out_of_stock">Out of Stock</option>
+                  <option value="invalid_area">Invalid Area</option>
+                  <option value="duplicate">Duplicate Order</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div class="fg"><label>Reason *</label>
+                <input id="sr-reject-reason" placeholder="Explain why this order is being rejected…"/>
+              </div>
+              <div id="sr-reject-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
+              <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('m-sr-reject')">Cancel</button>
+                <button class="btn btn-red" onclick="confirmSrReject()">Reject Order</button>
+              </div>
+            </div>
+          </div>
+        </div>`);
     }
     async function pageSrRetailers() {
       const data = await api('/retailers/list');
@@ -5382,6 +5451,251 @@ RULES:
       } else {
         badge.style.display = 'none';
       }
+    }
+
+    // ── MULTI-LINE ORDER FORM ────────────────────
+
+    async function loadAllProducts() {
+      try {
+        const products = await api('/products/weights').catch(() => api('/products'));
+        productWeights = {};
+        window._allProducts = [];
+        if (Array.isArray(products) && products.length) {
+          products.forEach(p => { if (p.weightPerUnit) productWeights[p.id] = parseFloat(p.weightPerUnit); });
+          window._allProducts = products.map(p => ({ id: p.id, productName: p.productName || `Product ${p.id}` }));
+        } else {
+          window._allProducts = [
+            { id:1,productName:'Milo Active Go 1kg' },{ id:2,productName:'Milo Active Go 400g' },
+            { id:3,productName:'Nestomalt 400g' },{ id:4,productName:'Nestomalt 1kg' },
+            { id:5,productName:'Nescafé Classic 200g' },{ id:6,productName:'Nescafé Classic 50g' },
+            { id:7,productName:'Nescafé 3-in-1 Original Box (30 sachets)' },
+            { id:8,productName:'KitKat 4-Finger 45g' },{ id:9,productName:'KitKat Chunky 40g' },
+            { id:10,productName:'Maggi Noodles Chicken 77g' },{ id:11,productName:'Maggi Noodles Masala 77g' },
+            { id:12,productName:'Nestlé Cerelac Wheat 400g' },{ id:13,productName:'Nestlé NAN Pro 1 400g' },
+            { id:14,productName:'Nestlé Everyday Dairy Whitener 400g' },{ id:15,productName:'Nestlé Milkmaid Condensed Milk 400g' },
+          ];
+        }
+        // Refresh any existing line selects
+        document.querySelectorAll('[id^="line-"][id$="-product"]').forEach(sel => {
+          const cur = sel.value;
+          sel.innerHTML = '<option value="">Select product…</option>' +
+            (window._allProducts||[]).map(p => `<option value="${p.id}">${escapeHtml(p.productName)}</option>`).join('');
+          if (cur) sel.value = cur;
+        });
+      } catch { window._allProducts = []; }
+    }
+
+    function addOrderLine() {
+      window._lineCounter = (window._lineCounter || 0) + 1;
+      const n = window._lineCounter;
+      const opts = (window._allProducts||[]).map(p =>
+        `<option value="${p.id}">${escapeHtml(p.productName)}</option>`).join('');
+      const div = document.createElement('div');
+      div.id = `line-${n}`;
+      div.style.cssText = 'background:var(--cream);border-radius:10px;padding:14px;margin-bottom:10px;animation:fadeIn .2s ease';
+      div.innerHTML = `
+        <div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+          <div class="fg" style="flex:2;min-width:180px;margin-bottom:0">
+            <label style="font-size:12px">Product <span style="color:var(--red)">*</span></label>
+            <select id="line-${n}-product" onchange="checkStockLine(${n});updateLineSummary()">
+              <option value="">Select product…</option>${opts}
+            </select>
+          </div>
+          <div class="fg" style="flex:1;min-width:90px;margin-bottom:0">
+            <label style="font-size:12px">Items <span style="color:var(--red)">*</span></label>
+            <input id="line-${n}-items" type="number" min="1" step="1" placeholder="e.g. 24"
+              oninput="checkStockLine(${n});updateLineSummary()"/>
+          </div>
+          <button onclick="removeOrderLine(${n})"
+            style="background:none;border:1.5px solid var(--red);border-radius:6px;color:var(--red);font-size:13px;cursor:pointer;padding:6px 10px;white-space:nowrap"
+            title="Remove line">✕ Remove</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <div id="line-${n}-kg" style="display:none;font-size:12px;font-weight:600;color:var(--blue)"></div>
+          <div id="line-${n}-stock" style="display:none;font-size:12px;font-weight:600;padding:4px 8px;border-radius:6px"></div>
+        </div>`;
+      document.getElementById('order-lines').appendChild(div);
+      updateLineSummary();
+    }
+
+    function removeOrderLine(n) {
+      const el = document.getElementById(`line-${n}`);
+      if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 150); }
+      setTimeout(updateLineSummary, 160);
+    }
+
+    async function checkStockLine(n) {
+      const productEl = document.getElementById(`line-${n}-product`);
+      const itemsEl   = document.getElementById(`line-${n}-items`);
+      const kgEl      = document.getElementById(`line-${n}-kg`);
+      const stockEl   = document.getElementById(`line-${n}-stock`);
+      if (!productEl || !itemsEl) return;
+      const productId = parseInt(productEl.value);
+      const items     = parseInt(itemsEl.value);
+      if (!productId || !items || items <= 0) {
+        if (kgEl) kgEl.style.display = 'none';
+        if (stockEl) stockEl.style.display = 'none';
+        return;
+      }
+      const wt = productWeights[productId] || 0;
+      if (kgEl) {
+        if (wt > 0) { kgEl.textContent = `⚖️ ${(wt * items).toFixed(1)} kg`; kgEl.style.display = 'block'; }
+        else kgEl.style.display = 'none';
+      }
+      try {
+        const s = await api(`/stock/${productId}`);
+        if (s.error || !stockEl) return;
+        const avail = parseInt(s.availableUnits);
+        stockEl.style.display = 'block';
+        if (avail <= 0) {
+          Object.assign(stockEl.style, { background:'#FFEBEE', color:'#B71C1C' });
+          stockEl.textContent = `❌ Out of stock`;
+        } else if (items > avail) {
+          Object.assign(stockEl.style, { background:'#FFF3E0', color:'#E65100' });
+          stockEl.textContent = `⚠️ Only ${avail} available`;
+        } else {
+          Object.assign(stockEl.style, { background:'#E8F5E9', color:'#1B5E20' });
+          stockEl.textContent = `✅ ${avail} in stock`;
+        }
+      } catch { if (stockEl) stockEl.style.display = 'none'; }
+    }
+
+    function updateLineSummary() {
+      let totalItems = 0, totalKg = 0, lineCount = 0;
+      document.querySelectorAll('[id^="line-"][id$="-product"]').forEach(sel => {
+        const n     = sel.id.replace('line-','').replace('-product','');
+        const items = parseInt(document.getElementById(`line-${n}-items`)?.value) || 0;
+        const pid   = parseInt(sel.value) || 0;
+        if (items > 0 && pid > 0) {
+          totalItems += items;
+          totalKg    += (productWeights[pid] || 0) * items;
+          lineCount++;
+        }
+      });
+      const sumEl = document.getElementById('order-summary');
+      if (sumEl) sumEl.style.display = lineCount > 0 ? 'block' : 'none';
+      const sl = document.getElementById('sum-lines'), si = document.getElementById('sum-items'), sk = document.getElementById('sum-kg');
+      if (sl) sl.textContent = lineCount;
+      if (si) si.textContent = totalItems;
+      if (sk) sk.textContent = totalKg.toFixed(1);
+    }
+
+    function updateDatePriority() {
+      const dateEl  = document.getElementById('i-order-date');
+      const prioEl  = document.getElementById('i-prio');
+      const badgeEl = document.getElementById('priority-badge');
+      if (!dateEl || !prioEl || !badgeEl) return;
+      const val = dateEl.value;
+      if (!val) return;
+      const today  = new Date(); today.setHours(0,0,0,0);
+      const target = new Date(val);
+      const diff   = Math.round((target - today) / 86400000);
+      if (diff <= 1) {
+        prioEl.value = 'urgent'; prioEl.disabled = true;
+        Object.assign(badgeEl.style, { background:'#FFEBEE', color:'#B71C1C' });
+        badgeEl.textContent = '⚡ Urgent — delivery needed within 48hrs (auto-set)';
+      } else if (diff <= 5) {
+        prioEl.value = 'high'; prioEl.disabled = true;
+        Object.assign(badgeEl.style, { background:'#FFF3E0', color:'#E65100' });
+        badgeEl.textContent = '🔶 High — delivery needed this week (auto-set)';
+      } else {
+        prioEl.disabled = false;
+        Object.assign(badgeEl.style, { background:'#E8F5E9', color:'#1B5E20' });
+        badgeEl.textContent = '🟢 Standard scheduling — select your priority below';
+      }
+    }
+
+    async function submitBulkOrder() {
+      const cityEl  = document.getElementById('i-city');
+      const areaEl  = document.getElementById('i-area');
+      const notesEl = document.getElementById('i-notes');
+      const prioEl  = document.getElementById('i-prio');
+      const dateEl  = document.getElementById('i-order-date');
+      const errBox  = document.getElementById('submit-err');
+      let valid = true;
+      if (!cityEl?.value) { document.getElementById('err-city')?.classList.add('show'); valid = false; }
+      else document.getElementById('err-city')?.classList.remove('show');
+      if (!areaEl?.value) { document.getElementById('err-area')?.classList.add('show'); valid = false; }
+      else document.getElementById('err-area')?.classList.remove('show');
+
+      const orders = [];
+      document.querySelectorAll('[id^="line-"][id$="-product"]').forEach(sel => {
+        const n          = sel.id.replace('line-','').replace('-product','');
+        const productId  = parseInt(sel.value);
+        const productName = (sel.options[sel.selectedIndex]?.textContent || '').trim();
+        const items      = parseInt(document.getElementById(`line-${n}-items`)?.value);
+        if (!productId || !items || items <= 0 || !Number.isInteger(items)) return;
+        const wt = productWeights[productId] || 0;
+        orders.push({
+          city: cityEl.value, area: areaEl.value,
+          productId, productName, items,
+          kg: wt > 0 ? parseFloat((wt * items).toFixed(2)) : 0,
+          priority: prioEl.value, notes: notesEl.value.trim(),
+          orderDate: dateEl?.value || null
+        });
+      });
+
+      if (!valid) { errBox.textContent = '⚠️ Please fix the errors above.'; errBox.style.display = 'flex'; return; }
+      if (!orders.length) { errBox.textContent = '⚠️ Add at least one complete product line (product + items).'; errBox.style.display = 'flex'; return; }
+      errBox.style.display = 'none';
+
+      const r = await api('/orders/bulk', 'POST', { retailerId: user.id, retailerName: user.name, orders });
+      if (r.error) { errBox.textContent = `❌ ${r.error}`; errBox.style.display = 'flex'; return; }
+
+      if (r.ok && r.results?.length) {
+        const placed = r.results.length, skipped = r.failed?.length || 0;
+        let msg = `✅ ${placed} order${placed > 1 ? 's' : ''} submitted — Sales Rep notified 🔔`;
+        if (skipped) msg += ` · ${skipped} line(s) skipped`;
+        toast(msg, '#16a34a');
+        if (skipped) {
+          errBox.innerHTML = `⚠️ <strong>Some lines could not be placed:</strong><br>` +
+            r.failed.map(f => `• ${escapeHtml(f.productName)}: ${escapeHtml(f.reason)}`).join('<br>');
+          errBox.style.display = 'flex';
+        }
+        window._stockCheck = null; window._pendingOrder = null;
+        pollBadge();
+        if (!skipped) nav('my-orders');
+      } else if (r.failed?.length) {
+        errBox.innerHTML = `❌ All lines failed:<br>` +
+          r.failed.map(f => `• ${escapeHtml(f.productName)}: ${escapeHtml(f.reason)}`).join('<br>');
+        errBox.style.display = 'flex';
+      }
+    }
+
+    // ── SALES REP CONFIRM / REJECT ───────────────
+    async function doSrConfirm(orderId) {
+      const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
+        action: 'confirm', confirmedBy: user.name
+      });
+      if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+      toast(`✅ Order ${orderId} confirmed — route auto-assigns after 3rd confirmation 🚛`);
+      pollBadge();
+      pageSrOrders();
+    }
+
+    function doSrReject(orderId, retailerName) {
+      document.getElementById('sr-reject-id').value = orderId;
+      document.getElementById('sr-reject-reason').value = '';
+      document.getElementById('sr-reject-cat').value = '';
+      document.getElementById('sr-reject-err').style.display = 'none';
+      openModal('m-sr-reject');
+    }
+
+    async function confirmSrReject() {
+      const orderId  = document.getElementById('sr-reject-id').value;
+      const reason   = document.getElementById('sr-reject-reason').value.trim();
+      const category = document.getElementById('sr-reject-cat').value;
+      const errEl    = document.getElementById('sr-reject-err');
+      if (!reason) { errEl.textContent = '⚠️ Please provide a rejection reason.'; errEl.style.display = 'flex'; return; }
+      if (!category) { errEl.textContent = '⚠️ Please select a category.'; errEl.style.display = 'flex'; return; }
+      const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
+        action: 'reject', confirmedBy: user.name, rejectReason: reason, rejectCategory: category
+      });
+      if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; }
+      closeModal('m-sr-reject');
+      toast(`Order ${orderId} rejected — retailer notified`);
+      pollBadge();
+      pageSrOrders();
     }
 
     // ── REAL-TIME STOCK CHECK ────────────────────
