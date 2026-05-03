@@ -5272,20 +5272,21 @@ RULES:
       setContent(`
         <div class="sec-hdr">
           <div><div class="sec-title">Pending Orders — Your City</div>
-          <div class="sec-sub">Confirm or reject orders · Auto-route assigns to distributor after every 3rd confirmation</div></div>
+          <div class="sec-sub">Confirm all or reject individually · Route auto-assigns to distributor after every 3rd confirmation</div></div>
           <span class="badge ${canConfirm ? 'b-green' : 'b-orange'}" style="font-size:13px;padding:6px 14px">
-            ${data.length} pending ${canConfirm ? '✅ Ready to confirm' : `(need ${3 - data.length} more)`}
+            ${data.length} pending ${canConfirm ? '✅ Ready' : `(need ${3 - data.length} more)`}
           </span>
         </div>
         ${canConfirm
-          ? `<div class="alert-banner" style="background:#E8F5E9;border:1.5px solid #A5D6A7;color:#1B5E20;margin-bottom:16px">
-              ✅ You have <strong>${data.length} pending orders</strong> — confirm buttons are now active. Every 3rd confirmed order auto-assigns the route to your city's distributor 🚛
+          ? `<div class="alert-banner" style="background:#E8F5E9;border:1.5px solid #A5D6A7;color:#1B5E20;margin-bottom:16px;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <span>✅ <strong>${data.length} pending orders</strong> ready — confirm all at once to trigger distributor assignment 🚛</span>
+              <button class="btn btn-green" onclick="doSrConfirmAll()" style="white-space:nowrap">✅ Confirm All (${data.length})</button>
              </div>`
           : `<div class="alert-banner alert-info" style="margin-bottom:16px">
-              ⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city before you can confirm.
+              ⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city.
              </div>`}
         <div class="card"><div class="tw"><table>
-          <thead><tr><th>ID</th><th>Retailer</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Actions</th></tr></thead>
+          <thead><tr><th>ID</th><th>Retailer</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Action</th></tr></thead>
           <tbody>${data.length ? data.map(o => `
             <tr>
               <td><span class="mono">${o.id}</span></td>
@@ -5296,12 +5297,7 @@ RULES:
               <td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--brown-m)">${o.orderDate || '—'}</td>
               <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
               <td>
-                ${canConfirm
-                  ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
-                      <button class="btn btn-green btn-sm" onclick="doSrConfirm(${o.id})">✅ Confirm</button>
-                      <button class="btn btn-red btn-sm" onclick="doSrReject(${o.id},'${escapeHtml(o.retailer)}')">✕ Reject</button>
-                    </div>`
-                  : `<span style="font-size:11px;color:var(--brown-l)">Waiting for 3+ orders</span>`}
+                <button class="btn btn-red btn-sm" onclick="doSrReject(${o.id},'${escapeHtml(o.retailer)}')">✕ Reject</button>
               </td>
             </tr>`).join('')
             : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No pending orders for your city.</div></div></td></tr>'}
@@ -5662,14 +5658,30 @@ RULES:
       }
     }
 
-    // ── SALES REP CONFIRM / REJECT ───────────────
-    async function doSrConfirm(orderId) {
-      const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
-        action: 'confirm', confirmedBy: user.name
-      });
-      if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
-      toast(`✅ Order ${orderId} confirmed — route auto-assigns after 3rd confirmation 🚛`);
+    // ── SALES REP CONFIRM ALL / REJECT ───────────────
+    async function doSrConfirmAll() {
+      const rows = document.querySelectorAll('tbody tr td .mono');
+      const ids  = Array.from(rows).map(el => parseInt(el.textContent)).filter(Boolean);
+      if (!ids.length) return;
+
+      const btn = document.querySelector('[onclick="doSrConfirmAll()"]');
+      if (btn) { btn.disabled = true; btn.textContent = `⏳ Confirming…`; }
+
+      let confirmed = 0, failed = 0;
+      for (const orderId of ids) {
+        const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
+          action: 'confirm', confirmedBy: user.name
+        });
+        if (r.error) { failed++; }
+        else { confirmed++; }
+      }
+
       pollBadge();
+      if (failed === 0) {
+        toast(`✅ ${confirmed} order${confirmed > 1 ? 's' : ''} confirmed — distributor route assigned 🚛`, '#16a34a');
+      } else {
+        toast(`✅ ${confirmed} confirmed · ⚠️ ${failed} failed — check below`, '#ea580c');
+      }
       pageSrOrders();
     }
 
