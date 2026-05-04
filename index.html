@@ -3043,9 +3043,9 @@
 
     // ══ NAV ═════════════════════════════════════════
     const ROLE_PAGES = {
-      retailer: [{ id: 'my-orders', ico: '📦', lbl: 'My Orders' }, { id: 'req-order', ico: '➕', lbl: 'Request Order' }, { id: 'ai-assistant', ico: '🤖', lbl: 'AI Assistant' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
+      retailer: [{ id: 'my-orders', ico: '📦', lbl: 'My Orders' }, { id: 'smart-order', ico: '✨', lbl: 'Smart Order' }, { id: 'ai-assistant', ico: '🤖', lbl: 'AI Assistant' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       order_team: [{ id: 'all-orders', ico: '📋', lbl: 'Pending Review' }, { id: 'deliveries', ico: '🚚', lbl: 'All Deliveries' }, { id: 'retailers', ico: '🏪', lbl: 'Retailers' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
-      warehouse: [{ id: 'wh-incoming', ico: '📦', lbl: 'Incoming' }, { id: 'wh-prepare', ico: '🏭', lbl: 'Cargo Status' }, { id: 'wh-stock', ico: '📋', lbl: 'Stock Levels' }, { id: 'wh-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
+      warehouse: [{ id: 'wh-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'wh-incoming', ico: '📦', lbl: 'Incoming' }, { id: 'wh-prepare', ico: '🏭', lbl: 'Cargo Status' }, { id: 'wh-stock', ico: '📋', lbl: 'Stock Levels' }, { id: 'wh-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       distributor: [{ id: 'my-routes', ico: '🛣️', lbl: 'My Routes' }, { id: 'upd-status', ico: '✅', lbl: 'Update Status' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       sales_rep: [{ id: 'sr-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'sr-orders', ico: '📋', lbl: 'All Orders' }, { id: 'sr-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'sr-retailers', ico: '🏪', lbl: 'Retailers' }],
     };
@@ -3106,6 +3106,8 @@
       if (id === 'deliveries') await pageDeliveries();
       // consolidate removed — auto-handled on confirm
 
+      if (id === 'smart-order') await pageSmartOrder();
+      if (id === 'wh-dashboard') await pageWhDashboard();
       if (id === 'wh-incoming') await pageWhIncoming();
       if (id === 'wh-prepare') await pageWhPrepare();
       if (id === 'wh-stock') await pageWhStock();
@@ -3703,6 +3705,183 @@ RULES:
       await pageMyOrders();
     }
 
+    // ══ SMART ORDER PAGE ════════════════════════════
+    async function pageSmartOrder() {
+      const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+      const city = user.city || '';
+
+      const [lastProducts, suggestData, reminderData] = await Promise.all([
+        api('/orders/last-products'),
+        api(`/suggest?city=${encodeURIComponent(city)}`).catch(() => null),
+        api('/order-reminder').catch(() => null)
+      ]);
+
+      const hasLast    = Array.isArray(lastProducts) && lastProducts.length > 0;
+      const hasSuggest = suggestData && !suggestData.error && suggestData.suggestions?.length;
+
+      // Reminder banner
+      let reminderBanner = '';
+      if (reminderData && !reminderData.error) {
+        if (reminderData.isOverdue) {
+          reminderBanner = `<div class="alert-banner" style="background:#FFF3E0;border-left:4px solid var(--orange);color:var(--orange);margin-bottom:14px;max-width:760px">
+            ⏰ Your ${reminderData.frequency} order is <strong>overdue</strong> — place your order now to avoid stockouts.
+            <span style="margin-left:12px;font-size:11px;color:var(--brown-l)">
+              Frequency:
+              <select onchange="updateReminderFrequency(this.value)" style="font-family:'Jost',sans-serif;font-size:11px;border:1px solid var(--cream-dk);border-radius:4px;padding:1px 4px">
+                <option value="weekly" ${reminderData.frequency==='weekly'?'selected':''}>Weekly</option>
+                <option value="monthly" ${reminderData.frequency==='monthly'?'selected':''}>Monthly</option>
+              </select>
+            </span>
+          </div>`;
+        } else if (reminderData.daysUntilDue !== null && reminderData.daysUntilDue <= 1) {
+          reminderBanner = `<div class="alert-banner alert-info" style="margin-bottom:14px;max-width:760px">
+            🛒 Your ${reminderData.frequency} order is due today or tomorrow — good time to reorder!
+            <span style="margin-left:12px;font-size:11px;color:var(--brown-l)">
+              Frequency:
+              <select onchange="updateReminderFrequency(this.value)" style="font-family:'Jost',sans-serif;font-size:11px;border:1px solid var(--cream-dk);border-radius:4px;padding:1px 4px">
+                <option value="weekly" ${reminderData.frequency==='weekly'?'selected':''}>Weekly</option>
+                <option value="monthly" ${reminderData.frequency==='monthly'?'selected':''}>Monthly</option>
+              </select>
+            </span>
+          </div>`;
+        } else {
+          reminderBanner = `<div style="max-width:760px;margin-bottom:14px;font-size:12px;color:var(--brown-l);display:flex;align-items:center;gap:10px">
+            🔔 Reminder frequency:
+            <select onchange="updateReminderFrequency(this.value)" style="font-family:'Jost',sans-serif;font-size:12px;border:1.5px solid var(--cream-dk);border-radius:6px;padding:4px 8px">
+              <option value="weekly" ${reminderData.frequency==='weekly'?'selected':''}>Weekly</option>
+              <option value="monthly" ${reminderData.frequency==='monthly'?'selected':''}>Monthly</option>
+            </select>
+          </div>`;
+        }
+      }
+
+      // Last order section
+      const lastOrderHtml = hasLast ? `
+      <div class="card" style="max-width:760px;margin-bottom:16px">
+        <div class="card-title">🔄 Reorder from Last Order
+          <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Tap Reorder to pre-fill that product</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px">
+          ${lastProducts.map(p => `
+          <div style="border:1.5px solid var(--cream-dk);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--white)">
+            <div>
+              <div style="font-weight:700;font-size:13px;color:var(--brown)">${escapeHtml(p.productName || '—')}</div>
+              <div style="font-size:11px;color:var(--brown-l);margin-top:2px">Previously: ${p.items} units · ${p.orderedOn}</div>
+            </div>
+            <button class="btn btn-tan btn-sm" onclick="smartReorder(${p.productId},'${escapeHtml(p.productName)}',${p.items})">Reorder</button>
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+
+      // Suggestion section
+      const suggestHtml = hasSuggest ? `
+      <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
+        <div class="card-title" style="color:var(--green)">✨ Personalised Suggestions
+          <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on ${escapeHtml(suggestData.suggestions[0]?.basis || 'your activity')}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:8px">
+          ${suggestData.suggestions.map(s => `
+          <div style="border:1.5px solid #a8d5ba;border-radius:10px;padding:12px;text-align:center;background:#f0faf4">
+            <div style="font-weight:700;font-size:12px;color:var(--brown);margin-bottom:8px">${escapeHtml(s.productName)}</div>
+            <button class="btn btn-green btn-sm" style="width:100%" onclick="smartReorder(${s.productId},'${escapeHtml(s.productName)}',1)">+ Add</button>
+          </div>`).join('')}
+        </div>
+      </div>` : '';
+
+      setContent(`
+      <div class="sec-hdr">
+        <div><div class="sec-title">✨ Smart Order</div>
+        <div class="sec-sub">Reorder past products, explore suggestions, and place your order below</div></div>
+      </div>
+      ${reminderBanner}
+      ${lastOrderHtml}
+      ${suggestHtml}
+      <div class="card" style="max-width:760px">
+        <div class="card-title">📋 New Order</div>
+        <div class="form-grid">
+          <div class="fg">
+            <label>Order Date <span style="color:var(--red)">*</span></label>
+            <input type="date" id="i-order-date" min="${todayStr}" value="${todayStr}" onchange="updateDatePriority()" style="font-family:'Jost',sans-serif"/>
+            <div id="priority-badge" style="margin-top:6px;font-size:12px;font-weight:600;padding:6px 10px;border-radius:6px;background:#E8F5E9;color:#1B5E20;display:inline-block">🟢 Standard</div>
+          </div>
+          <div class="fg">
+            <label>Priority</label>
+            <select id="i-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
+          </div>
+          <div class="fg">
+            <label>City <span style="color:var(--red)">*</span></label>
+            <select id="i-city">
+              <option value="">Select city…</option>
+              <option ${city==='Colombo'?'selected':''}>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
+              <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
+              <option>Peradeniya</option><option>Galle</option><option>Matara</option>
+              <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+            </select>
+            <div class="field-err" id="err-city">Please select a city.</div>
+          </div>
+          <div class="fg">
+            <label>Area <span style="color:var(--red)">*</span></label>
+            <select id="i-area">
+              <option value="">Select area…</option>
+              <option>Colombo 1</option><option>Colombo 2</option><option>Colombo 3</option>
+              <option>Colombo 4</option><option>Colombo 5</option><option>Colombo 6</option>
+              <option>Colombo 7</option><option>Colombo 8</option><option>Colombo 9</option>
+              <option>Colombo 10</option><option>Colombo 11</option><option>Colombo 12</option>
+              <option>Colombo 13</option><option>Colombo 14</option><option>Colombo 15</option>
+            </select>
+            <div class="field-err" id="err-area">Please select an area.</div>
+          </div>
+          <div class="fg" style="grid-column:1/-1">
+            <label>Notes</label>
+            <input id="i-notes" placeholder="Special instructions…"/>
+          </div>
+        </div>
+        <div style="margin-top:20px">
+          <div style="font-weight:700;color:var(--brown);margin-bottom:10px;font-size:14px">📦 Products to Order</div>
+          <div id="order-lines"></div>
+          <button class="btn btn-ghost" onclick="addOrderLine()" style="margin-top:10px;width:100%;border:1.5px dashed var(--cream-dk)">+ Add Another Product</button>
+        </div>
+        <div class="card" style="background:var(--cream);margin-top:16px">
+          <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--brown-m)">
+            <span>📦 <strong id="sum-lines">0</strong> product(s)</span>
+            <span>🔢 <strong id="sum-items">0</strong> total units</span>
+            <span>⚖️ <strong id="sum-kg">0.0</strong> kg total</span>
+          </div>
+        </div>
+        <div id="submit-err" class="alert-banner alert-error" style="display:none;margin-top:12px"></div>
+        <button class="btn btn-tan" onclick="submitBulkOrder()" style="margin-top:16px;width:100%;font-size:15px;padding:14px">
+          Submit Order(s) → Sales Rep notified 🔔
+        </button>
+        <div id="waitlist-options" style="display:none;margin-top:16px"></div>
+      </div>`);
+
+      window._lineCounter = 0;
+      await loadAllProducts();
+      addOrderLine();
+      updateDatePriority();
+      if (city) { const sel = document.getElementById('i-city'); if (sel) sel.value = city; }
+    }
+
+    async function smartReorder(productId, productName, defaultQty) {
+      // Check if product is already on the form
+      const existing = document.querySelector(`[id^="line-"][id$="-product"][value="${productId}"]`);
+      if (existing) { toast(`"${escapeHtml(productName)}" already added — adjust the quantity`, '#8B6914'); return; }
+      addOrderLine();
+      const n = window._lineCounter;
+      setTimeout(() => {
+        const sel   = document.getElementById(`line-${n}-product`);
+        const items = document.getElementById(`line-${n}-items`);
+        if (sel)   { sel.value = String(productId); checkStockLine(n); }
+        if (items) { items.value = String(defaultQty); updateLineSummary(); }
+      }, 80);
+    }
+
+    async function updateReminderFrequency(freq) {
+      const r = await api('/order-reminder/frequency', 'PUT', { frequency: freq });
+      if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+      toast(`✅ Reminder set to ${freq}`, '#16a34a');
+    }
+
     async function pageReqOrder() {
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
 
@@ -4199,16 +4378,120 @@ RULES:
     }
 
     // ══ WAREHOUSE PAGES ═════════════════════════════
+    // ══ WAREHOUSE DASHBOARD ═════════════════════════
+    async function pageWhDashboard() {
+      const d = await api('/warehouse/dashboard');
+      if (d.error) { setContent(`<div class="alert-banner alert-error">❌ ${d.error}</div>`); return; }
+
+      const lowList = (d.lowStockProducts || []);
+      const queue   = (d.waitlistQueue   || []);
+
+      const kpiCard = (label, value, sub, color) => `
+        <div style="background:var(--white);border:1.5px solid var(--cream-dk);border-radius:12px;padding:18px 20px;flex:1;min-width:160px">
+          <div style="font-size:12px;color:var(--brown-l);margin-bottom:6px">${label}</div>
+          <div style="font-size:26px;font-weight:800;color:${color || 'var(--brown)'}">${value}</div>
+          ${sub ? `<div style="font-size:11px;color:var(--brown-l);margin-top:4px">${sub}</div>` : ''}
+        </div>`;
+
+      setContent(`
+      <div class="sec-hdr">
+        <div><div class="sec-title">Warehouse Dashboard</div>
+        <div class="sec-sub">Live stock overview · waitlist queue · low stock alerts</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block"></span>
+          <span style="font-size:12px;font-weight:600;color:#16a34a">Live</span>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px">
+        ${kpiCard('Total Stock Units', d.totalUnits.toLocaleString(), null, 'var(--brown)')}
+        ${kpiCard('Reserved (Partial Waitlist)', d.reservedUnits.toLocaleString(), `${d.partialWaitlist} partial entries`, '#c2410c')}
+        ${kpiCard('Available Stock', d.availableUnits.toLocaleString(), 'Total minus reserved', d.availableUnits < 500 ? 'var(--red)' : 'var(--green)')}
+        ${kpiCard('Pending Orders', d.pendingOrders, `Waitlist: ${d.fullWaitlist} full · ${d.partialWaitlist} partial`, 'var(--blue)')}
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+
+        <!-- Low Stock Alerts -->
+        <div class="card">
+          <div class="card-title">⚠️ Low Stock Alerts
+            <span class="badge b-orange" style="font-size:10px">${lowList.length} products</span>
+          </div>
+          ${lowList.length ? lowList.map(p => {
+            const isOut = parseInt(p.availableUnits) <= 0;
+            return `
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--cream-dk)">
+              <div>
+                <div style="font-weight:700;font-size:13px;color:var(--brown)">${escapeHtml(p.productName)}</div>
+                <div style="font-size:11px;color:${isOut ? 'var(--red)' : 'var(--orange)'};font-weight:600;margin-top:2px">
+                  ${isOut ? '❌ Out of Stock' : `⚠️ ${p.availableUnits} units left`}
+                  <span style="color:var(--brown-l);font-weight:400"> · threshold ${p.lowStockThreshold}</span>
+                </div>
+              </div>
+              <button class="btn btn-tan btn-sm" onclick="nav('wh-stock')">Restock →</button>
+            </div>`}).join('') : `<div class="empty" style="padding:20px 0"><div class="empty-icon">✅</div><div>All products above threshold</div></div>`}
+        </div>
+
+        <!-- Waitlist Queue (FCFS) -->
+        <div class="card">
+          <div class="card-title">⏳ Waitlist Queue
+            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:6px">First come, first served</span>
+          </div>
+          ${queue.length ? queue.map((w, i) => `
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--cream-dk)">
+              <div style="width:24px;height:24px;border-radius:50%;background:${i===0?'var(--tan)':'var(--cream-dk)'};color:${i===0?'white':'var(--brown)'};font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:700;font-size:12px;color:var(--brown);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(w.retailerName)}</div>
+                <div style="font-size:11px;color:var(--brown-l)">${escapeHtml(w.productName)} · ${w.requestedQty} units · ${w.city || '—'}</div>
+              </div>
+              <div style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace;flex-shrink:0">${w.joinedAt}</div>
+            </div>`).join('') : `<div class="empty" style="padding:20px 0"><div class="empty-icon">⏳</div><div>No one on waitlist</div></div>`}
+          ${queue.length ? `<button class="btn btn-ghost btn-sm" onclick="nav('wh-waitlist')" style="width:100%;margin-top:10px">View Full Waitlist →</button>` : ''}
+        </div>
+      </div>
+
+      <!-- Product Stock Snapshot -->
+      <div class="card">
+        <div class="card-title">📦 Product Stock Snapshot
+          <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:6px">Available = Current − Reserved (partial waitlist)</span>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Product</th><th>Current Stock</th><th>Reserved</th><th>Available</th><th>Status</th></tr></thead>
+            <tbody id="stock-snapshot-body"><tr><td colspan="5" style="text-align:center;padding:20px;color:var(--brown-l)">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="nav('wh-stock')" style="margin-top:12px">Manage Stock Levels →</button>
+      </div>`);
+
+      // Load stock snapshot separately (reuse GET /api/stock which is already fast)
+      try {
+        const stocks = await api('/stock');
+        const tbody = document.getElementById('stock-snapshot-body');
+        if (!tbody) return;
+        if (!stocks.length) { tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="empty-icon">📦</div><div>No stock records</div></div></td></tr>'; return; }
+        tbody.innerHTML = stocks.map(p => {
+          const current   = parseInt(p.availableUnits) || 0;
+          const reserved  = parseInt(p.reservedUnits)  || 0;
+          const available = Math.max(0, current - reserved);
+          const threshold = parseInt(p.lowStockThreshold) || 50;
+          const isOut = current <= 0;
+          const isLow = !isOut && current <= threshold;
+          return `<tr style="${isOut?'background:#FFF5F5':isLow?'background:#FFFDE7':''}">
+            <td><strong>${escapeHtml(p.productName)}</strong></td>
+            <td style="font-weight:700">${current}</td>
+            <td style="color:#c2410c;font-weight:600">${reserved > 0 ? reserved : '—'}</td>
+            <td style="font-size:15px;font-weight:800;color:${isOut?'var(--red)':isLow?'var(--orange)':'var(--green)'}">${available}</td>
+            <td>${isOut ? '<span class="badge b-red" style="font-size:10px">OUT</span>' : isLow ? '<span class="badge b-orange" style="font-size:10px">LOW</span>' : '<span class="badge b-green" style="font-size:10px">OK</span>'}</td>
+          </tr>`;
+        }).join('');
+      } catch {}
+    }
+
     async function pageWhStock() {
       const stocks = await api('/stock');
-      // Fetch restock suggestions in parallel for all products
-      const suggestions = {};
-      await Promise.all((stocks || []).map(async p => {
-        try {
-          const s = await api(`/restock-suggestion/${p.id}`);
-          if (!s.error) suggestions[p.id] = s.suggested || 0;
-        } catch {}
-      }));
+      // suggestedRestock is now folded into each stock row by the backend
 
       setContent(`
     <div class="sec-hdr">
@@ -4225,7 +4508,7 @@ RULES:
           const isLow     = units > 0 && units <= threshold;
           const isOut     = units <= 0;
           const totalDemand = parseInt(p.waitingCount || 0) + parseInt(p.watchCount || 0);
-          const suggested = suggestions[p.id] || 0;
+          const suggested = parseInt(p.suggestedRestock) || 0;
           return `
           <tr style="${isOut ? 'background:#FFF5F5' : isLow ? 'background:#FFFDE7' : ''}">
             <td>
@@ -4373,7 +4656,7 @@ RULES:
           return `<div class="empty"><div class="empty-icon">${type === 'partial' ? '⚡' : '📋'}</div><div>No entries yet.</div></div>`;
         }
         return `<div class="tw"><table>
-          <thead><tr><th>ID</th><th>Retailer</th><th>Product</th><th>Qty</th><th>City</th><th>Area</th><th>Joined</th><th>Action</th></tr></thead>
+          <thead><tr><th>ID</th><th>Retailer</th><th>Product</th><th>Qty</th><th>City</th><th>Area</th><th>Joined</th><th>Actions</th></tr></thead>
           <tbody>${rows.map(w => `
             <tr>
               <td><span class="mono">${w.id}</span></td>
@@ -4383,7 +4666,10 @@ RULES:
               <td>${escapeHtml(w.city || '—')}</td>
               <td>${escapeHtml(w.area || '—')}</td>
               <td style="font-size:12px;color:var(--brown-l)">${w.createdAt}</td>
-              <td><button class="btn btn-ghost btn-sm" onclick="removeWaitlistEntry(${w.id})">✕ Remove</button></td>
+              <td style="display:flex;gap:6px;flex-wrap:wrap">
+                ${type === 'partial' ? `<button class="btn btn-green btn-sm" onclick="fulfilWaitlistEntry(${w.id})">✅ Fulfil</button>` : ''}
+                <button class="btn btn-ghost btn-sm" style="color:var(--red);border-color:var(--red)" onclick="removeWaitlistEntry(${w.id})">✕ Cancel</button>
+              </td>
             </tr>`).join('')}
           </tbody></table></div>`;
       }
@@ -4411,12 +4697,20 @@ RULES:
       </div>`);
     }
 
+    async function fulfilWaitlistEntry(id) {
+      if (!confirm('Mark this partial entry as fulfilled? The retailer will be notified.')) return;
+      const r = await api(`/waiting-list/${id}/fulfil`, 'PUT', {});
+      if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+      toast('✅ Entry fulfilled — retailer notified 🔔', '#16a34a');
+      pollBadge(); pageWhWaitlist();
+    }
+
     async function removeWaitlistEntry(id) {
-      if (!confirm('Remove this waiting list entry?')) return;
+      if (!confirm('Cancel this waiting list entry? The retailer will be notified and reserved stock will be returned.')) return;
       const r = await api(`/waiting-list/${id}`, 'DELETE');
       if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
-      toast('✅ Entry removed');
-      pageWhWaitlist();
+      toast('✅ Entry cancelled — retailer notified');
+      pollBadge(); pageWhWaitlist();
     }
 
     // ── SALES REP WAITLIST (city-scoped) ─────────────
@@ -5399,6 +5693,15 @@ RULES:
           <div class="fg"><label>Business Name *</label><input id="ar-name" placeholder="e.g. Keells Super Colombo 7"/></div>
           <div class="fg"><label>Email *</label><input id="ar-email" type="text" placeholder="keells@nestle.lk"/></div>
           <div class="fg"><label>Password *</label><input id="ar-pass" type="password" placeholder="Min 4 characters"/></div>
+          <div class="fg"><label>City</label>
+            <select id="ar-city">
+              <option value="">Select city…</option>
+              <option>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
+              <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
+              <option>Peradeniya</option><option>Galle</option><option>Matara</option>
+              <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+            </select>
+          </div>
           <div class="fg"><label>Avatar Initials (optional)</label><input id="ar-avatar" placeholder="e.g. KS" maxlength="2" style="max-width:80px;text-transform:uppercase"/></div>
           <div id="ar-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
           <div class="modal-actions">
@@ -5424,7 +5727,7 @@ RULES:
     </div>`);
     }
     function openAddRetailer() { ['ar-name', 'ar-email', 'ar-pass', 'ar-avatar'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('ar-err').style.display = 'none'; const btn = document.getElementById('ar-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Create Retailer Account'; } openModal('m-add-retailer'); }
-    async function saveNewRetailer() { const name = document.getElementById('ar-name').value.trim(); const email = document.getElementById('ar-email').value.trim(); const pass = document.getElementById('ar-pass').value; const avatar = document.getElementById('ar-avatar').value.trim(); const errEl = document.getElementById('ar-err'); if (!name || !email || !pass) { errEl.textContent = '⚠️ Name, email and password are all required.'; errEl.style.display = 'flex'; return; } if (pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('ar-btn'); btn.disabled = true; btn.textContent = 'Creating…'; const r = await api('/retailers', 'POST', { name, email, password: pass, avatar }); btn.disabled = false; btn.textContent = 'Create Retailer Account'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-add-retailer'); toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a'); await pageRetailers(); }
+    async function saveNewRetailer() { const name = document.getElementById('ar-name').value.trim(); const email = document.getElementById('ar-email').value.trim(); const pass = document.getElementById('ar-pass').value; const avatar = document.getElementById('ar-avatar').value.trim(); const city = document.getElementById('ar-city')?.value || ''; const errEl = document.getElementById('ar-err'); if (!name || !email || !pass) { errEl.textContent = '⚠️ Name, email and password are all required.'; errEl.style.display = 'flex'; return; } if (pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('ar-btn'); btn.disabled = true; btn.textContent = 'Creating…'; const r = await api('/retailers', 'POST', { name, email, password: pass, avatar, city }); btn.disabled = false; btn.textContent = 'Create Retailer Account'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-add-retailer'); toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a'); await pageRetailers(); }
     function openRetailerResetPw(id, name) { document.getElementById('rpw-id').value = id; document.getElementById('rpw-label').textContent = `New password for ${name}`; document.getElementById('rpw-pass').value = ''; document.getElementById('rpw-err').style.display = 'none'; const btn = document.getElementById('rpw-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; } openModal('m-retailer-pw'); }
     async function saveRetailerPw() { const id = document.getElementById('rpw-id').value; const pass = document.getElementById('rpw-pass').value; const errEl = document.getElementById('rpw-err'); if (!pass || pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('rpw-btn'); btn.disabled = true; btn.textContent = 'Resetting…'; const r = await api(`/retailers/${id}/reset-password`, 'PUT', { password: pass }); btn.disabled = false; btn.textContent = 'Reset Password'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-retailer-pw'); toast('✅ Password reset successfully'); }
     async function deleteRetailer(id, name) { if (!confirm(`Remove retailer "${name}"?`)) return; const r = await api(`/retailers/${id}`, 'DELETE'); if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; } toast(`✅ Retailer "${name}" removed`); await pageRetailers(); }
@@ -5706,6 +6009,9 @@ RULES:
     }
 
     function addOrderLineWithProduct(productId, productName) {
+      // Prevent adding the same product twice
+      const existing = document.querySelector(`[id^="line-"][id$="-product"][value="${productId}"]`);
+      if (existing) { toast(`"${escapeHtml(productName)}" is already added — adjust the quantity instead`, '#8B6914'); return; }
       addOrderLine();
       const n = window._lineCounter;
       setTimeout(() => {
