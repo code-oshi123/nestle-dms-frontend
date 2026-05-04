@@ -4281,7 +4281,6 @@ RULES:
       const unitsInput = document.getElementById(`units-${productId}`);
       if (unitsInput && suggested) unitsInput.value = suggested;
     }
-    }
 
     async function updateStock(productId, productName, currentKg) {
       const units     = parseInt(document.getElementById('units-' + productId)?.value) || 0;
