@@ -2852,6 +2852,21 @@
 
   <div class="toast" id="toast" style="background:var(--brown)"><span id="toast-msg"></span></div>
 
+  <!-- Global: Order Reminder Popup -->
+  <div class="modal-bg" id="m-order-reminder" style="z-index:500">
+    <div class="modal" style="max-width:400px;text-align:center">
+      <div style="font-size:40px;margin-bottom:8px">🛒</div>
+      <div class="modal-title" style="justify-content:center">Time to Reorder!</div>
+      <div class="modal-body">
+        <p id="reminder-msg" style="color:var(--brown-m);margin-bottom:18px;line-height:1.6"></p>
+        <div class="modal-actions" style="justify-content:center">
+          <button class="btn btn-ghost" onclick="closeModal('m-order-reminder')">Remind Me Later</button>
+          <button class="btn btn-tan" onclick="closeModal('m-order-reminder');nav('req-order')">Place Order Now →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
     const API = 'https://nestle-dms-backend.onrender.com/api';
     const observer = new MutationObserver(() => {
@@ -2932,6 +2947,25 @@
       loadRef();
       buildNav();
       startPoll();
+      if (user.role === 'retailer') setTimeout(checkOrderReminder, 1500);
+    }
+
+    async function checkOrderReminder() {
+      try {
+        const r = await api('/order-reminder');
+        if (r.error) return;
+        const shouldAlert = r.isOverdue || (r.daysUntilDue !== null && r.daysUntilDue <= 1);
+        if (!shouldAlert) return;
+
+        const el = document.getElementById('m-order-reminder');
+        if (!el) return;
+        const msg = r.isOverdue
+          ? `Your last order was ${Math.abs(r.daysUntilDue)} day${Math.abs(r.daysUntilDue) === 1 ? '' : 's'} ago — your <strong>${r.frequency}</strong> order is overdue!`
+          : `Your next <strong>${r.frequency}</strong> order is due today or tomorrow.`;
+        const sub = document.getElementById('reminder-msg');
+        if (sub) sub.innerHTML = msg;
+        openModal('m-order-reminder');
+      } catch {}
     }
 
     function roleLabel(r) {
@@ -3011,9 +3045,9 @@
     const ROLE_PAGES = {
       retailer: [{ id: 'my-orders', ico: '📦', lbl: 'My Orders' }, { id: 'req-order', ico: '➕', lbl: 'Request Order' }, { id: 'ai-assistant', ico: '🤖', lbl: 'AI Assistant' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       order_team: [{ id: 'all-orders', ico: '📋', lbl: 'Pending Review' }, { id: 'deliveries', ico: '🚚', lbl: 'All Deliveries' }, { id: 'retailers', ico: '🏪', lbl: 'Retailers' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
-      warehouse: [{ id: 'wh-incoming', ico: '📦', lbl: 'Incoming' }, { id: 'wh-prepare', ico: '🏭', lbl: 'Cargo Status' }, { id: 'wh-stock', ico: '📋', lbl: 'Stock Levels' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
+      warehouse: [{ id: 'wh-incoming', ico: '📦', lbl: 'Incoming' }, { id: 'wh-prepare', ico: '🏭', lbl: 'Cargo Status' }, { id: 'wh-stock', ico: '📋', lbl: 'Stock Levels' }, { id: 'wh-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       distributor: [{ id: 'my-routes', ico: '🛣️', lbl: 'My Routes' }, { id: 'upd-status', ico: '✅', lbl: 'Update Status' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
-      sales_rep: [{ id: 'sr-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'sr-orders', ico: '📋', lbl: 'All Orders' }, { id: 'sr-retailers', ico: '🏪', lbl: 'Retailers' }],
+      sales_rep: [{ id: 'sr-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'sr-orders', ico: '📋', lbl: 'All Orders' }, { id: 'sr-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'sr-retailers', ico: '🏪', lbl: 'Retailers' }],
     };
 
     function buildNav() {
@@ -3075,6 +3109,8 @@
       if (id === 'wh-incoming') await pageWhIncoming();
       if (id === 'wh-prepare') await pageWhPrepare();
       if (id === 'wh-stock') await pageWhStock();
+      if (id === 'wh-waitlist') await pageWhWaitlist();
+      if (id === 'sr-waitlist') await pageSrWaitlist();
       if (id === 'my-routes') await pageMyRoutes();
       if (id === 'upd-status') await pageUpdStatus();
       if (id === 'live-map') await pageLiveMap();
@@ -3669,11 +3705,35 @@ RULES:
 
     async function pageReqOrder() {
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+
+      // Load suggestions in parallel with page render
+      const city = user.city || '';
+      const suggestData = await api(`/suggest?city=${encodeURIComponent(city)}`).catch(() => null);
+
+      let suggestBlock = '';
+      if (suggestData && !suggestData.error && suggestData.suggestions?.length) {
+        const basis = suggestData.suggestions[0]?.basis || 'popular products';
+        suggestBlock = `
+        <div class="card" style="max-width:680px;margin-bottom:14px;border:1.5px solid #a8d5ba">
+          <div class="card-title" style="color:var(--green)">✨ Suggested for You
+            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on ${escapeHtml(basis)}</span>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+            ${suggestData.suggestions.map(s => `
+              <button class="btn btn-ghost btn-sm" style="border:1.5px solid var(--green);color:var(--green)"
+                onclick="addOrderLineWithProduct(${s.productId},'${escapeHtml(s.productName)}')">
+                + ${escapeHtml(s.productName)}
+              </button>`).join('')}
+          </div>
+        </div>`;
+      }
+
       setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Request Delivery Order</div>
       <div class="sec-sub">Add multiple products in one submission — your Sales Rep will be notified 🔔</div></div>
     </div>
+    ${suggestBlock}
     <div class="alert-banner alert-info" style="max-width:680px;margin-bottom:14px">
       ⚖️ <strong>Smart ordering:</strong> Pick your delivery date — priority is set automatically. Add as many products as you need in one go.
     </div>
@@ -3739,6 +3799,7 @@ RULES:
       <button class="btn btn-tan" onclick="submitBulkOrder()" style="margin-top:16px;width:100%;font-size:15px;padding:14px">
         Submit Order(s) → Sales Rep notified 🔔
       </button>
+      <div id="waitlist-options" style="display:none;margin-top:16px"></div>
     </div>`);
 
       window._lineCounter = 0;
@@ -4140,6 +4201,15 @@ RULES:
     // ══ WAREHOUSE PAGES ═════════════════════════════
     async function pageWhStock() {
       const stocks = await api('/stock');
+      // Fetch restock suggestions in parallel for all products
+      const suggestions = {};
+      await Promise.all((stocks || []).map(async p => {
+        try {
+          const s = await api(`/restock-suggestion/${p.id}`);
+          if (!s.error) suggestions[p.id] = s.suggested || 0;
+        } catch {}
+      }));
+
       setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Stock Levels</div>
@@ -4148,13 +4218,14 @@ RULES:
     <div class="card">
       <div class="card-title">📋 Current Stock Levels</div>
       <div class="tw"><table>
-        <thead><tr><th>Product</th><th>Units Available</th><th>Weight Available</th><th>Weight/Unit</th><th>Low Stock Threshold</th><th>Demand</th><th>Update Stock</th></tr></thead>
+        <thead><tr><th>Product</th><th>Units Available</th><th>Weight</th><th>Threshold</th><th>Demand</th><th>Suggested Restock</th><th>Update Stock</th></tr></thead>
         <tbody>${stocks.length ? stocks.map(p => {
           const units     = parseInt(p.availableUnits) || 0;
           const threshold = parseInt(p.lowStockThreshold) || 50;
           const isLow     = units > 0 && units <= threshold;
           const isOut     = units <= 0;
           const totalDemand = parseInt(p.waitingCount || 0) + parseInt(p.watchCount || 0);
+          const suggested = suggestions[p.id] || 0;
           return `
           <tr style="${isOut ? 'background:#FFF5F5' : isLow ? 'background:#FFFDE7' : ''}">
             <td>
@@ -4168,7 +4239,6 @@ RULES:
               </span>
             </td>
             <td style="font-weight:700;color:var(--blue)">${p.availableKg ? parseFloat(p.availableKg).toFixed(1) + 'kg' : '—'}</td>
-            <td style="color:var(--brown-m)">${p.weightPerUnit ? p.weightPerUnit + 'kg/unit' : '—'}</td>
             <td>
               <input type="number" min="0" id="threshold-${p.id}" value="${threshold}"
                 style="width:70px;padding:5px 7px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:12px"/>
@@ -4177,14 +4247,22 @@ RULES:
             <td>
               ${totalDemand > 0
                 ? `<div style="display:flex;flex-direction:column;gap:3px">
-                    ${parseInt(p.waitingCount || 0) > 0 ? `<span class="badge b-navy" style="font-size:10px">⏳ ${p.waitingCount} waiting list</span>` : ''}
-                    ${parseInt(p.watchCount  || 0) > 0 ? `<span class="badge b-orange" style="font-size:10px">🔔 ${p.watchCount} resubmit</span>` : ''}
+                    ${parseInt(p.waitingCount || 0) > 0 ? `<span class="badge b-navy" style="font-size:10px">⏳ ${p.waitingCount} waitlist</span>` : ''}
+                    ${parseInt(p.watchCount  || 0) > 0 ? `<span class="badge b-orange" style="font-size:10px">🔔 ${p.watchCount} watching</span>` : ''}
                    </div>`
                 : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:6px">
+                <input type="number" min="0" id="suggest-${p.id}" value="${suggested}"
+                  style="width:80px;padding:5px 7px;border:1.5px solid #a8d5ba;border-radius:6px;font-family:'Jost',sans-serif;font-size:13px;font-weight:700;color:var(--green)"/>
+                <span style="font-size:10px;color:var(--brown-l)">auto</span>
+              </div>
             </td>
             <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
               <input type="number" min="0" id="units-${p.id}" value="${units}"
                 style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px"/>
+              <button class="btn btn-ghost btn-sm" onclick="useSuggested('${p.id}')">← Use</button>
               <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName || '')}',${p.availableKg || 0})">
                 ✅ Update${totalDemand > 0 ? ' & Notify 🔔' : ''}
               </button>
@@ -4193,8 +4271,16 @@ RULES:
       </table></div>
     </div>
     <div class="alert-banner alert-info">
-      🔔 <strong>Auto-notify:</strong> Updating stock notifies retailers on the waiting list <em>and</em> those with rejected "Out of Stock" orders so they can resubmit.
+      🔔 <strong>Auto-notify:</strong> Updating stock notifies waiting list retailers and those with rejected "Out of Stock" orders.
+      &nbsp;·&nbsp; <strong>Suggested Restock</strong> = avg daily demand (last 30 days) × 14-day buffer — editable before applying.
     </div>`);
+    }
+
+    function useSuggested(productId) {
+      const suggested = document.getElementById(`suggest-${productId}`)?.value;
+      const unitsInput = document.getElementById(`units-${productId}`);
+      if (unitsInput && suggested) unitsInput.value = suggested;
+    }
     }
 
     async function updateStock(productId, productName, currentKg) {
@@ -4274,6 +4360,112 @@ RULES:
           <td style="font-family:'DM Mono',monospace;font-size:12px">${d.eta || '—'}</td>
         </tr>`).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">🏭</div><div>No deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
+    }
+
+    // ── WAREHOUSE WAITLIST ───────────────────────────
+    async function pageWhWaitlist() {
+      const [full, partial] = await Promise.all([
+        api('/waiting-list?type=full'),
+        api('/waiting-list?type=partial')
+      ]);
+
+      function wlTable(rows, type) {
+        if (!Array.isArray(rows) || !rows.length) {
+          return `<div class="empty"><div class="empty-icon">${type === 'partial' ? '⚡' : '📋'}</div><div>No entries yet.</div></div>`;
+        }
+        return `<div class="tw"><table>
+          <thead><tr><th>ID</th><th>Retailer</th><th>Product</th><th>Qty</th><th>City</th><th>Area</th><th>Joined</th><th>Action</th></tr></thead>
+          <tbody>${rows.map(w => `
+            <tr>
+              <td><span class="mono">${w.id}</span></td>
+              <td><strong>${escapeHtml(w.retailerName || '—')}</strong></td>
+              <td>${escapeHtml(w.productName || '—')}</td>
+              <td style="font-weight:700;color:var(--blue)">${w.requestedQty}</td>
+              <td>${escapeHtml(w.city || '—')}</td>
+              <td>${escapeHtml(w.area || '—')}</td>
+              <td style="font-size:12px;color:var(--brown-l)">${w.createdAt}</td>
+              <td><button class="btn btn-ghost btn-sm" onclick="removeWaitlistEntry(${w.id})">✕ Remove</button></td>
+            </tr>`).join('')}
+          </tbody></table></div>`;
+      }
+
+      setContent(`
+      <div class="sec-hdr">
+        <div><div class="sec-title">Waiting List</div>
+        <div class="sec-sub">Full waitlist = retailer waiting for full stock · Partial = retailer accepting available units</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px">
+          📋 Full Quantity Waitlist
+          <span class="badge b-navy" style="font-size:11px">${Array.isArray(full) ? full.length : 0} entries</span>
+        </div>
+        <p style="font-size:12px;color:var(--brown-l);margin:0 0 12px">Retailers waiting until enough stock is restocked to fulfil their full order.</p>
+        ${wlTable(Array.isArray(full) ? full : [], 'full')}
+      </div>
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px">
+          ⚡ Partial Quantity Waitlist
+          <span class="badge b-orange" style="font-size:11px">${Array.isArray(partial) ? partial.length : 0} entries</span>
+        </div>
+        <p style="font-size:12px;color:var(--brown-l);margin:0 0 12px">Retailers who accepted whatever units are currently available — process these first.</p>
+        ${wlTable(Array.isArray(partial) ? partial : [], 'partial')}
+      </div>`);
+    }
+
+    async function removeWaitlistEntry(id) {
+      if (!confirm('Remove this waiting list entry?')) return;
+      const r = await api(`/waiting-list/${id}`, 'DELETE');
+      if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+      toast('✅ Entry removed');
+      pageWhWaitlist();
+    }
+
+    // ── SALES REP WAITLIST (city-scoped) ─────────────
+    async function pageSrWaitlist() {
+      const [full, partial] = await Promise.all([
+        api('/waiting-list?type=full'),
+        api('/waiting-list?type=partial')
+      ]);
+
+      function srWlTable(rows, type) {
+        if (!Array.isArray(rows) || !rows.length) {
+          return `<div class="empty"><div class="empty-icon">${type === 'partial' ? '⚡' : '📋'}</div><div>No entries in your city.</div></div>`;
+        }
+        return `<div class="tw"><table>
+          <thead><tr><th>ID</th><th>Retailer</th><th>Product</th><th>Qty</th><th>Area</th><th>Joined</th></tr></thead>
+          <tbody>${rows.map(w => `
+            <tr>
+              <td><span class="mono">${w.id}</span></td>
+              <td><strong>${escapeHtml(w.retailerName || '—')}</strong></td>
+              <td>${escapeHtml(w.productName || '—')}</td>
+              <td style="font-weight:700;color:var(--blue)">${w.requestedQty}</td>
+              <td>${escapeHtml(w.area || '—')}</td>
+              <td style="font-size:12px;color:var(--brown-l)">${w.createdAt}</td>
+            </tr>`).join('')}
+          </tbody></table></div>`;
+      }
+
+      setContent(`
+      <div class="sec-hdr">
+        <div><div class="sec-title">Waitlist — Your City</div>
+        <div class="sec-sub">Retailers in your assigned city waiting for stock</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px">
+          📋 Full Quantity Waitlist
+          <span class="badge b-navy" style="font-size:11px">${Array.isArray(full) ? full.length : 0}</span>
+        </div>
+        <p style="font-size:12px;color:var(--brown-l);margin:0 0 12px">These retailers need full restock before their order can be fulfilled.</p>
+        ${srWlTable(Array.isArray(full) ? full : [], 'full')}
+      </div>
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;gap:8px">
+          ⚡ Partial Quantity Waitlist
+          <span class="badge b-orange" style="font-size:11px">${Array.isArray(partial) ? partial.length : 0}</span>
+        </div>
+        <p style="font-size:12px;color:var(--brown-l);margin:0 0 12px">These retailers accepted partial supply — coordinate with warehouse to process.</p>
+        ${srWlTable(Array.isArray(partial) ? partial : [], 'partial')}
+      </div>`);
     }
 
     // ══ DISTRIBUTOR PAGES ═══════════════════════════
@@ -5514,6 +5706,15 @@ RULES:
       updateLineSummary();
     }
 
+    function addOrderLineWithProduct(productId, productName) {
+      addOrderLine();
+      const n = window._lineCounter;
+      setTimeout(() => {
+        const sel = document.getElementById(`line-${n}-product`);
+        if (sel) { sel.value = String(productId); checkStockLine(n); updateLineSummary(); }
+      }, 80);
+    }
+
     function removeOrderLine(n) {
       const el = document.getElementById(`line-${n}`);
       if (el) { el.style.opacity = '0'; setTimeout(() => el.remove(), 150); }
@@ -5643,19 +5844,59 @@ RULES:
         let msg = `✅ ${placed} order${placed > 1 ? 's' : ''} submitted — Sales Rep notified 🔔`;
         if (skipped) msg += ` · ${skipped} line(s) skipped`;
         toast(msg, '#16a34a');
-        if (skipped) {
-          errBox.innerHTML = `⚠️ <strong>Some lines could not be placed:</strong><br>` +
-            r.failed.map(f => `• ${escapeHtml(f.productName)}: ${escapeHtml(f.reason)}`).join('<br>');
-          errBox.style.display = 'flex';
-        }
         window._stockCheck = null; window._pendingOrder = null;
         pollBadge();
-        if (!skipped) nav('my-orders');
+        if (skipped) {
+          showWaitlistOptions(r.failed, cityEl.value, areaEl.value);
+        } else {
+          nav('my-orders');
+        }
       } else if (r.failed?.length) {
-        errBox.innerHTML = `❌ All lines failed:<br>` +
-          r.failed.map(f => `• ${escapeHtml(f.productName)}: ${escapeHtml(f.reason)}`).join('<br>');
-        errBox.style.display = 'flex';
+        toast(`❌ All lines failed — see waitlist options below`, '#B71C1C');
+        showWaitlistOptions(r.failed, cityEl.value, areaEl.value);
       }
+    }
+
+    function showWaitlistOptions(failed, city, area) {
+      const container = document.getElementById('waitlist-options');
+      if (!container) return;
+      container.innerHTML = `
+        <div style="font-weight:700;color:var(--brown);margin-bottom:10px;font-size:14px">⏳ Stock Issues — Choose an Option</div>
+        ${failed.map(f => {
+          const avail = f.availableUnits || 0;
+          const reqQty = f.requestedQty || 0;
+          return `
+          <div style="border:1.5px solid var(--cream-dk);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--white)">
+            <div style="font-weight:700;color:var(--brown);margin-bottom:6px">${escapeHtml(f.productName)}</div>
+            <div style="font-size:12px;color:var(--brown-l);margin-bottom:10px">${escapeHtml(f.reason)}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-tan btn-sm"
+                onclick="joinWaitlist(${f.productId},'${escapeHtml(f.productName)}',${reqQty},'full','${escapeHtml(city)}','${escapeHtml(area)}')">
+                📋 Waitlist for ${reqQty} units (full)
+              </button>
+              ${avail > 0 ? `<button class="btn btn-green btn-sm"
+                onclick="joinWaitlist(${f.productId},'${escapeHtml(f.productName)}',${avail},'partial','${escapeHtml(city)}','${escapeHtml(area)}')">
+                ⚡ Waitlist for ${avail} available (partial)
+              </button>` : ''}
+            </div>
+          </div>`;
+        }).join('')}`;
+      container.style.display = 'block';
+    }
+
+    async function joinWaitlist(productId, productName, qty, type, city, area) {
+      const r = await api('/waiting-list', 'POST', {
+        retailerId: user.id, retailerName: user.name,
+        productId, productName, requestedQty: qty, type, city, area
+      });
+      if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+      const label = type === 'partial' ? `partial (${qty} units)` : `full (${qty} units)`;
+      toast(`✅ Added to ${label} waitlist — you will be notified when stock is ready 🔔`, '#0f766e');
+      pollBadge();
+      // Disable the buttons for this product to prevent double-join
+      document.querySelectorAll(`[onclick*="joinWaitlist(${productId},"]`).forEach(btn => {
+        btn.disabled = true; btn.style.opacity = '0.5';
+      });
     }
 
     // ── SALES REP CONFIRM ALL / REJECT ───────────────
