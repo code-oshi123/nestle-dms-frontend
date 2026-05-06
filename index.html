@@ -2970,7 +2970,7 @@
 
     function roleLabel(r) {
       return {
-        retailer: 'Retailer', order_team: 'Order Processing Team',
+        retailer: 'Retailer', order_team: 'Nestlé Sales Manager',
         warehouse: 'Warehouse', distributor: 'Distributor',
         admin: 'System Administrator', sales_rep: 'Sales Representative'
       }[r] || r;
@@ -3044,8 +3044,8 @@
     // ══ NAV ═════════════════════════════════════════
     const ROLE_PAGES = {
       retailer: [{ id: 'my-orders', ico: '📦', lbl: 'My Orders' }, { id: 'smart-order', ico: '✨', lbl: 'Smart Order' }, { id: 'ai-assistant', ico: '🤖', lbl: 'AI Assistant' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
-      order_team: [{ id: 'all-orders', ico: '📋', lbl: 'Pending Review' }, { id: 'deliveries', ico: '🚚', lbl: 'All Deliveries' }, { id: 'retailers', ico: '🏪', lbl: 'Retailers' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
-      warehouse: [{ id: 'wh-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'wh-incoming', ico: '📦', lbl: 'Incoming' }, { id: 'wh-prepare', ico: '🏭', lbl: 'Cargo Status' }, { id: 'wh-stock', ico: '📋', lbl: 'Stock Levels' }, { id: 'wh-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
+      order_team: [{ id: 'ot-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'deliveries', ico: '🚚', lbl: 'All Deliveries' }, { id: 'retailers', ico: '🏪', lbl: 'Retailers' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
+      warehouse: [{ id: 'wh-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'wh-incoming', ico: '📦', lbl: 'Incoming' }, { id: 'wh-stock', ico: '📋', lbl: 'Stock Levels' }, { id: 'wh-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       distributor: [{ id: 'my-routes', ico: '🛣️', lbl: 'My Routes' }, { id: 'upd-status', ico: '✅', lbl: 'Update Status' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
       sales_rep: [{ id: 'sr-dashboard', ico: '📊', lbl: 'Dashboard' }, { id: 'sr-orders', ico: '📋', lbl: 'All Orders' }, { id: 'sr-waitlist', ico: '⏳', lbl: 'Waitlist' }, { id: 'sr-retailers', ico: '🏪', lbl: 'Retailers' }],
     };
@@ -3121,6 +3121,7 @@
       if (id === 'sr-dashboard') await pageSrDashboard();
       if (id === 'sr-orders') await pageSrOrders();
       if (id === 'sr-retailers') await pageSrRetailers();
+      if (id === 'ot-dashboard') await pageOtDashboard();
     }
 
     // ══ AI ASSISTANT ════════════════════════════════
@@ -4328,6 +4329,126 @@ RULES:
         action === 'confirm' ? '#16a34a' : '#B71C1C');
       pollBadge();
       pageAllOrders();
+    }
+
+    // ══ NESTLÉ SALES MANAGER DASHBOARD ══════════════
+    async function pageOtDashboard() {
+      const d = await api('/analytics/sales');
+      if (d.error) { setContent(`<div class="empty"><div class="empty-icon">⚠️</div><div>${d.error}</div></div>`); return; }
+
+      const statusColour = { pending:'#92400e', confirmed:'#166534', consolidated:'#1e40af', delivered:'#15803d', rejected:'#991b1b' };
+      const statusLabel  = { pending:'Pending', confirmed:'Confirmed', consolidated:'Consolidated', delivered:'Delivered', rejected:'Rejected' };
+
+      // Monthly bar chart
+      const maxCount = Math.max(...d.monthly.map(m => m.count), 1);
+      const monthBars = d.monthly.map(m => `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
+          <span style="font-size:11px;font-weight:700;color:var(--brown)">${m.count}</span>
+          <div style="width:100%;background:#e5e7eb;border-radius:6px;height:80px;display:flex;align-items:flex-end">
+            <div style="width:100%;background:var(--tan);border-radius:6px;height:${Math.round((m.count/maxCount)*100)}%;min-height:4px;transition:height .4s"></div>
+          </div>
+          <span style="font-size:10px;color:#6b7280;text-align:center">${m.month}</span>
+        </div>`).join('');
+
+      // Status breakdown rows
+      const statusRows = d.byStatus.map(s => {
+        const total = d.byStatus.reduce((a,b) => a + b.count, 0) || 1;
+        const pct = Math.round((s.count / total) * 100);
+        return `
+          <div style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:13px;font-weight:600;color:${statusColour[s.status]||'#374151'}">${statusLabel[s.status]||s.status}</span>
+              <span style="font-size:13px;color:#6b7280">${s.count} (${pct}%)</span>
+            </div>
+            <div style="background:#e5e7eb;border-radius:999px;height:8px">
+              <div style="background:${statusColour[s.status]||'var(--tan)'};width:${pct}%;height:8px;border-radius:999px;transition:width .4s"></div>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Top-5 table helper
+      const topTable = (rows, col1Label, col2Label, col1Key, col2Key) => {
+        if (!rows.length) return `<p style="color:#9ca3af;font-size:13px">No data yet</p>`;
+        const maxVal = rows[0][col2Key];
+        return rows.map((r,i) => `
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:700;color:#9ca3af;width:18px">${i+1}</span>
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600;color:var(--brown)">${r[col1Key]}</div>
+              <div style="background:#e5e7eb;border-radius:999px;height:6px;margin-top:3px">
+                <div style="background:var(--tan);width:${Math.round((r[col2Key]/maxVal)*100)}%;height:6px;border-radius:999px"></div>
+              </div>
+            </div>
+            <span style="font-size:13px;font-weight:700;color:var(--brown);white-space:nowrap">${r[col2Key]}</span>
+          </div>`).join('');
+      };
+
+      const successBadge = d.kpi.deliverySuccessRate !== null
+        ? `<span style="font-size:28px;font-weight:800;color:${d.kpi.deliverySuccessRate>=80?'#16a34a':d.kpi.deliverySuccessRate>=50?'#d97706':'#dc2626'}">${d.kpi.deliverySuccessRate}%</span>`
+        : `<span style="font-size:18px;color:#9ca3af">N/A</span>`;
+
+      setContent(`
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-title">Sales Analytics Dashboard</div>
+        <div class="sec-sub">Read-only overview · Last 30 days unless noted · Orders confirmed by Sales Representatives</div>
+      </div>
+    </div>
+
+    <!-- KPI Row -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px">
+      <div class="card" style="padding:18px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:var(--brown)">${d.kpi.thisMonth}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">Orders This Month</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:#166534">${d.kpi.totalConfirmed}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">Total Confirmed</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:#15803d">${d.kpi.totalDelivered}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">Total Delivered</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center">
+        <div style="font-size:28px;font-weight:800;color:#991b1b">${d.kpi.totalRejected}</div>
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">Total Rejected</div>
+      </div>
+      <div class="card" style="padding:18px;text-align:center">
+        ${successBadge}
+        <div style="font-size:12px;color:#6b7280;margin-top:4px">Delivery Success Rate<br><span style="font-size:10px">(last 30 days)</span></div>
+      </div>
+    </div>
+
+    <!-- Monthly Trend + Status Breakdown -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
+      <div class="card" style="padding:20px">
+        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:16px">📈 Monthly Order Trend</div>
+        <div style="display:flex;align-items:flex-end;gap:6px;height:110px">
+          ${d.monthly.length ? monthBars : '<p style="color:#9ca3af;font-size:13px">No data yet</p>'}
+        </div>
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:16px">📊 Orders by Status</div>
+        ${statusRows || '<p style="color:#9ca3af;font-size:13px">No data yet</p>'}
+      </div>
+    </div>
+
+    <!-- Top Lists -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+      <div class="card" style="padding:20px">
+        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px">🏙️ Top Cities <span style="font-size:11px;font-weight:400;color:#9ca3af">(last 30 days)</span></div>
+        ${topTable(d.topCities, 'City', 'Orders', 'city', 'count')}
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px">🏪 Top Retailers <span style="font-size:11px;font-weight:400;color:#9ca3af">(last 30 days)</span></div>
+        ${topTable(d.topRetailers, 'Retailer', 'Orders', 'retailer', 'count')}
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px">🛒 Top Products <span style="font-size:11px;font-weight:400;color:#9ca3af">(last 30 days)</span></div>
+        ${topTable(d.topProducts, 'Product', 'Units', 'productName', 'units')}
+      </div>
+    </div>
+      `);
     }
 
     async function pageDeliveries() {
