@@ -3041,6 +3041,27 @@
     function startPoll() { pollBadge(); pollTimer = setInterval(pollBadge, 12000); }
     function stopPoll() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
 
+    // ══ CITY / AREA LOOKUP ══════════════════════════
+    const CITY_AREAS = {
+      'Colombo':          ['Colombo 01 - Fort', 'Colombo 02 - Staples Street', 'Colombo 02 - Slave Island', 'Colombo 03 - Duplication Road', 'Colombo 03 - Green Path', 'Colombo 04 - Majestic City', 'Colombo 05 - Park Road', 'Colombo 06 - Wellawatte', 'Colombo 07 - Ward Place', 'Colombo 07 - Alexandra Place', 'Colombo 10 - Maligawatte'],
+      'Colombo Suburbs':  ['Nugegoda', 'Kohuwala', 'Maharagama', 'Dehiwala', 'Mount Lavinia', 'Boralesgamuwa', 'Piliyandala', 'Rajagiriya', 'Nawala', 'Malabe', 'Battaramulla'],
+      'Gampaha':          ['Negombo', 'Wattala', 'Ja-Ela', 'Gampaha', 'Kadawatha', 'Kelaniya'],
+      'Southern':         ['Galle', 'Matara', 'Ambalangoda', 'Beruwala', 'Aluthgama'],
+      'Central':          ['Kandy', 'Katugastota', 'Matale', 'Nuwara Eliya', 'Bandarawela'],
+      'North Western':    ['Kurunegala', 'Chilaw'],
+      'Sabaragamuwa':     ['Ratnapura', 'Kegalle', 'Warakapola', 'Avissawella']
+    };
+
+    function populateAreas(preselect) {
+      const citySel = document.getElementById('i-city');
+      const areaSel = document.getElementById('i-area');
+      if (!citySel || !areaSel) return;
+      const areas = CITY_AREAS[citySel.value] || [];
+      areaSel.innerHTML = '<option value="">Select area…</option>' +
+        areas.map(a => `<option${a === preselect ? ' selected' : ''}>${a}</option>`).join('');
+      areaSel.disabled = !areas.length;
+    }
+
     // ══ NAV ═════════════════════════════════════════
     const ROLE_PAGES = {
       retailer: [{ id: 'my-orders', ico: '📦', lbl: 'My Orders' }, { id: 'smart-order', ico: '✨', lbl: 'Smart Order' }, { id: 'ai-assistant', ico: '🤖', lbl: 'AI Assistant' }, { id: 'live-map', ico: '🗺️', lbl: 'Live Tracking' }],
@@ -3711,13 +3732,14 @@ RULES:
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
       const city = user.city || '';
 
-      const [lastProducts, suggestData, reminderData] = await Promise.all([
+      const [lastOrder, suggestData, reminderData] = await Promise.all([
         api('/orders/last-products'),
         api(`/suggest?city=${encodeURIComponent(city)}`).catch(() => null),
         api('/order-reminder').catch(() => null)
       ]);
+      window._lastOrder = (lastOrder && lastOrder.products?.length) ? lastOrder : null;
 
-      const hasLast    = Array.isArray(lastProducts) && lastProducts.length > 0;
+      const hasLast    = !!window._lastOrder;
       const hasSuggest = suggestData && !suggestData.error && suggestData.suggestions?.length;
 
       // Reminder banner
@@ -3757,22 +3779,34 @@ RULES:
       }
 
       // Last order section
-      const lastOrderHtml = hasLast ? `
-      <div class="card" style="max-width:760px;margin-bottom:16px">
-        <div class="card-title">🔄 Reorder from Last Order
-          <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Tap Reorder to pre-fill that product</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px">
-          ${lastProducts.map(p => `
-          <div style="border:1.5px solid var(--cream-dk);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--white)">
+      const lastOrderHtml = hasLast ? (() => {
+        const lo = window._lastOrder;
+        const productRows = lo.products.map(p => `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--cream-dk)">
+            <span style="font-size:13px;font-weight:600;color:var(--brown);flex:1">${escapeHtml(p.productName || '—')}</span>
+            <span class="lo-qty-display" style="font-size:13px;color:var(--brown-l);margin-right:8px">${p.items} units</span>
+            <input class="lo-qty-input" type="number" value="${p.items}" min="1"
+              style="display:none;width:72px;padding:4px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px;margin-right:8px">
+          </div>`).join('');
+        return `
+        <div class="card" style="max-width:760px;margin-bottom:16px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
             <div>
-              <div style="font-weight:700;font-size:13px;color:var(--brown)">${escapeHtml(p.productName || '—')}</div>
-              <div style="font-size:11px;color:var(--brown-l);margin-top:2px">Previously: ${p.items} units · ${p.orderedOn}</div>
+              <div class="card-title" style="margin-bottom:2px">🔄 Last Order</div>
+              <div style="font-size:12px;color:var(--brown-l)">${lo.orderDate} &nbsp;·&nbsp; ${lo.products.length} product${lo.products.length > 1 ? 's' : ''}</div>
             </div>
-            <button class="btn btn-tan btn-sm" onclick="smartReorder(${p.productId},'${escapeHtml(p.productName)}',${p.items})">Reorder</button>
-          </div>`).join('')}
-        </div>
-      </div>` : '';
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="toggleEditReorder()" id="btn-edit-reorder">✏️ Edit &amp; Reorder</button>
+              <button class="btn btn-tan btn-sm" onclick="reorderAll()">🔄 Reorder All</button>
+            </div>
+          </div>
+          <div id="last-order-list">${productRows}</div>
+          <div id="lo-confirm-row" style="display:none;margin-top:12px;gap:8px;justify-content:flex-end">
+            <button class="btn btn-ghost btn-sm" onclick="toggleEditReorder()">Cancel</button>
+            <button class="btn btn-tan btn-sm" onclick="confirmEditReorder()">✓ Add to Order</button>
+          </div>
+        </div>`;
+      })() : '';
 
       // Suggestion section
       const suggestHtml = hasSuggest ? `
@@ -3810,25 +3844,17 @@ RULES:
             <select id="i-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
           </div>
           <div class="fg">
-            <label>City <span style="color:var(--red)">*</span></label>
-            <select id="i-city">
-              <option value="">Select city…</option>
-              <option ${city==='Colombo'?'selected':''}>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
-              <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
-              <option>Peradeniya</option><option>Galle</option><option>Matara</option>
-              <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+            <label>Province <span style="color:var(--red)">*</span></label>
+            <select id="i-city" onchange="populateAreas()">
+              <option value="">Select province…</option>
+              ${Object.keys(CITY_AREAS).map(p => `<option>${p}</option>`).join('')}
             </select>
-            <div class="field-err" id="err-city">Please select a city.</div>
+            <div class="field-err" id="err-city">Please select a province.</div>
           </div>
           <div class="fg">
-            <label>Area <span style="color:var(--red)">*</span></label>
-            <select id="i-area">
-              <option value="">Select area…</option>
-              <option>Colombo 1</option><option>Colombo 2</option><option>Colombo 3</option>
-              <option>Colombo 4</option><option>Colombo 5</option><option>Colombo 6</option>
-              <option>Colombo 7</option><option>Colombo 8</option><option>Colombo 9</option>
-              <option>Colombo 10</option><option>Colombo 11</option><option>Colombo 12</option>
-              <option>Colombo 13</option><option>Colombo 14</option><option>Colombo 15</option>
+            <label>City / Area <span style="color:var(--red)">*</span></label>
+            <select id="i-area" disabled>
+              <option value="">Select province first…</option>
             </select>
             <div class="field-err" id="err-area">Please select an area.</div>
           </div>
@@ -3860,7 +3886,7 @@ RULES:
       await loadAllProducts();
       addOrderLine();
       updateDatePriority();
-      if (city) { const sel = document.getElementById('i-city'); if (sel) sel.value = city; }
+      if (city) { const sel = document.getElementById('i-city'); if (sel) { sel.value = city; populateAreas(); } }
 
       // ── Resubmit pre-fill (from Quick Resubmit / Edit & Resubmit in My Orders)
       const resubmitData = sessionStorage.getItem('resubmit');
@@ -3869,7 +3895,7 @@ RULES:
           const rd = JSON.parse(resubmitData);
           sessionStorage.removeItem('resubmit');
           setTimeout(() => {
-            if (rd.city)  { const el = document.getElementById('i-city');  if (el) el.value = rd.city; }
+            if (rd.city)  { const el = document.getElementById('i-city');  if (el) { el.value = rd.city; populateAreas(rd.area || ''); } }
             if (rd.prio)  { const el = document.getElementById('i-prio');  if (el) el.value = rd.prio; }
             if (rd.items) { const el = document.getElementById('line-1-items'); if (el) { el.value = rd.items; updateLineSummary(); } }
             if (rd.edit) {
@@ -3886,8 +3912,7 @@ RULES:
     }
 
     async function smartReorder(productId, productName, defaultQty) {
-      // Check if product is already on the form
-      const existing = document.querySelector(`[id^="line-"][id$="-product"][value="${productId}"]`);
+      const existing = [...document.querySelectorAll('[id^="line-"][id$="-product"]')].some(el => el.value === String(productId));
       if (existing) { toast(`"${escapeHtml(productName)}" already added — adjust the quantity`, '#8B6914'); return; }
       addOrderLine();
       const n = window._lineCounter;
@@ -3897,6 +3922,54 @@ RULES:
         if (sel)   { sel.value = String(productId); checkStockLine(n); }
         if (items) { items.value = String(defaultQty); updateLineSummary(); }
       }, 80);
+    }
+
+    function _addBatchToForm(products) {
+      const cityEl = document.getElementById('i-city');
+      const lo = window._lastOrder;
+      if (cityEl && lo?.city && CITY_AREAS[lo.city]) { cityEl.value = lo.city; populateAreas(lo.area || ''); }
+      products.forEach((p, i) => {
+        const alreadyAdded = [...document.querySelectorAll('[id^="line-"][id$="-product"]')].some(el => el.value === String(p.productId));
+        if (alreadyAdded) return;
+        addOrderLine();
+        const n = window._lineCounter;
+        setTimeout(() => {
+          const sel   = document.getElementById(`line-${n}-product`);
+          const items = document.getElementById(`line-${n}-items`);
+          if (sel)   { sel.value = String(p.productId); checkStockLine(n); }
+          if (items) { items.value = String(p.items); updateLineSummary(); }
+        }, 100 + i * 80);
+      });
+      setTimeout(() => { document.getElementById('order-lines')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 150);
+    }
+
+    function reorderAll() {
+      const lo = window._lastOrder;
+      if (!lo) return;
+      _addBatchToForm(lo.products);
+      toast(`✅ ${lo.products.length} product(s) pre-filled from last order`, '#16a34a');
+    }
+
+    function toggleEditReorder() {
+      const displays    = document.querySelectorAll('#last-order-list .lo-qty-display');
+      const inputs      = document.querySelectorAll('#last-order-list .lo-qty-input');
+      const confirmRow  = document.getElementById('lo-confirm-row');
+      const editBtn     = document.getElementById('btn-edit-reorder');
+      const isEditing   = inputs[0] && inputs[0].style.display !== 'none';
+      displays.forEach(el => el.style.display = isEditing ? '' : 'none');
+      inputs.forEach(el => el.style.display = isEditing ? 'none' : 'inline-block');
+      if (confirmRow) confirmRow.style.display = isEditing ? 'none' : 'flex';
+      if (editBtn) editBtn.textContent = isEditing ? '✏️ Edit & Reorder' : '✕ Cancel Edit';
+    }
+
+    function confirmEditReorder() {
+      const lo = window._lastOrder;
+      if (!lo) return;
+      const inputs = [...document.querySelectorAll('#last-order-list .lo-qty-input')];
+      const edited = lo.products.map((p, i) => ({ ...p, items: Math.max(1, parseInt(inputs[i]?.value) || p.items) }));
+      _addBatchToForm(edited);
+      toast(`✅ Edited order pre-filled — review and submit`, '#16a34a');
+      toggleEditReorder();
     }
 
     async function updateReminderFrequency(freq) {
@@ -3952,25 +4025,17 @@ RULES:
           <select id="i-prio"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option></select>
         </div>
         <div class="fg">
-          <label>City <span style="color:var(--red)">*</span></label>
-          <select id="i-city">
-            <option value="">Select city…</option>
-            <option>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
-            <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
-            <option>Peradeniya</option><option>Galle</option><option>Matara</option>
-            <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+          <label>Province <span style="color:var(--red)">*</span></label>
+          <select id="i-city" onchange="populateAreas()">
+            <option value="">Select province…</option>
+            ${Object.keys(CITY_AREAS).map(p => `<option>${p}</option>`).join('')}
           </select>
-          <div class="field-err" id="err-city">Please select a city.</div>
+          <div class="field-err" id="err-city">Please select a province.</div>
         </div>
         <div class="fg">
-          <label>Area <span style="color:var(--red)">*</span></label>
-          <select id="i-area">
-            <option value="">Select area…</option>
-            <option>Colombo 1</option><option>Colombo 2</option><option>Colombo 3</option>
-            <option>Colombo 4</option><option>Colombo 5</option><option>Colombo 6</option>
-            <option>Colombo 7</option><option>Colombo 8</option><option>Colombo 9</option>
-            <option>Colombo 10</option><option>Colombo 11</option><option>Colombo 12</option>
-            <option>Colombo 13</option><option>Colombo 14</option><option>Colombo 15</option>
+          <label>City / Area <span style="color:var(--red)">*</span></label>
+          <select id="i-area" disabled>
+            <option value="">Select province first…</option>
           </select>
           <div class="field-err" id="err-area">Please select an area.</div>
         </div>
@@ -4016,7 +4081,7 @@ RULES:
           const rd = JSON.parse(resubmitData);
           sessionStorage.removeItem('resubmit');
           setTimeout(() => {
-            if (rd.city) { const el = document.getElementById('i-city'); if (el) el.value = rd.city; }
+            if (rd.city) { const el = document.getElementById('i-city'); if (el) { el.value = rd.city; populateAreas(rd.area || ''); } }
             if (rd.prio) { const el = document.getElementById('i-prio'); if (el) el.value = rd.prio; }
             const lp = document.getElementById('line-1-product');
             if (lp && rd.productId) lp.value = rd.productId;
