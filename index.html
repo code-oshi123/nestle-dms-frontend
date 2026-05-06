@@ -2861,7 +2861,7 @@
         <p id="reminder-msg" style="color:var(--brown-m);margin-bottom:18px;line-height:1.6"></p>
         <div class="modal-actions" style="justify-content:center">
           <button class="btn btn-ghost" onclick="closeModal('m-order-reminder')">Remind Me Later</button>
-          <button class="btn btn-tan" onclick="closeModal('m-order-reminder');nav('req-order')">Place Order Now →</button>
+          <button class="btn btn-tan" onclick="closeModal('m-order-reminder');nav('smart-order')">Place Order Now →</button>
         </div>
       </div>
     </div>
@@ -3555,13 +3555,13 @@ RULES:
           reminderBanner = `
     <div class="alert-banner" style="background:#FFF3E0;border:1.5px solid #FFB74D;color:#E65100;margin-bottom:18px;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <span>⏰ <strong>Your ${reminder.frequency} order is overdue</strong> — ${daysLate} day${daysLate !== 1 ? 's' : ''} late. Time to restock!</span>
-      <button class="btn btn-tan btn-sm" onclick="nav('req-order')">Place Order →</button>
+      <button class="btn btn-tan btn-sm" onclick="nav('smart-order')">Place Order →</button>
     </div>`;
         } else if (reminder.daysUntilDue !== null && reminder.daysUntilDue <= 2) {
           reminderBanner = `
     <div class="alert-banner" style="background:#E8F5E9;border:1.5px solid #A5D6A7;color:#1B5E20;margin-bottom:18px;justify-content:space-between;flex-wrap:wrap;gap:8px">
       <span>📅 <strong>Your next order is due in ${reminder.daysUntilDue} day${reminder.daysUntilDue !== 1 ? 's' : ''}</strong> (${reminder.frequency} schedule).</span>
-      <button class="btn btn-tan btn-sm" onclick="nav('req-order')">Order Now →</button>
+      <button class="btn btn-tan btn-sm" onclick="nav('smart-order')">Order Now →</button>
     </div>`;
         }
       }
@@ -3569,7 +3569,7 @@ RULES:
       setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">My Orders</div><div class="sec-sub">Track your submitted orders and confirm deliveries</div></div>
-      <button class="btn btn-tan" onclick="nav('req-order')">+ New Request</button>
+      <button class="btn btn-tan" onclick="nav('smart-order')">+ New Request</button>
     </div>
     ${reminderBanner}
     ${rejectionBanner}
@@ -3669,14 +3669,14 @@ RULES:
       const original = await api(`/orders/${orderId}/details`).catch(() => null);
       // Navigate to request order page with pre-filled values stored in sessionStorage
       sessionStorage.setItem('resubmit', JSON.stringify({ city, items, prio, fromOrderId: orderId }));
-      nav('req-order');
+      nav('smart-order');
       toast('📝 Form pre-filled with your previous order details — review and submit', '#1565C0');
     }
 
     // ── Edit and resubmit — navigate to form with all fields pre-filled for editing
     function editAndResubmit(orderId, city, items, prio) {
       sessionStorage.setItem('resubmit', JSON.stringify({ city, items, prio, fromOrderId: orderId, edit: true }));
-      nav('req-order');
+      nav('smart-order');
       toast('✏️ Edit your order details and resubmit', '#8B6914');
     }
 
@@ -3860,6 +3860,28 @@ RULES:
       addOrderLine();
       updateDatePriority();
       if (city) { const sel = document.getElementById('i-city'); if (sel) sel.value = city; }
+
+      // ── Resubmit pre-fill (from Quick Resubmit / Edit & Resubmit in My Orders)
+      const resubmitData = sessionStorage.getItem('resubmit');
+      if (resubmitData) {
+        try {
+          const rd = JSON.parse(resubmitData);
+          sessionStorage.removeItem('resubmit');
+          setTimeout(() => {
+            if (rd.city)  { const el = document.getElementById('i-city');  if (el) el.value = rd.city; }
+            if (rd.prio)  { const el = document.getElementById('i-prio');  if (el) el.value = rd.prio; }
+            if (rd.items) { const el = document.getElementById('line-1-items'); if (el) { el.value = rd.items; updateLineSummary(); } }
+            if (rd.edit) {
+              const notice = document.createElement('div');
+              notice.className = 'alert-banner alert-info';
+              notice.style.marginBottom = '12px';
+              notice.textContent = `✏️ Pre-filled from order #${rd.fromOrderId} — review and submit`;
+              const card = document.querySelector('.card');
+              if (card) card.insertAdjacentElement('beforebegin', notice);
+            }
+          }, 120);
+        } catch { sessionStorage.removeItem('resubmit'); }
+      }
     }
 
     async function smartReorder(productId, productName, defaultQty) {
