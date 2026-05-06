@@ -3802,93 +3802,47 @@ RULES:
         }
       }
 
-      // Last order section
-      const lastOrderHtml = hasLast ? (() => {
-        const lo        = window._lastOrder;
-        const validCity = CITY_AREAS[lo.city];
-
-        // Stock check per product
-        let issueCount = 0;
-        const productRows = lo.products.map(p => {
-          const stock = window._stockMap[p.productId];
-          const avail = stock ? parseInt(stock.availableUnits) : null;
-          let badge = '', stockNote = '';
-          if (avail === null) {
-            badge = ''; // unknown — don't block
-          } else if (avail === 0) {
-            badge = '<span style="font-size:11px;color:#dc2626;font-weight:700;margin-left:6px">❌ Out of stock</span>';
-            issueCount++;
-          } else if (avail < p.items) {
-            badge = `<span style="font-size:11px;color:#d97706;font-weight:700;margin-left:6px">⚠️ Only ${avail} available</span>`;
-            issueCount++;
-          } else {
-            badge = '<span style="font-size:11px;color:#16a34a;font-weight:700;margin-left:6px">✅</span>';
-          }
-          return `
+      // Suggestion section — last order for returning retailers, popular products for new
+      let suggestHtml = '';
+      if (hasLast) {
+        const lo = window._lastOrder;
+        const productRows = lo.products.map(p => `
           <div style="display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--cream-dk);gap:8px">
-            <div style="flex:1;min-width:0">
-              <span style="font-size:13px;font-weight:600;color:var(--brown)">${escapeHtml(p.productName || '—')}</span>
-              ${badge}
-            </div>
+            <span style="font-size:13px;font-weight:600;color:var(--brown);flex:1">${escapeHtml(p.productName || '—')}</span>
             <span class="lo-qty-display" style="font-size:13px;color:var(--brown-l);white-space:nowrap">${p.items} units</span>
             <input class="lo-qty-input" type="number" value="${p.items}" min="1"
               style="display:none;width:72px;padding:4px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px">
-          </div>`;
-        }).join('');
-
-        const warningBanner = issueCount > 0 ? `
-          <div style="background:#FFF8E1;border:1.5px solid #FBC02D;border-radius:8px;padding:10px 14px;margin:12px 0;font-size:12px;color:#5D4037">
-            ⚠️ <strong>${issueCount} product${issueCount > 1 ? 's have' : ' has'} stock issues.</strong>
-            Confirm anyway to join the waitlist, or Edit to adjust quantities.
-          </div>` : '';
-
-        const invalidCityNote = !validCity ? `
-          <div style="background:#FFF3E0;border:1.5px solid #FFB74D;border-radius:8px;padding:10px 14px;margin:12px 0;font-size:12px;color:#E65100">
-            ⚠️ <strong>Outdated delivery location.</strong> Select province &amp; area in the form below before confirming.
-          </div>` : '';
-
-        const confirmBtn = validCity
-          ? `<button class="btn btn-tan btn-sm" id="lo-confirm-btn"
-               onclick="confirmLastOrder(this)">
-               ${issueCount > 0 ? '⚠️ Confirm Anyway' : '✓ Confirm Order'}
-             </button>`
-          : `<button class="btn btn-tan btn-sm" disabled style="opacity:0.5;cursor:not-allowed">✓ Confirm Order</button>`;
-
-        return `
-        <div class="card" style="max-width:760px;margin-bottom:16px">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-            <div>
-              <div class="card-title" style="margin-bottom:2px">🔄 Last Order</div>
-              <div style="font-size:12px;color:var(--brown-l)">${lo.orderDate} &nbsp;·&nbsp; ${lo.city || '—'} &nbsp;·&nbsp; ${lo.products.length} product${lo.products.length > 1 ? 's' : ''}</div>
-            </div>
+          </div>`).join('');
+        suggestHtml = `
+        <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
+          <div class="card-title" style="color:var(--green);margin-bottom:4px">✨ Personalised Suggestions
+            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on your last order · ${lo.orderDate}</span>
           </div>
           <div id="last-order-list">${productRows}</div>
-          ${warningBanner}${invalidCityNote}
-          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+          <div id="lo-main-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
             <button class="btn btn-ghost btn-sm" id="lo-edit-btn" onclick="toggleLastOrderEdit()">✏️ Edit</button>
-            ${confirmBtn}
+            <button class="btn btn-tan btn-sm" id="lo-confirm-btn" onclick="confirmLastOrder(this)">✓ Confirm Order</button>
           </div>
           <div id="lo-edit-actions" style="display:none;justify-content:flex-end;gap:8px;margin-top:10px">
             <button class="btn btn-ghost btn-sm" onclick="toggleLastOrderEdit()">Cancel</button>
             <button class="btn btn-tan btn-sm" onclick="submitEditedLastOrder(this)">✓ Confirm Order</button>
           </div>
         </div>`;
-      })() : '';
-
-      // Suggestion section
-      const suggestHtml = hasSuggest ? `
-      <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
-        <div class="card-title" style="color:var(--green)">✨ Personalised Suggestions
-          <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on ${escapeHtml(suggestData.suggestions[0]?.basis || 'your activity')}</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:8px">
-          ${suggestData.suggestions.map(s => `
-          <div style="border:1.5px solid #a8d5ba;border-radius:10px;padding:12px;text-align:center;background:#f0faf4">
-            <div style="font-weight:700;font-size:12px;color:var(--brown);margin-bottom:8px">${escapeHtml(s.productName)}</div>
-            <button class="btn btn-green btn-sm" style="width:100%" onclick="smartReorder(${s.productId},'${escapeHtml(s.productName)}',1)">+ Add</button>
-          </div>`).join('')}
-        </div>
-      </div>` : '';
+      } else if (hasSuggest) {
+        suggestHtml = `
+        <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
+          <div class="card-title" style="color:var(--green)">✨ Personalised Suggestions
+            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on ${escapeHtml(suggestData.suggestions[0]?.basis || 'your area')}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:8px">
+            ${suggestData.suggestions.map(s => `
+            <div style="border:1.5px solid #a8d5ba;border-radius:10px;padding:12px;text-align:center;background:#f0faf4">
+              <div style="font-weight:700;font-size:12px;color:var(--brown);margin-bottom:8px">${escapeHtml(s.productName)}</div>
+              <button class="btn btn-green btn-sm" style="width:100%" onclick="smartReorder(${s.productId},'${escapeHtml(s.productName)}',1)">+ Add</button>
+            </div>`).join('')}
+          </div>
+        </div>`;
+      }
 
       setContent(`
       <div class="sec-hdr">
@@ -3896,7 +3850,6 @@ RULES:
         <div class="sec-sub">Reorder past products, explore suggestions, and place your order below</div></div>
       </div>
       ${reminderBanner}
-      ${lastOrderHtml}
       ${suggestHtml}
       <div class="card" style="max-width:760px">
         <div class="card-title">📋 New Order</div>
