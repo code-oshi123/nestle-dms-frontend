@@ -6166,16 +6166,16 @@ RULES:
       if (data.error) { setContent(`<div class="alert-banner alert-error">❌ ${data.error}</div>`); return; }
       setContent(`
         <div class="sec-hdr"><div><div class="sec-title">Retailers</div>
-        <div class="sec-sub">All retailers who have placed orders</div></div>
-        <span class="badge b-gray" style="font-size:13px;padding:6px 14px">${data.length} retailers</span></div>
+        <div class="sec-sub">Retailers registered in your assigned city</div></div>
+        <span class="badge b-gray" style="font-size:13px;padding:6px 14px">${data.length} Retailers</span></div>
         <div class="card"><div class="tw"><table>
-          <thead><tr><th>Retailer Name</th><th>City</th><th>Area</th></tr></thead>
+          <thead><tr><th>Retailer Name</th><th>City</th><th>Email</th></tr></thead>
           <tbody>${data.length ? data.map(r => `
             <tr>
               <td><strong>${escapeHtml(r.retailerName)}</strong></td>
               <td>${r.city || '—'}</td>
-              <td style="font-size:12px;color:var(--brown-m)">${r.area || '—'}</td>
-            </tr>`).join('') : '<tr><td colspan="3"><div class="empty"><div>No retailers found.</div></div></td></tr>'}
+              <td style="font-size:12px;color:var(--brown-m);font-family:'DM Mono',monospace">${escapeHtml(r.email || '—')}</td>
+            </tr>`).join('') : '<tr><td colspan="3"><div class="empty"><div>No retailers found in your city.</div></div></td></tr>'}
           </tbody></table></div></div>`);
     }
 
