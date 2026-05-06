@@ -6097,7 +6097,7 @@ RULES:
           <div><div class="sec-title">Pending Orders — Your City</div>
           <div class="sec-sub">Confirm all or reject individually · Route auto-assigns to distributor after every 3rd confirmation</div></div>
           <span class="badge ${canConfirm ? 'b-green' : 'b-orange'}" style="font-size:13px;padding:6px 14px">
-            ${data.length} pending ${canConfirm ? '✅ Ready' : `(need ${3 - data.length} more)`}
+            ${data.length} Pending ${canConfirm ? '✅ Ready' : `(need ${3 - data.length} more)`}
           </span>
         </div>
         ${canConfirm
@@ -6109,20 +6109,29 @@ RULES:
               ⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city.
              </div>`}
         <div class="card"><div class="tw"><table>
-          <thead><tr><th>ID</th><th>Retailer</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Action</th></tr></thead>
-          <tbody>${data.length ? data.map(o => `
-            <tr>
-              <td><span class="mono">${o.id}</span></td>
+          <thead><tr><th>Order ID</th><th>Retailer</th><th>Area</th><th>Products</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Action</th></tr></thead>
+          <tbody>${data.length ? data.map(o => {
+            const productLines = (o.products || []).map(p =>
+              `<div style="font-size:11px;color:var(--brown-m);white-space:nowrap">${escapeHtml(p.productName || '—')} × ${p.items}</div>`
+            ).join('');
+            const idsStr = (o.ids || [o.batchId]).join(',');
+            return `
+            <tr data-ids="${idsStr}">
+              <td><span class="mono">#${o.batchId}</span></td>
               <td><strong>${escapeHtml(o.retailer)}</strong></td>
               <td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
-              <td>${o.items} items · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
+              <td>
+                ${productLines}
+                <div style="font-size:11px;color:var(--brown-l);margin-top:3px">${o.items} units total</div>
+              </td>
               <td>${prioBadge(o.prio)}</td>
               <td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--brown-m)">${o.orderDate || '—'}</td>
-              <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
+              <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created || '—'}</td>
               <td>
-                <button class="btn btn-red btn-sm" onclick="doSrReject(${o.id},'${escapeHtml(o.retailer)}')">✕ Reject</button>
+                <button class="btn btn-red btn-sm" onclick="doSrReject('${idsStr}','${escapeHtml(o.retailer)}')">✕ Reject</button>
               </td>
-            </tr>`).join('')
+            </tr>`;
+          }).join('')
             : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No pending orders for your city.</div></div></td></tr>'}
           </tbody></table></div></div>
 
@@ -6130,7 +6139,7 @@ RULES:
           <div class="modal" style="max-width:420px">
             <div class="modal-title">✕ Reject Order</div>
             <div class="modal-body">
-              <input type="hidden" id="sr-reject-id"/>
+              <input type="hidden" id="sr-reject-ids"/>
               <div class="fg"><label>Rejection Category *</label>
                 <select id="sr-reject-cat">
                   <option value="">Select category…</option>
@@ -6539,8 +6548,9 @@ RULES:
 
     // ── SALES REP CONFIRM ALL / REJECT ───────────────
     async function doSrConfirmAll() {
-      const rows = document.querySelectorAll('tbody tr td .mono');
-      const ids  = Array.from(rows).map(el => parseInt(el.textContent)).filter(Boolean);
+      // Collect all individual order IDs across every batch row
+      const ids = [...document.querySelectorAll('tbody tr[data-ids]')]
+        .flatMap(row => row.dataset.ids.split(',').map(Number).filter(Boolean));
       if (!ids.length) return;
 
       const btn = document.querySelector('[onclick="doSrConfirmAll()"]');
@@ -6564,8 +6574,8 @@ RULES:
       pageSrOrders();
     }
 
-    function doSrReject(orderId, retailerName) {
-      document.getElementById('sr-reject-id').value = orderId;
+    function doSrReject(idsStr, retailerName) {
+      document.getElementById('sr-reject-ids').value = idsStr;
       document.getElementById('sr-reject-reason').value = '';
       document.getElementById('sr-reject-cat').value = '';
       document.getElementById('sr-reject-err').style.display = 'none';
@@ -6573,18 +6583,23 @@ RULES:
     }
 
     async function confirmSrReject() {
-      const orderId  = document.getElementById('sr-reject-id').value;
+      const idsStr   = document.getElementById('sr-reject-ids').value;
+      const ids      = idsStr.split(',').map(Number).filter(Boolean);
       const reason   = document.getElementById('sr-reject-reason').value.trim();
       const category = document.getElementById('sr-reject-cat').value;
       const errEl    = document.getElementById('sr-reject-err');
       if (!reason) { errEl.textContent = '⚠️ Please provide a rejection reason.'; errEl.style.display = 'flex'; return; }
       if (!category) { errEl.textContent = '⚠️ Please select a category.'; errEl.style.display = 'flex'; return; }
-      const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
-        action: 'reject', confirmedBy: user.name, rejectReason: reason, rejectCategory: category
-      });
-      if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; }
+      let lastErr = null;
+      for (const orderId of ids) {
+        const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
+          action: 'reject', confirmedBy: user.name, rejectReason: reason, rejectCategory: category
+        });
+        if (r.error) lastErr = r.error;
+      }
+      if (lastErr) { errEl.textContent = `❌ ${lastErr}`; errEl.style.display = 'flex'; return; }
       closeModal('m-sr-reject');
-      toast(`Order ${orderId} rejected — retailer notified`);
+      toast(`Order rejected — retailer notified`);
       pollBadge();
       pageSrOrders();
     }
