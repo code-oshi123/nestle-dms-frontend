@@ -3807,10 +3807,11 @@ RULES:
       if (hasLast) {
         const lo = window._lastOrder;
         const productRows = lo.products.map(p => `
-          <div style="display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--cream-dk);gap:8px">
+          <div data-product-id="${p.productId}" data-product-name="${escapeHtml(p.productName || '')}"
+               style="display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--cream-dk);gap:8px">
             <span style="font-size:13px;font-weight:600;color:var(--brown);flex:1">${escapeHtml(p.productName || '—')}</span>
             <span class="lo-qty-display" style="font-size:13px;color:var(--brown-l);white-space:nowrap">${p.items} units</span>
-            <input class="lo-qty-input" type="number" value="${p.items}" min="1"
+            <input class="lo-qty-input" type="number" value="${p.items}" min="1" data-original-qty="${p.items}"
               style="display:none;width:72px;padding:4px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px">
           </div>`).join('');
         suggestHtml = `
@@ -3819,6 +3820,17 @@ RULES:
             <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on your last order · ${lo.orderDate}</span>
           </div>
           <div id="last-order-list">${productRows}</div>
+          <div id="lo-add-product" style="display:none;margin-top:12px;padding-top:12px;border-top:1.5px dashed var(--cream-dk)">
+            <div style="font-size:12px;font-weight:600;color:var(--brown);margin-bottom:8px">Add a product</div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="lo-product-select" style="flex:1;min-width:180px;padding:6px 10px;border:1.5px solid var(--cream-dk);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px;background:#fff">
+                <option value="">Select product…</option>
+              </select>
+              <input type="number" id="lo-add-qty" value="1" min="1"
+                style="width:72px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:8px;font-family:'Jost',sans-serif;font-size:13px">
+              <button class="btn btn-green btn-sm" onclick="addProductToLastOrder()">+ Add</button>
+            </div>
+          </div>
           <div id="lo-main-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
             <button class="btn btn-ghost btn-sm" id="lo-edit-btn" onclick="toggleLastOrderEdit()">✏️ Edit</button>
             <button class="btn btn-tan btn-sm" id="lo-confirm-btn" onclick="confirmLastOrder(this)">✓ Confirm Order</button>
@@ -3945,17 +3957,48 @@ RULES:
     }
 
     function toggleLastOrderEdit() {
-      const displays   = document.querySelectorAll('#last-order-list .lo-qty-display');
-      const inputs     = document.querySelectorAll('#last-order-list .lo-qty-input');
-      const mainBtns   = document.querySelector('#lo-confirm-btn')?.parentElement;
+      const displays    = document.querySelectorAll('#last-order-list .lo-qty-display');
+      const inputs      = document.querySelectorAll('#last-order-list .lo-qty-input');
+      const mainBtns    = document.getElementById('lo-main-actions');
       const editActions = document.getElementById('lo-edit-actions');
-      const editBtn    = document.getElementById('lo-edit-btn');
-      const isEditing  = inputs[0] && inputs[0].style.display !== 'none';
-      displays.forEach(el => el.style.display = isEditing ? '' : 'none');
-      inputs.forEach(el => el.style.display = isEditing ? 'none' : 'inline-block');
-      if (mainBtns)    mainBtns.style.display    = isEditing ? 'flex' : 'none';
-      if (editActions) editActions.style.display  = isEditing ? 'none' : 'flex';
-      if (editBtn)     editBtn.style.display      = isEditing ? 'inline-block' : 'none';
+      const editBtn     = document.getElementById('lo-edit-btn');
+      const addPanel    = document.getElementById('lo-add-product');
+      const isEditing   = inputs[0] && inputs[0].style.display !== 'none';
+
+      if (isEditing) {
+        // Cancel — remove dynamically added rows, restore original quantities
+        document.querySelectorAll('#last-order-list [data-added="true"]').forEach(el => el.remove());
+        document.querySelectorAll('#last-order-list .lo-qty-input').forEach(el => {
+          el.value = el.dataset.originalQty || el.value;
+          el.style.display = 'none';
+        });
+        document.querySelectorAll('#last-order-list .lo-qty-display').forEach(el => el.style.display = '');
+        if (mainBtns)    mainBtns.style.display    = 'flex';
+        if (editActions) editActions.style.display  = 'none';
+        if (editBtn)     editBtn.style.display      = 'inline-block';
+        if (addPanel)    addPanel.style.display     = 'none';
+      } else {
+        // Enter edit mode
+        displays.forEach(el => el.style.display = 'none');
+        inputs.forEach(el => el.style.display = 'inline-block');
+        if (mainBtns)    mainBtns.style.display    = 'none';
+        if (editActions) editActions.style.display  = 'flex';
+        if (editBtn)     editBtn.style.display      = 'none';
+        if (addPanel) {
+          addPanel.style.display = 'block';
+          const select = document.getElementById('lo-product-select');
+          if (select && select.options.length <= 1) {
+            Object.values(window._stockMap || {})
+              .sort((a, b) => (a.productName || '').localeCompare(b.productName || ''))
+              .forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = s.productName || `Product ${s.id}`;
+                select.appendChild(opt);
+              });
+          }
+        }
+      }
     }
 
     async function confirmLastOrder(btn) {
@@ -3966,12 +4009,51 @@ RULES:
     }
 
     async function submitEditedLastOrder(btn) {
-      const lo = window._lastOrder;
-      if (!lo) return;
-      const inputs = [...document.querySelectorAll('#last-order-list .lo-qty-input')];
-      const edited = lo.products.map((p, i) => ({ ...p, items: Math.max(1, parseInt(inputs[i]?.value) || p.items) }));
+      if (!window._lastOrder) return;
+      const rows = [...document.querySelectorAll('#last-order-list [data-product-id]')];
+      const edited = rows.map(row => ({
+        productId:   parseInt(row.dataset.productId),
+        productName: row.dataset.productName,
+        items:       Math.max(1, parseInt(row.querySelector('.lo-qty-input')?.value) || 1)
+      }));
+      if (!edited.length) return;
       if (btn) { btn.disabled = true; btn.textContent = 'Placing order…'; }
       await _submitLastOrderBatch(edited, btn);
+    }
+
+    function addProductToLastOrder() {
+      const select = document.getElementById('lo-product-select');
+      const qtyInput = document.getElementById('lo-add-qty');
+      const productId = parseInt(select?.value);
+      if (!productId) return;
+      const productName = select.options[select.selectedIndex]?.text || '';
+      const qty = Math.max(1, parseInt(qtyInput?.value) || 1);
+
+      // If already in list, just increase its quantity
+      const existing = document.querySelector(`#last-order-list [data-product-id="${productId}"]`);
+      if (existing) {
+        const inp = existing.querySelector('.lo-qty-input');
+        if (inp) inp.value = (parseInt(inp.value) || 0) + qty;
+        select.value = '';
+        qtyInput.value = 1;
+        return;
+      }
+
+      // Append new row (already in edit mode — input visible, display hidden)
+      const list = document.getElementById('last-order-list');
+      const row = document.createElement('div');
+      row.dataset.productId   = productId;
+      row.dataset.productName = productName;
+      row.dataset.added       = 'true';
+      row.style.cssText = 'display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--cream-dk);gap:8px';
+      row.innerHTML = `
+        <span style="font-size:13px;font-weight:600;color:var(--brown);flex:1">${escapeHtml(productName)}</span>
+        <span class="lo-qty-display" style="display:none;font-size:13px;color:var(--brown-l);white-space:nowrap">${qty} units</span>
+        <input class="lo-qty-input" type="number" value="${qty}" min="1" data-original-qty="${qty}"
+          style="display:inline-block;width:72px;padding:4px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px">`;
+      list.appendChild(row);
+      select.value = '';
+      qtyInput.value = 1;
     }
 
     async function _submitLastOrderBatch(products, btn) {
