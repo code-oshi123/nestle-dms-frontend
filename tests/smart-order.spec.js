@@ -8,7 +8,7 @@ const { test, expect } = require('@playwright/test');
 const BASE_URL = process.env.BASE_URL || 'https://nestle-dms-frontend.vercel.app';
 
 async function openApp(page) {
-  await page.goto(BASE_URL, { waitUntil: 'domcontentloaded' });
+  await page.goto(BASE_URL);
 }
 
 /* ================= GLOBAL CONFIG ================= */
