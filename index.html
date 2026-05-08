@@ -3797,10 +3797,19 @@ RULES:
     // ══ SMART ORDER PAGE ════════════════════════════
     async function pageSmartOrder() {
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+
+      // Refresh user.city from DB in case it changed since last login
+      const me = await api('/me').catch(() => null);
+      if (me && !me.error && me.id === user.id) {
+        user.city = me.city || user.city;
+        user.assignedCity = me.assignedCity || user.assignedCity;
+        localStorage.setItem('dms_user', JSON.stringify(user));
+      }
+
       const city = user.city || '';
 
       const [lastOrder, suggestData, reminderData, stockData] = await Promise.all([
-        api('/orders/last-products'),
+        api('/orders/last-products?_t=' + Date.now()),
         api(`/suggest?city=${encodeURIComponent(city)}`).catch(() => null),
         api('/order-reminder').catch(() => null),
         api('/stock').catch(() => null)
@@ -3871,7 +3880,10 @@ RULES:
         suggestHtml = `
         <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
           <div class="card-title" style="color:var(--green);margin-bottom:4px">✨ Personalised Suggestions
-            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on your last order · ${lo.orderDate}</span>
+            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on your last order · ${lo.orderDate || 'recent'}</span>
+          </div>
+          <div style="font-size:12px;color:var(--brown-m);margin-bottom:10px">
+            📍 Delivery to: <strong>${escapeHtml(user.city || lo.city || '—')}</strong> · ${escapeHtml((() => { const p = user.city || lo.city; const va = CITY_AREAS[p] || []; return (va.length && !va.includes(lo.area)) ? va[0] : (lo.area || '—'); })())}
           </div>
           <div id="last-order-list">${productRows}</div>
           <div id="lo-add-product" style="display:none;margin-top:12px;padding-top:12px;border-top:1.5px dashed var(--cream-dk)">
@@ -4113,9 +4125,12 @@ RULES:
     async function _submitLastOrderBatch(products, btn) {
       const lo      = window._lastOrder;
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+      const province    = user.city || lo.city;
+      const validAreas  = CITY_AREAS[province] || [];
+      const resolvedArea = (validAreas.length && !validAreas.includes(lo.area)) ? validAreas[0] : lo.area;
       const orders  = products.map(p => ({
-        city:        user.city || lo.city,
-        area:        lo.area,
+        city:        province,
+        area:        resolvedArea,
         productId:   p.productId,
         productName: p.productName,
         items:       p.items,
@@ -4136,13 +4151,13 @@ RULES:
         toast(`✅ ${placed} order${placed > 1 ? 's' : ''} placed — Sales Rep notified 🔔${skipped ? ` · ${skipped} line(s) need attention` : ''}`, '#16a34a');
         pollBadge();
         if (skipped) {
-          showWaitlistOptions(r.failed, user.city || lo.city, lo.area);
+          showWaitlistOptions(r.failed, province, resolvedArea);
         } else {
           nav('my-orders');
         }
       } else if (r.failed?.length) {
         toast(`❌ All lines failed — stock unavailable`, '#B71C1C');
-        showWaitlistOptions(r.failed, user.city || lo.city, lo.area);
+        showWaitlistOptions(r.failed, province, resolvedArea);
         if (btn) { btn.disabled = false; btn.textContent = '⚠️ Confirm Anyway'; }
       }
     }
