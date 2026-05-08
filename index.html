@@ -3613,7 +3613,7 @@ RULES:
               </div>
               <div style="display:flex;gap:8px">
                 <button class="btn btn-ghost btn-sm" onclick="editAndResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">✏️ Edit & Resubmit</button>
-                <button class="btn btn-tan btn-sm" onclick="quickResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">🔄 Quick Resubmit</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--brown-l);border-color:var(--cream-dk)" onclick="dismissOrder('${o.id}')">✕ Dismiss</button>
               </div>
             </div>
             <div style="background:#FFF5F5;border-radius:8px;padding:10px 12px;margin-bottom:8px">
@@ -3750,6 +3750,13 @@ RULES:
       </div>
     </div>
   </div>`);
+    }
+
+    async function dismissOrder(orderId) {
+      if (!confirm('Dismiss this rejected order? It will be removed from your orders list.')) return;
+      const r = await api(`/orders/${orderId}/dismiss`, 'POST');
+      if (r.error) return alert('Could not dismiss: ' + r.error);
+      nav('my-orders');
     }
 
     // ── Quick resubmit — same details, new order
