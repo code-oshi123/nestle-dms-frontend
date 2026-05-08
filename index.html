@@ -4114,7 +4114,7 @@ RULES:
       const lo      = window._lastOrder;
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
       const orders  = products.map(p => ({
-        city:        lo.city,
+        city:        user.city || lo.city,
         area:        lo.area,
         productId:   p.productId,
         productName: p.productName,
@@ -4136,13 +4136,13 @@ RULES:
         toast(`✅ ${placed} order${placed > 1 ? 's' : ''} placed — Sales Rep notified 🔔${skipped ? ` · ${skipped} line(s) need attention` : ''}`, '#16a34a');
         pollBadge();
         if (skipped) {
-          showWaitlistOptions(r.failed, lo.city, lo.area);
+          showWaitlistOptions(r.failed, user.city || lo.city, lo.area);
         } else {
           nav('my-orders');
         }
       } else if (r.failed?.length) {
         toast(`❌ All lines failed — stock unavailable`, '#B71C1C');
-        showWaitlistOptions(r.failed, lo.city, lo.area);
+        showWaitlistOptions(r.failed, user.city || lo.city, lo.area);
         if (btn) { btn.disabled = false; btn.textContent = '⚠️ Confirm Anyway'; }
       }
     }
