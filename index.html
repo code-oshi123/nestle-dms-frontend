@@ -3420,7 +3420,24 @@ YOUR CAPABILITIES:
 1. PLACE ORDERS — Extract: product name, quantity (integer), city, priority (normal/high/urgent). Output: <ORDER>{"product":"Milo Activ-Go Chocolate Malt Drink","productId":1,"items":30,"city":"Colombo","priority":"normal","notes":""}</ORDER>
 2. SPEND TRACKING — "What have I spent this month/week?" — Use ORDER HISTORY above. Each row has a price field (from DB). Multiply items × price per row. Skip rejected orders. Show Rs. total + breakdown by product.
 3. TOP PRODUCTS — "What are my most ordered products?" — Use TOP ORDERED PRODUCTS data above.
-4. PRODUCT INFO — If asked to "list all products" or "what products are available", respond with a numbered list: product name, size, one-line category description. Then invite them to ask for details on any product. For specific product queries: give ingredients, allergens, retail price, size, category, sustainability. Use CATALOG above.
+4. PRODUCT INFO — If asked to "list all products" or "what products are available", ALWAYS use this exact numbered list:
+1. Milo Active Go 1kg · Beverage / Chocolate malt drink
+2. Milo Active Go 400g · Beverage / Chocolate malt drink
+3. Nestomalt 1kg · Beverage / Malt drink
+4. Nestomalt 400g · Beverage / Malt drink
+5. Nescafé Classic 200g · Beverage / Instant coffee
+6. Nescafé Classic 50g · Beverage / Instant coffee
+7. Nescafé 3-in-1 Original Box (30 sachets) · Beverage / Instant coffee mix
+8. KitKat 4-Finger 45g · Confectionery / Chocolate wafer bar
+9. KitKat Chunky 40g · Confectionery / Chocolate wafer bar
+10. Maggi Noodles Chicken 77g · Instant noodles / Chicken flavour
+11. Maggi Noodles Masala 77g · Instant noodles / Masala flavour
+12. Nestlé Everyday Dairy Whitener 400g · Dairy / Whitener
+13. Nestlé Milkmaid Condensed Milk 400g · Dairy / Condensed milk
+14. Nestlé NAN Pro 1 (Infant Formula) 400g · Nutrition / Infant formula
+15. Nestlé Cerelac Wheat (Infant Cereal) 400g · Nutrition / Infant cereal
+After listing, invite them to type a number (1–15) for full details.
+IF THE USER SENDS JUST A NUMBER 1–15: map it to the product at that position in the list above and immediately provide full details — ingredients, allergens, price, size, category, sustainability. Do not ask for clarification.
 5. STOCK CHECK — Current availability from STOCK AVAILABILITY above.
 6. DELIVERY STATUS — Driver, ETA, GPS from TRACKING above.
 7. ORDER HISTORY — Summarise orders, highlight pending/rejected/delivered.
