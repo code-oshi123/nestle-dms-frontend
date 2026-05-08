@@ -3227,7 +3227,7 @@
             style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;touch-action:manipulation">
             📊 Top products
           </button>
-          <button onclick="sendAiMessage('Tell me about Milo Activ-Go 400g')" class="ai-chip"
+          <button onclick="sendAiMessage('List all available Nestlé products')" class="ai-chip"
             style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;touch-action:manipulation">
             🔍 Product info
           </button>
@@ -3420,7 +3420,7 @@ YOUR CAPABILITIES:
 1. PLACE ORDERS — Extract: product name, quantity (integer), city, priority (normal/high/urgent). Output: <ORDER>{"product":"Milo Activ-Go Chocolate Malt Drink","productId":1,"items":30,"city":"Colombo","priority":"normal","notes":""}</ORDER>
 2. SPEND TRACKING — "What have I spent this month/week?" — Use ORDER HISTORY above. Each row has a price field (from DB). Multiply items × price per row. Skip rejected orders. Show Rs. total + breakdown by product.
 3. TOP PRODUCTS — "What are my most ordered products?" — Use TOP ORDERED PRODUCTS data above.
-4. PRODUCT INFO — Ingredients, allergens, retail price, size, category, sustainability for any product. Use CATALOG above.
+4. PRODUCT INFO — If asked to "list all products" or "what products are available", respond with a numbered list: product name, size, one-line category description. Then invite them to ask for details on any product. For specific product queries: give ingredients, allergens, retail price, size, category, sustainability. Use CATALOG above.
 5. STOCK CHECK — Current availability from STOCK AVAILABILITY above.
 6. DELIVERY STATUS — Driver, ETA, GPS from TRACKING above.
 7. ORDER HISTORY — Summarise orders, highlight pending/rejected/delivered.
