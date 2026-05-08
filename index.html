@@ -4972,7 +4972,7 @@ RULES:
       <div class="sec-sub">Mark cargo ready → Driver notified · Mark vehicle loaded → Driver notified 🔔</div></div>
     </div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>${relevant.length ? relevant.map(d => `
         <tr>
           <td><span class="mono">${d.id}</span></td>
@@ -4991,7 +4991,7 @@ RULES:
           ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
             <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')" style="margin-left:auto">🗺️ Track</button>
           </td>
-        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
+        </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
     }
 
@@ -6159,8 +6159,9 @@ RULES:
               <span>✅ <strong>${data.length} pending orders</strong> ready — confirm all at once to trigger distributor assignment 🚛</span>
               <button class="btn btn-green" onclick="doSrConfirmAll()" style="white-space:nowrap">✅ Confirm All (${data.length})</button>
              </div>`
-          : `<div class="alert-banner alert-info" style="margin-bottom:16px">
-              ⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city.
+          : `<div class="alert-banner alert-info" style="margin-bottom:16px;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <span>⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city.</span>
+              <button class="btn btn-orange btn-sm" onclick="openModal('m-sr-confirm-warn')" style="white-space:nowrap">⚠️ Confirm Anyway (${data.length})</button>
              </div>`}
         <div class="card"><div class="tw"><table>
           <thead><tr><th>Order ID</th><th>Retailer</th><th>Area</th><th>Products</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Action</th></tr></thead>
@@ -6210,6 +6211,23 @@ RULES:
               <div class="modal-actions">
                 <button class="btn btn-ghost" onclick="closeModal('m-sr-reject')">Cancel</button>
                 <button class="btn btn-red" onclick="confirmSrReject()">Reject Order</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-bg" id="m-sr-confirm-warn" style="z-index:400">
+          <div class="modal" style="max-width:420px">
+            <div class="modal-title">⚠️ Below Recommended Batch Size</div>
+            <div class="modal-body">
+              <p style="color:var(--brown);font-size:14px;line-height:1.6;margin:0 0 10px">
+                Only <strong>${data.length} of 3</strong> recommended orders are pending.<br/>
+                Dispatching below the recommended batch size may increase delivery costs.
+              </p>
+              <p style="color:var(--brown-l);font-size:13px;margin:0 0 16px">Are you sure you want to confirm and dispatch now?</p>
+              <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('m-sr-confirm-warn')">Cancel</button>
+                <button class="btn btn-orange" onclick="closeModal('m-sr-confirm-warn');doSrConfirmAll()">Yes, Confirm Anyway</button>
               </div>
             </div>
           </div>
