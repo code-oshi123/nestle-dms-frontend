@@ -4362,7 +4362,7 @@ RULES:
       const r = await api('/orders', 'POST', {
         retailerId: user.id,
         retailerName: user.name,
-        city: cityEl.value,
+        city: areaEl.value,
         area: areaEl.value,
         productId: productIdNum,
         productName,
@@ -6539,7 +6539,7 @@ RULES:
         if (!productId || !items || items <= 0 || !Number.isInteger(items)) return;
         const wt = productWeights[productId] || 0;
         orders.push({
-          city: cityEl.value, area: areaEl.value,
+          city: areaEl.value, area: areaEl.value,
           productId, productName, items,
           kg: wt > 0 ? parseFloat((wt * items).toFixed(2)) : 0,
           priority: prioEl.value, notes: notesEl.value.trim(),
