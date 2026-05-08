@@ -3972,7 +3972,7 @@ RULES:
       await loadAllProducts();
       addOrderLine();
       updateDatePriority();
-      if (city) { const sel = document.getElementById('i-city'); if (sel) { sel.value = city; populateAreas(); } }
+      if (city) { const sel = document.getElementById('i-city'); if (sel) { sel.value = city; sel.disabled = true; populateAreas(); } }
 
       // ── Resubmit pre-fill (from Quick Resubmit / Edit & Resubmit in My Orders)
       const resubmitData = sessionStorage.getItem('resubmit');
@@ -4362,7 +4362,7 @@ RULES:
       const r = await api('/orders', 'POST', {
         retailerId: user.id,
         retailerName: user.name,
-        city: areaEl.value,
+        city: cityEl.value,
         area: areaEl.value,
         productId: productIdNum,
         productName,
@@ -6076,14 +6076,12 @@ RULES:
           <div class="fg"><label>Business Name *</label><input id="ar-name" placeholder="e.g. Keells Super Colombo 7"/></div>
           <div class="fg"><label>Email *</label><input id="ar-email" type="text" placeholder="keells@nestle.lk"/></div>
           <div class="fg"><label>Password *</label><input id="ar-pass" type="password" placeholder="Min 4 characters"/></div>
-          <div class="fg"><label>City</label>
+          <div class="fg"><label>Province <span style="color:var(--red)">*</span></label>
             <select id="ar-city">
-              <option value="">Select city…</option>
-              <option>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
-              <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
-              <option>Peradeniya</option><option>Galle</option><option>Matara</option>
-              <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+              <option value="">Select province…</option>
+              ${Object.keys(CITY_AREAS).map(p => `<option>${p}</option>`).join('')}
             </select>
+            <div class="field-err" id="ar-city-err" style="display:none;color:var(--red);font-size:12px;margin-top:4px">Please select a province.</div>
           </div>
           <div class="fg"><label>Avatar Initials (optional)</label><input id="ar-avatar" placeholder="e.g. KS" maxlength="2" style="max-width:80px;text-transform:uppercase"/></div>
           <div id="ar-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
@@ -6109,8 +6107,8 @@ RULES:
       </div>
     </div>`);
     }
-    function openAddRetailer() { ['ar-name', 'ar-email', 'ar-pass', 'ar-avatar'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('ar-err').style.display = 'none'; const btn = document.getElementById('ar-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Create Retailer Account'; } openModal('m-add-retailer'); }
-    async function saveNewRetailer() { const name = document.getElementById('ar-name').value.trim(); const email = document.getElementById('ar-email').value.trim(); const pass = document.getElementById('ar-pass').value; const avatar = document.getElementById('ar-avatar').value.trim(); const city = document.getElementById('ar-city')?.value || ''; const errEl = document.getElementById('ar-err'); if (!name || !email || !pass) { errEl.textContent = '⚠️ Name, email and password are all required.'; errEl.style.display = 'flex'; return; } if (pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('ar-btn'); btn.disabled = true; btn.textContent = 'Creating…'; const r = await api('/retailers', 'POST', { name, email, password: pass, avatar, city }); btn.disabled = false; btn.textContent = 'Create Retailer Account'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-add-retailer'); toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a'); await pageRetailers(); }
+    function openAddRetailer() { ['ar-name', 'ar-email', 'ar-pass', 'ar-avatar', 'ar-city'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('ar-err').style.display = 'none'; const cityErr = document.getElementById('ar-city-err'); if (cityErr) cityErr.style.display = 'none'; const btn = document.getElementById('ar-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Create Retailer Account'; } openModal('m-add-retailer'); }
+    async function saveNewRetailer() { const name = document.getElementById('ar-name').value.trim(); const email = document.getElementById('ar-email').value.trim(); const pass = document.getElementById('ar-pass').value; const avatar = document.getElementById('ar-avatar').value.trim(); const city = document.getElementById('ar-city')?.value || ''; const errEl = document.getElementById('ar-err'); const cityErr = document.getElementById('ar-city-err'); if (cityErr) cityErr.style.display = 'none'; if (!name || !email || !pass) { errEl.textContent = '⚠️ Name, email and password are all required.'; errEl.style.display = 'flex'; return; } if (pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } if (!city) { if (cityErr) cityErr.style.display = 'block'; errEl.textContent = '⚠️ Please select a province.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('ar-btn'); btn.disabled = true; btn.textContent = 'Creating…'; const r = await api('/retailers', 'POST', { name, email, password: pass, avatar, city }); btn.disabled = false; btn.textContent = 'Create Retailer Account'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-add-retailer'); toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a'); await pageRetailers(); }
     function openRetailerResetPw(id, name) { document.getElementById('rpw-id').value = id; document.getElementById('rpw-label').textContent = `New password for ${name}`; document.getElementById('rpw-pass').value = ''; document.getElementById('rpw-err').style.display = 'none'; const btn = document.getElementById('rpw-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; } openModal('m-retailer-pw'); }
     async function saveRetailerPw() { const id = document.getElementById('rpw-id').value; const pass = document.getElementById('rpw-pass').value; const errEl = document.getElementById('rpw-err'); if (!pass || pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('rpw-btn'); btn.disabled = true; btn.textContent = 'Resetting…'; const r = await api(`/retailers/${id}/reset-password`, 'PUT', { password: pass }); btn.disabled = false; btn.textContent = 'Reset Password'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-retailer-pw'); toast('✅ Password reset successfully'); }
     async function deleteRetailer(id, name) { if (!confirm(`Remove retailer "${name}"?`)) return; const r = await api(`/retailers/${id}`, 'DELETE'); if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; } toast(`✅ Retailer "${name}" removed`); await pageRetailers(); }
@@ -6539,7 +6537,7 @@ RULES:
         if (!productId || !items || items <= 0 || !Number.isInteger(items)) return;
         const wt = productWeights[productId] || 0;
         orders.push({
-          city: areaEl.value, area: areaEl.value,
+          city: cityEl.value, area: areaEl.value,
           productId, productName, items,
           kg: wt > 0 ? parseFloat((wt * items).toFixed(2)) : 0,
           priority: prioEl.value, notes: notesEl.value.trim(),
