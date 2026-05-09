@@ -3679,7 +3679,7 @@ RULES:
         const ico = catIcons[cat] || '📝';
         const lbl = catLabels[cat] || 'Rejected';
         const action = catActions[cat] || '';
-        const idLabel = b.ids.length > 1 ? `Order #${b.ids[0]} +${b.ids.length - 1} more` : `Order #${b.ids[0]}`;
+        const idLabel = `Order #${b.ids[0]}`;
         return `
           <div style="background:var(--white);border:2px solid #FFCDD2;border-radius:12px;padding:16px;border-left:5px solid var(--red)">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
@@ -3749,7 +3749,7 @@ RULES:
       <thead><tr><th>ID</th><th>City</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>🔐 Delivery PIN</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
       <tbody>${batchOrder.length ? batchOrder.map(b => `
         <tr>
-          <td><span class="mono">#${b.ids[0]}${b.ids.length > 1 ? '<span style="font-size:10px;color:var(--brown-l)"> +' + (b.ids.length - 1) + '</span>' : ''}</span></td>
+          <td><span class="mono">#${b.ids[0]}</span></td>
           <td>${b.city}${['consolidated', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(b.status) ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="openTrackMap(${b.ids[0]},'${b.city || ''}','')">🗺️ Track</button>` : ''}</td>
           <td style="font-size:12px;color:var(--brown-m)">${b.area || '—'}</td>
           <td>
