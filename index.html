@@ -2546,7 +2546,7 @@
             <div class="qav" style="background:#1565C0">ND</div>
             <div>
               <div class="qname">Nuwan Dissanayake</div>
-              <div class="qrole">Order Team</div>
+              <div class="qrole">Nestlé Sales Manager</div>
             </div>
           </button>
 
@@ -2564,11 +2564,11 @@
               <div class="qrole">Distributor</div>
             </div>
           </button>
-          <button class="qbtn" onclick="quick('salesrep@nestle.lk','sales123')">
+          <button class="qbtn" onclick="quick('salesrep@nestle.lk','rep123')">
             <div class="qav" style="background:#00897B">SR</div>
             <div>
-              <div class="qname">Sales Rep</div>
-              <div class="qrole">Field Sales</div>
+              <div class="qname">Ashen Gamage</div>
+              <div class="qrole">Sales Rep</div>
             </div>
           </button>
         </div>
@@ -2985,7 +2985,7 @@
       return {
         retailer: 'Retailer', order_team: 'Nestlé Sales Manager',
         warehouse: 'Warehouse', distributor: 'Distributor',
-        admin: 'System Administrator', sales_rep: 'Sales Representative'
+        admin: 'System Administrator', sales_rep: 'Sales Rep'
       }[r] || r;
     }
 
@@ -3159,6 +3159,24 @@
     }
 
     // ══ AI ASSISTANT ════════════════════════════════
+    const NESTLE_CATALOG = [
+      { name: "KitKat 4-Finger", size: "45g", category: "Confectionery / Chocolate wafer bar", ingredients: "Sugar, wheat flour, cocoa mass/cocoa powder, milk solids, vegetable fat, emulsifier and flavouring", allergens: "Milk, wheat/gluten, soy; may contain nuts", sustainability: "Recyclable packaging where facilities exist" },
+      { name: "KitKat Chunky", size: "40g", category: "Confectionery / Chocolate wafer bar", ingredients: "Sugar, wheat flour, cocoa mass/cocoa powder, milk solids, vegetable fat, emulsifier and flavouring", allergens: "Milk, wheat/gluten, soy; may contain nuts", sustainability: "Recyclable packaging where facilities exist" },
+      { name: "Maggi Noodles Chicken", size: "77g", category: "Instant noodles / Chicken flavour", ingredients: "Wheat flour noodles, palm oil, salt, chicken-flavour seasoning, spices, flavour enhancers and permitted additives", allergens: "Wheat/gluten; may contain soy, milk, celery or traces depending on market label", sustainability: "Flexible packaging; recycle only where facilities accept soft plastics" },
+      { name: "Maggi Noodles Masala", size: "77g", category: "Instant noodles / Masala flavour", ingredients: "Wheat flour noodles, palm oil, salt, masala seasoning, spices, flavour enhancers and permitted additives", allergens: "Wheat/gluten; may contain soy, milk, celery or traces depending on market label", sustainability: "Flexible packaging; recycle only where facilities accept soft plastics" },
+      { name: "Milo Active Go", size: "1kg", category: "Beverage / Chocolate malt drink", ingredients: "Malt extract, milk powder, cocoa, sugar, vitamins and minerals", allergens: "Milk, gluten/barley", sustainability: "Recyclable packaging where facilities exist" },
+      { name: "Milo Active Go", size: "400g", category: "Beverage / Chocolate malt drink", ingredients: "Malt extract, milk powder, cocoa, sugar, vitamins and minerals", allergens: "Milk, gluten/barley", sustainability: "Recyclable packaging where facilities exist" },
+      { name: "Nescafé 3-in-1 Original Box", size: "30 sachets / 525g", category: "Beverage / Instant coffee mix", ingredients: "Sugar, creamer, soluble coffee, stabilisers/emulsifiers and flavouring", allergens: "Milk; may contain soy depending on creamer formulation", sustainability: "Box may be recyclable; sachets depend on local flexible-packaging facilities" },
+      { name: "Nescafé Classic", size: "200g", category: "Beverage / Instant coffee", ingredients: "100% soluble coffee", allergens: "No major allergens listed; verify label", sustainability: "Glass jar is recyclable where facilities exist" },
+      { name: "Nescafé Classic", size: "50g", category: "Beverage / Instant coffee", ingredients: "100% soluble coffee", allergens: "No major allergens listed; verify label", sustainability: "Glass jar is recyclable where facilities exist" },
+      { name: "Nestlé Cerelac Wheat", size: "400g", category: "Infant cereal / Wheat cereal", ingredients: "Wheat flour/cereal, milk solids, sugar, vegetable oil, vitamins and minerals", allergens: "Wheat/gluten and milk", sustainability: "Carton may be recyclable where facilities exist" },
+      { name: "Nestlé Everyday Dairy Whitener", size: "400g", category: "Dairy whitener / Milk powder substitute", ingredients: "Milk solids, sugar/maltodextrin, stabiliser and permitted additives", allergens: "Milk", sustainability: "Flexible pouch; recycle only where facilities accept soft plastics" },
+      { name: "Nestlé Milkmaid Condensed Milk", size: "400g", category: "Dairy / Sweetened condensed milk", ingredients: "Milk and sugar", allergens: "Milk", sustainability: "Metal tin is recyclable where facilities exist" },
+      { name: "Nestlé NAN Pro 1", size: "400g", category: "Infant formula / Stage 1", ingredients: "Milk solids, vegetable oils, lactose, vitamins, minerals and probiotic culture depending on formula", allergens: "Milk, lactose", sustainability: "Metal tin/cardboard components recyclable where facilities exist" },
+      { name: "Nestomalt", size: "1kg", category: "Beverage / Malted food drink", ingredients: "Malted barley extract, milk solids, sugar, vitamins and minerals", allergens: "Milk, gluten/barley", sustainability: "Flexible pouch; recycle only where facilities accept soft plastics" },
+      { name: "Nestomalt", size: "400g", category: "Beverage / Malted food drink", ingredients: "Malted barley extract, milk solids, sugar, vitamins and minerals", allergens: "Milk, gluten/barley", sustainability: "Flexible pouch; recycle only where facilities accept soft plastics" },
+    ];
+
     let aiChatHistory = [];
     let aiTyping = false;
 
@@ -3189,10 +3207,9 @@
               <div style="background:#F0F4FF;border-radius:0 12px 12px 12px;padding:12px 16px;font-size:13px;color:#1B2A4A;line-height:1.6">
                 Hello <strong>${user.name}</strong>! 👋 I'm your Nestlé Smart DMS assistant.<br><br>
                 I can help you:<br>
-                &bull; <strong>Place orders</strong> — just tell me what you need<br>
-                &bull; <strong>Check delivery status</strong> — ask about any order<br>
-                &bull; <strong>Track your driver</strong> — get live location updates<br>
-                &bull; <strong>Answer questions</strong> — about products, prices, availability<br><br>
+                &bull; <strong>This month's spend</strong> — see how much you've spent<br>
+                &bull; <strong>Top products</strong> — your most ordered items<br>
+                &bull; <strong>Product info</strong> — ingredients, price &amp; nutritional info<br><br>
                 What can I help you with today?
               </div>
               <div class="ai-ts" style="font-size:10px;color:var(--brown-l);margin-top:4px;padding:0 4px">AI Assistant · just now</div>
@@ -3202,25 +3219,17 @@
 
         <!-- Suggestion chips — horizontally scrollable on mobile -->
         <div id="ai-suggestions" class="ai-chips" style="padding:10px 16px;border-top:1px solid var(--cream-dk);display:flex;gap:8px;flex-wrap:wrap;background:var(--cream)">
-          <button onclick="sendAiMessage('Where is my latest delivery?')" class="ai-chip"
+          <button onclick="sendAiMessage('What have I spent this month?')" class="ai-chip"
             style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;touch-action:manipulation">
-            📍 Track delivery
+            💰 This month's spend
           </button>
-          <button onclick="sendAiMessage('I need 30 boxes of Milo to Colombo urgently')" class="ai-chip"
+          <button onclick="sendAiMessage('What are my most ordered products?')" class="ai-chip"
             style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;touch-action:manipulation">
-            🛒 Place order
+            📊 Top products
           </button>
-          <button onclick="sendAiMessage('What is the status of my orders?')" class="ai-chip"
+          <button onclick="sendAiMessage('List all available Nestlé products')" class="ai-chip"
             style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;touch-action:manipulation">
-            📋 Order status
-          </button>
-          <button onclick="sendAiMessage('Show me all my pending orders')" class="ai-chip"
-            style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;touch-action:manipulation">
-            ⏳ Pending
-          </button>
-          <button onclick="sendAiMessage('When will my delivery arrive?')" class="ai-chip"
-            style="padding:6px 13px;border:1.5px solid var(--tan);border-radius:20px;background:var(--white);font-size:12px;font-weight:600;color:var(--tan);cursor:pointer;font-family:'Jost',sans-serif;touch-action:manipulation">
-            ⏰ ETA
+            🔍 Product info
           </button>
         </div>
 
@@ -3261,12 +3270,12 @@
         <div class="ai-tips-card" style="background:var(--cream);border-radius:12px;padding:16px;border:1px solid var(--cream-dk)">
           <div style="font-size:12px;font-weight:700;color:var(--tan);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">💡 Try Saying</div>
           <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--brown-m)">
-            <div>📦 "Order 20 KitKat to Galle high priority"</div>
-            <div>📍 "Where is my order #5?"</div>
-            <div>🔄 "Resubmit my last rejected order"</div>
-            <div>📋 "List all my orders this week"</div>
-            <div>⏰ "When will my delivery arrive?"</div>
-            <div>🚛 "How far is my driver?"</div>
+            <div>💰 "How much have I spent this month?"</div>
+            <div>📊 "What are my most ordered products?"</div>
+            <div>🔍 "Tell me about Milo Activ-Go 400g"</div>
+            <div>🥛 "What are the ingredients in Nestomalt?"</div>
+            <div>💵 "What is the price of KitKat?"</div>
+            <div>🌿 "Is Nescafé suitable for diabetics?"</div>
           </div>
         </div>
       </div>
@@ -3341,20 +3350,18 @@
       addAiMessage(userMsg, 'user');
       addAiTyping();
 
-      // Fetch live context for the AI
-      const [orders, deliveries] = await Promise.all([
+      // Fetch all live context for the AI in parallel
+      const [orders, deliveries, history, suggestData, stockData] = await Promise.all([
         api(`/orders?role=retailer&userId=${user.id}`).catch(() => []),
         api(`/deliveries?role=retailer&userId=${user.id}`).catch(() => []),
+        api(`/ai/retailer-context`).catch(() => []),
+        api(`/suggest?city=${encodeURIComponent(user.city || '')}`).catch(() => ({ suggestions: [] })),
+        api(`/stock`).catch(() => []),
       ]);
-
-      // Build a products list for the AI
-      const productList = Object.entries(productWeights).length > 0
-        ? Object.entries(productWeights).map(([id, w]) => `Product ID ${id}: weight ${w}kg/unit`).join(', ')
-        : 'Milo Active Go 1kg (id:1), Nescafé Classic 200g (id:5), KitKat 45g (id:8), Maggi Noodles 77g (id:10)';
 
       const cities = ['Colombo', 'Dehiwala', 'Nugegoda', 'Negombo', 'Kiribathgoda', 'Kandy', 'Peradeniya', 'Galle', 'Matara', 'Jaffna', 'Ratnapura', 'Kurunegala'];
 
-      const activeDelivery = deliveries.find ? deliveries.find(d => ['in-transit', 'loaded', 'assigned'].includes(d.status)) : null;
+      const activeDelivery = Array.isArray(deliveries) ? deliveries.find(d => ['in-transit', 'loaded', 'assigned'].includes(d.status)) : null;
       let trackingInfo = '';
       if (activeDelivery) {
         const track = await api(`/tracking/${activeDelivery.id}`).catch(() => null);
@@ -3362,6 +3369,23 @@
           trackingInfo = `Active delivery #${activeDelivery.id}: driver ${track.driverName}, vehicle ${track.vehicleId}, heading to ${track.city}, ETA ${track.eta}, GPS updated ${track.recordedAt}.`;
         }
       }
+
+      // Stock availability summary (includes live price from DB)
+      const stockSummary = Array.isArray(stockData)
+        ? stockData.map(s => `${s.productName}: ${s.availableUnits} units available${s.price ? ', Rs. ' + s.price + '/unit' : ''}`).join('; ')
+        : 'Unavailable';
+
+      // Most ordered products
+      const topProducts = (suggestData && suggestData.suggestions) ? suggestData.suggestions : [];
+      const topProductsText = topProducts.length
+        ? topProducts.map((p, i) => `${i + 1}. ${p.productName} — ${p.totalOrdered} units total (${p.orderCount} orders)`).join('\n')
+        : 'No order history yet';
+
+      // Date context for spend calculations
+      const todayObj = new Date();
+      const todayStr = todayObj.toISOString().split('T')[0];
+      const monthStart = new Date(todayObj.getFullYear(), todayObj.getMonth(), 1).toISOString().split('T')[0];
+      const weekStart = new Date(todayObj.getTime() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
       // Add user message to history
       aiChatHistory.push({ role: 'user', content: userMsg });
@@ -3371,29 +3395,63 @@
         const systemPrompt = `You are a smart AI assistant for Nestlé Smart DMS — a delivery management system in Sri Lanka.
 
 You are talking to: ${user.name} (Retailer)
+Today: ${todayStr} | This month started: ${monthStart} | This week (last 7 days) started: ${weekStart}
 
-CURRENT DATA:
-Orders: ${JSON.stringify(orders.slice(0, 10))}
-Deliveries: ${JSON.stringify(deliveries.slice(0, 5))}
-Tracking: ${trackingInfo || 'No active tracking'}
+NESTLÉ PRODUCT CATALOG — 15 products (use for product info queries and spend calculations):
+${JSON.stringify(NESTLE_CATALOG)}
+
+CURRENT STOCK AVAILABILITY:
+${stockSummary}
+
+ORDER HISTORY — last 30 days (use this to calculate spend and frequency):
+${JSON.stringify(Array.isArray(history) ? history : [])}
+
+TOP ORDERED PRODUCTS (all-time, this retailer):
+${topProductsText}
+
+RECENT ORDER STATUS SUMMARY:
+${JSON.stringify(Array.isArray(orders) ? orders.slice(0, 30) : [])}
+
+DELIVERY TRACKING:
+${trackingInfo || 'No active delivery'}
 Available cities: ${cities.join(', ')}
-Available products: ${productList}
 
 YOUR CAPABILITIES:
-1. PLACE ORDERS — Extract: product name, quantity (integer), city, priority (normal/high/urgent). When you have all details, respond with JSON block: <ORDER>{"product":"Milo Active Go 1kg","productId":1,"items":30,"city":"Colombo","priority":"normal","notes":""}</ORDER>
-2. DELIVERY STATUS — Tell them current status, driver name, ETA, GPS position if available
-3. TRACKING — Give live driver location and ETA from tracking data
-4. ORDER HISTORY — Summarise their orders, highlight pending/rejected/delivered
-5. RESUBMIT — If they want to resubmit a rejected order, tell them to click "Edit & Resubmit" on that order
+1. PLACE ORDERS — Extract: product name, quantity (integer), city, priority (normal/high/urgent). Output: <ORDER>{"product":"Milo Activ-Go Chocolate Malt Drink","productId":1,"items":30,"city":"Colombo","priority":"normal","notes":""}</ORDER>
+2. SPEND TRACKING — "What have I spent this month/week?" — Use ORDER HISTORY above. Each row has a price field (from DB). Multiply items × price per row. Skip rejected orders. Show Rs. total + breakdown by product.
+3. TOP PRODUCTS — "What are my most ordered products?" — Use TOP ORDERED PRODUCTS data above.
+4. PRODUCT INFO — If asked to "list all products" or "what products are available", ALWAYS use this exact numbered list:
+1. Milo Active Go 1kg · Beverage / Chocolate malt drink
+2. Milo Active Go 400g · Beverage / Chocolate malt drink
+3. Nestomalt 1kg · Beverage / Malt drink
+4. Nestomalt 400g · Beverage / Malt drink
+5. Nescafé Classic 200g · Beverage / Instant coffee
+6. Nescafé Classic 50g · Beverage / Instant coffee
+7. Nescafé 3-in-1 Original Box (30 sachets) · Beverage / Instant coffee mix
+8. KitKat 4-Finger 45g · Confectionery / Chocolate wafer bar
+9. KitKat Chunky 40g · Confectionery / Chocolate wafer bar
+10. Maggi Noodles Chicken 77g · Instant noodles / Chicken flavour
+11. Maggi Noodles Masala 77g · Instant noodles / Masala flavour
+12. Nestlé Everyday Dairy Whitener 400g · Dairy / Whitener
+13. Nestlé Milkmaid Condensed Milk 400g · Dairy / Condensed milk
+14. Nestlé NAN Pro 1 (Infant Formula) 400g · Nutrition / Infant formula
+15. Nestlé Cerelac Wheat (Infant Cereal) 400g · Nutrition / Infant cereal
+After listing, invite them to type a number (1–15) for full details.
+IF THE USER SENDS JUST A NUMBER 1–15: map it to the product at that position in the list above and immediately provide full details — ingredients, allergens, price, size, category, sustainability. Do not ask for clarification.
+5. STOCK CHECK — Current availability from STOCK AVAILABILITY above.
+6. DELIVERY STATUS — Driver, ETA, GPS from TRACKING above.
+7. ORDER HISTORY — Summarise orders, highlight pending/rejected/delivered.
+8. RESUBMIT — Tell them to click "Edit & Resubmit" on the rejected order.
 
 RULES:
 - Be conversational, friendly and concise
-- Always confirm order details before placing (show a summary)
+- Always confirm order details before placing
 - If product name is ambiguous, ask for clarification
 - If city is not in the list, say it is not covered
-- Use Sri Lanka context — mention rupees if prices come up
+- Always show money amounts in Rs. (LKR)
 - Keep responses short — 2-4 sentences max unless listing data
 - Use emojis naturally
+- For spend: show grand total + per-product breakdown; note if a product couldn't be price-matched
 - If you detect an order intent, ALWAYS output the <ORDER> JSON block at the end of your message`;
 
         // Call via backend proxy — keeps API key secure on server
@@ -3559,7 +3617,7 @@ RULES:
               </div>
               <div style="display:flex;gap:8px">
                 <button class="btn btn-ghost btn-sm" onclick="editAndResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">✏️ Edit & Resubmit</button>
-                <button class="btn btn-tan btn-sm" onclick="quickResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">🔄 Quick Resubmit</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--brown-l);border-color:var(--cream-dk)" onclick="dismissOrder('${o.id}')">✕ Dismiss</button>
               </div>
             </div>
             <div style="background:#FFF5F5;border-radius:8px;padding:10px 12px;margin-bottom:8px">
@@ -3698,6 +3756,13 @@ RULES:
   </div>`);
     }
 
+    async function dismissOrder(orderId) {
+      if (!confirm('Dismiss this rejected order? It will be removed from your orders list.')) return;
+      const r = await api(`/orders/${orderId}/dismiss`, 'POST');
+      if (r.error) return alert('Could not dismiss: ' + r.error);
+      nav('my-orders');
+    }
+
     // ── Quick resubmit — same details, new order
     async function quickResubmit(orderId, city, items, prio) {
       if (!confirm(`Resubmit order to ${city} (${items} items, ${prio} priority)?`)) return;
@@ -3743,10 +3808,19 @@ RULES:
     // ══ SMART ORDER PAGE ════════════════════════════
     async function pageSmartOrder() {
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+
+      // Refresh user.city from DB in case it changed since last login
+      const me = await api('/me').catch(() => null);
+      if (me && !me.error && me.id === user.id) {
+        user.city = me.city || user.city;
+        user.assignedCity = me.assignedCity || user.assignedCity;
+        localStorage.setItem('dms_user', JSON.stringify(user));
+      }
+
       const city = user.city || '';
 
       const [lastOrder, suggestData, reminderData, stockData] = await Promise.all([
-        api('/orders/last-products'),
+        api('/orders/last-products?_t=' + Date.now()),
         api(`/suggest?city=${encodeURIComponent(city)}`).catch(() => null),
         api('/order-reminder').catch(() => null),
         api('/stock').catch(() => null)
@@ -3817,7 +3891,10 @@ RULES:
         suggestHtml = `
         <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
           <div class="card-title" style="color:var(--green);margin-bottom:4px">✨ Personalised Suggestions
-            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on your last order · ${lo.orderDate}</span>
+            <span style="font-size:11px;font-weight:400;color:var(--brown-l);margin-left:8px">Based on your last order · ${lo.orderDate || 'recent'}</span>
+          </div>
+          <div style="font-size:12px;color:var(--brown-m);margin-bottom:10px">
+            📍 Delivery to: <strong>${escapeHtml(user.city || lo.city || '—')}</strong> · ${escapeHtml((() => { const p = user.city || lo.city; const va = CITY_AREAS[p] || []; return (va.length && !va.includes(lo.area)) ? va[0] : (lo.area || '—'); })())}
           </div>
           <div id="last-order-list">${productRows}</div>
           <div id="lo-add-product" style="display:none;margin-top:12px;padding-top:12px;border-top:1.5px dashed var(--cream-dk)">
@@ -3918,7 +3995,7 @@ RULES:
       await loadAllProducts();
       addOrderLine();
       updateDatePriority();
-      if (city) { const sel = document.getElementById('i-city'); if (sel) { sel.value = city; populateAreas(); } }
+      if (city) { const sel = document.getElementById('i-city'); if (sel) { sel.value = city; sel.disabled = true; populateAreas(); } }
 
       // ── Resubmit pre-fill (from Quick Resubmit / Edit & Resubmit in My Orders)
       const resubmitData = sessionStorage.getItem('resubmit');
@@ -4059,9 +4136,12 @@ RULES:
     async function _submitLastOrderBatch(products, btn) {
       const lo      = window._lastOrder;
       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+      const province    = user.city || lo.city;
+      const validAreas  = CITY_AREAS[province] || [];
+      const resolvedArea = (validAreas.length && !validAreas.includes(lo.area)) ? validAreas[0] : lo.area;
       const orders  = products.map(p => ({
-        city:        lo.city,
-        area:        lo.area,
+        city:        province,
+        area:        resolvedArea,
         productId:   p.productId,
         productName: p.productName,
         items:       p.items,
@@ -4082,13 +4162,13 @@ RULES:
         toast(`✅ ${placed} order${placed > 1 ? 's' : ''} placed — Sales Rep notified 🔔${skipped ? ` · ${skipped} line(s) need attention` : ''}`, '#16a34a');
         pollBadge();
         if (skipped) {
-          showWaitlistOptions(r.failed, lo.city, lo.area);
+          showWaitlistOptions(r.failed, province, resolvedArea);
         } else {
           nav('my-orders');
         }
       } else if (r.failed?.length) {
         toast(`❌ All lines failed — stock unavailable`, '#B71C1C');
-        showWaitlistOptions(r.failed, lo.city, lo.area);
+        showWaitlistOptions(r.failed, province, resolvedArea);
         if (btn) { btn.disabled = false; btn.textContent = '⚠️ Confirm Anyway'; }
       }
     }
@@ -4918,7 +4998,7 @@ RULES:
       <div class="sec-sub">Mark cargo ready → Driver notified · Mark vehicle loaded → Driver notified 🔔</div></div>
     </div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>${relevant.length ? relevant.map(d => `
         <tr>
           <td><span class="mono">${d.id}</span></td>
@@ -4937,7 +5017,7 @@ RULES:
           ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
             <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')" style="margin-left:auto">🗺️ Track</button>
           </td>
-        </tr>`).join('') : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
+        </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
     }
 
@@ -6022,14 +6102,12 @@ RULES:
           <div class="fg"><label>Business Name *</label><input id="ar-name" placeholder="e.g. Keells Super Colombo 7"/></div>
           <div class="fg"><label>Email *</label><input id="ar-email" type="text" placeholder="keells@nestle.lk"/></div>
           <div class="fg"><label>Password *</label><input id="ar-pass" type="password" placeholder="Min 4 characters"/></div>
-          <div class="fg"><label>City</label>
+          <div class="fg"><label>Province <span style="color:var(--red)">*</span></label>
             <select id="ar-city">
-              <option value="">Select city…</option>
-              <option>Colombo</option><option>Dehiwala</option><option>Nugegoda</option>
-              <option>Negombo</option><option>Kiribathgoda</option><option>Kandy</option>
-              <option>Peradeniya</option><option>Galle</option><option>Matara</option>
-              <option>Jaffna</option><option>Ratnapura</option><option>Kurunegala</option>
+              <option value="">Select province…</option>
+              ${Object.keys(CITY_AREAS).map(p => `<option>${p}</option>`).join('')}
             </select>
+            <div class="field-err" id="ar-city-err" style="display:none;color:var(--red);font-size:12px;margin-top:4px">Please select a province.</div>
           </div>
           <div class="fg"><label>Avatar Initials (optional)</label><input id="ar-avatar" placeholder="e.g. KS" maxlength="2" style="max-width:80px;text-transform:uppercase"/></div>
           <div id="ar-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div>
@@ -6055,8 +6133,8 @@ RULES:
       </div>
     </div>`);
     }
-    function openAddRetailer() { ['ar-name', 'ar-email', 'ar-pass', 'ar-avatar'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('ar-err').style.display = 'none'; const btn = document.getElementById('ar-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Create Retailer Account'; } openModal('m-add-retailer'); }
-    async function saveNewRetailer() { const name = document.getElementById('ar-name').value.trim(); const email = document.getElementById('ar-email').value.trim(); const pass = document.getElementById('ar-pass').value; const avatar = document.getElementById('ar-avatar').value.trim(); const city = document.getElementById('ar-city')?.value || ''; const errEl = document.getElementById('ar-err'); if (!name || !email || !pass) { errEl.textContent = '⚠️ Name, email and password are all required.'; errEl.style.display = 'flex'; return; } if (pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('ar-btn'); btn.disabled = true; btn.textContent = 'Creating…'; const r = await api('/retailers', 'POST', { name, email, password: pass, avatar, city }); btn.disabled = false; btn.textContent = 'Create Retailer Account'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-add-retailer'); toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a'); await pageRetailers(); }
+    function openAddRetailer() { ['ar-name', 'ar-email', 'ar-pass', 'ar-avatar', 'ar-city'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('ar-err').style.display = 'none'; const cityErr = document.getElementById('ar-city-err'); if (cityErr) cityErr.style.display = 'none'; const btn = document.getElementById('ar-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Create Retailer Account'; } openModal('m-add-retailer'); }
+    async function saveNewRetailer() { const name = document.getElementById('ar-name').value.trim(); const email = document.getElementById('ar-email').value.trim(); const pass = document.getElementById('ar-pass').value; const avatar = document.getElementById('ar-avatar').value.trim(); const city = document.getElementById('ar-city')?.value || ''; const errEl = document.getElementById('ar-err'); const cityErr = document.getElementById('ar-city-err'); if (cityErr) cityErr.style.display = 'none'; if (!name || !email || !pass) { errEl.textContent = '⚠️ Name, email and password are all required.'; errEl.style.display = 'flex'; return; } if (pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } if (!city) { if (cityErr) cityErr.style.display = 'block'; errEl.textContent = '⚠️ Please select a province.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('ar-btn'); btn.disabled = true; btn.textContent = 'Creating…'; const r = await api('/retailers', 'POST', { name, email, password: pass, avatar, city }); btn.disabled = false; btn.textContent = 'Create Retailer Account'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-add-retailer'); toast(`✅ Retailer "${name}" added — they can now log in and place orders`, '#16a34a'); await pageRetailers(); }
     function openRetailerResetPw(id, name) { document.getElementById('rpw-id').value = id; document.getElementById('rpw-label').textContent = `New password for ${name}`; document.getElementById('rpw-pass').value = ''; document.getElementById('rpw-err').style.display = 'none'; const btn = document.getElementById('rpw-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Reset Password'; } openModal('m-retailer-pw'); }
     async function saveRetailerPw() { const id = document.getElementById('rpw-id').value; const pass = document.getElementById('rpw-pass').value; const errEl = document.getElementById('rpw-err'); if (!pass || pass.length < 4) { errEl.textContent = '⚠️ Password must be at least 4 characters.'; errEl.style.display = 'flex'; return; } const btn = document.getElementById('rpw-btn'); btn.disabled = true; btn.textContent = 'Resetting…'; const r = await api(`/retailers/${id}/reset-password`, 'PUT', { password: pass }); btn.disabled = false; btn.textContent = 'Reset Password'; if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; } closeModal('m-retailer-pw'); toast('✅ Password reset successfully'); }
     async function deleteRetailer(id, name) { if (!confirm(`Remove retailer "${name}"?`)) return; const r = await api(`/retailers/${id}`, 'DELETE'); if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; } toast(`✅ Retailer "${name}" removed`); await pageRetailers(); }
@@ -6097,7 +6175,7 @@ RULES:
           <div><div class="sec-title">Pending Orders — Your City</div>
           <div class="sec-sub">Confirm all or reject individually · Route auto-assigns to distributor after every 3rd confirmation</div></div>
           <span class="badge ${canConfirm ? 'b-green' : 'b-orange'}" style="font-size:13px;padding:6px 14px">
-            ${data.length} pending ${canConfirm ? '✅ Ready' : `(need ${3 - data.length} more)`}
+            ${data.length} Pending ${canConfirm ? '✅ Ready' : `(need ${3 - data.length} more)`}
           </span>
         </div>
         ${canConfirm
@@ -6105,24 +6183,34 @@ RULES:
               <span>✅ <strong>${data.length} pending orders</strong> ready — confirm all at once to trigger distributor assignment 🚛</span>
               <button class="btn btn-green" onclick="doSrConfirmAll()" style="white-space:nowrap">✅ Confirm All (${data.length})</button>
              </div>`
-          : `<div class="alert-banner alert-info" style="margin-bottom:16px">
-              ⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city.
+          : `<div class="alert-banner alert-info" style="margin-bottom:16px;justify-content:space-between;flex-wrap:wrap;gap:10px">
+              <span>⏳ <strong>${data.length}/3 orders</strong> — waiting for ${3 - data.length} more order(s) from retailers in your city.</span>
+              <button class="btn btn-orange btn-sm" onclick="openModal('m-sr-confirm-warn')" style="white-space:nowrap">⚠️ Confirm Anyway (${data.length})</button>
              </div>`}
         <div class="card"><div class="tw"><table>
-          <thead><tr><th>ID</th><th>Retailer</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Action</th></tr></thead>
-          <tbody>${data.length ? data.map(o => `
-            <tr>
-              <td><span class="mono">${o.id}</span></td>
+          <thead><tr><th>Order ID</th><th>Retailer</th><th>Area</th><th>Products</th><th>Priority</th><th>Order Date</th><th>Submitted</th><th>Action</th></tr></thead>
+          <tbody>${data.length ? data.map(o => {
+            const productLines = (o.products || []).map(p =>
+              `<div style="font-size:11px;color:var(--brown-m);white-space:nowrap">${escapeHtml(p.productName || '—')} × ${p.items}</div>`
+            ).join('');
+            const idsStr = (o.ids || [o.batchId]).join(',');
+            return `
+            <tr data-ids="${idsStr}">
+              <td><span class="mono">#${o.batchId}</span></td>
               <td><strong>${escapeHtml(o.retailer)}</strong></td>
               <td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
-              <td>${o.items} items · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
+              <td>
+                ${productLines}
+                <div style="font-size:11px;color:var(--brown-l);margin-top:3px">${o.items} units total</div>
+              </td>
               <td>${prioBadge(o.prio)}</td>
               <td style="font-size:12px;font-family:'DM Mono',monospace;color:var(--brown-m)">${o.orderDate || '—'}</td>
-              <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
+              <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created || '—'}</td>
               <td>
-                <button class="btn btn-red btn-sm" onclick="doSrReject(${o.id},'${escapeHtml(o.retailer)}')">✕ Reject</button>
+                <button class="btn btn-red btn-sm" onclick="doSrReject('${idsStr}','${escapeHtml(o.retailer)}')">✕ Reject</button>
               </td>
-            </tr>`).join('')
+            </tr>`;
+          }).join('')
             : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No pending orders for your city.</div></div></td></tr>'}
           </tbody></table></div></div>
 
@@ -6130,13 +6218,10 @@ RULES:
           <div class="modal" style="max-width:420px">
             <div class="modal-title">✕ Reject Order</div>
             <div class="modal-body">
-              <input type="hidden" id="sr-reject-id"/>
+              <input type="hidden" id="sr-reject-ids"/>
               <div class="fg"><label>Rejection Category *</label>
                 <select id="sr-reject-cat">
                   <option value="">Select category…</option>
-                  <option value="out_of_stock">Out of Stock</option>
-                  <option value="invalid_area">Invalid Area</option>
-                  <option value="duplicate">Duplicate Order</option>
                   <option value="other">Other</option>
                 </select>
               </div>
@@ -6150,6 +6235,23 @@ RULES:
               </div>
             </div>
           </div>
+        </div>
+
+        <div class="modal-bg" id="m-sr-confirm-warn" style="z-index:400">
+          <div class="modal" style="max-width:420px">
+            <div class="modal-title">⚠️ Below Recommended Batch Size</div>
+            <div class="modal-body">
+              <p style="color:var(--brown);font-size:14px;line-height:1.6;margin:0 0 10px">
+                Only <strong>${data.length} of 3</strong> recommended orders are pending.<br/>
+                Dispatching below the recommended batch size may increase delivery costs.
+              </p>
+              <p style="color:var(--brown-l);font-size:13px;margin:0 0 16px">Are you sure you want to confirm and dispatch now?</p>
+              <div class="modal-actions">
+                <button class="btn btn-ghost" onclick="closeModal('m-sr-confirm-warn')">Cancel</button>
+                <button class="btn btn-orange" onclick="closeModal('m-sr-confirm-warn');doSrConfirmAll()">Yes, Confirm Anyway</button>
+              </div>
+            </div>
+          </div>
         </div>`);
     }
     async function pageSrRetailers() {
@@ -6157,16 +6259,16 @@ RULES:
       if (data.error) { setContent(`<div class="alert-banner alert-error">❌ ${data.error}</div>`); return; }
       setContent(`
         <div class="sec-hdr"><div><div class="sec-title">Retailers</div>
-        <div class="sec-sub">All retailers who have placed orders</div></div>
-        <span class="badge b-gray" style="font-size:13px;padding:6px 14px">${data.length} retailers</span></div>
+        <div class="sec-sub">Retailers registered in your assigned city</div></div>
+        <span class="badge b-gray" style="font-size:13px;padding:6px 14px">${data.length} Retailers</span></div>
         <div class="card"><div class="tw"><table>
-          <thead><tr><th>Retailer Name</th><th>City</th><th>Area</th></tr></thead>
+          <thead><tr><th>Retailer Name</th><th>City</th><th>Email</th></tr></thead>
           <tbody>${data.length ? data.map(r => `
             <tr>
               <td><strong>${escapeHtml(r.retailerName)}</strong></td>
               <td>${r.city || '—'}</td>
-              <td style="font-size:12px;color:var(--brown-m)">${r.area || '—'}</td>
-            </tr>`).join('') : '<tr><td colspan="3"><div class="empty"><div>No retailers found.</div></div></td></tr>'}
+              <td style="font-size:12px;color:var(--brown-m);font-family:'DM Mono',monospace">${escapeHtml(r.email || '—')}</td>
+            </tr>`).join('') : '<tr><td colspan="3"><div class="empty"><div>No retailers found in your city.</div></div></td></tr>'}
           </tbody></table></div></div>`);
     }
 
@@ -6539,8 +6641,9 @@ RULES:
 
     // ── SALES REP CONFIRM ALL / REJECT ───────────────
     async function doSrConfirmAll() {
-      const rows = document.querySelectorAll('tbody tr td .mono');
-      const ids  = Array.from(rows).map(el => parseInt(el.textContent)).filter(Boolean);
+      // Collect all individual order IDs across every batch row
+      const ids = [...document.querySelectorAll('tbody tr[data-ids]')]
+        .flatMap(row => row.dataset.ids.split(',').map(Number).filter(Boolean));
       if (!ids.length) return;
 
       const btn = document.querySelector('[onclick="doSrConfirmAll()"]');
@@ -6564,8 +6667,8 @@ RULES:
       pageSrOrders();
     }
 
-    function doSrReject(orderId, retailerName) {
-      document.getElementById('sr-reject-id').value = orderId;
+    function doSrReject(idsStr, retailerName) {
+      document.getElementById('sr-reject-ids').value = idsStr;
       document.getElementById('sr-reject-reason').value = '';
       document.getElementById('sr-reject-cat').value = '';
       document.getElementById('sr-reject-err').style.display = 'none';
@@ -6573,18 +6676,23 @@ RULES:
     }
 
     async function confirmSrReject() {
-      const orderId  = document.getElementById('sr-reject-id').value;
+      const idsStr   = document.getElementById('sr-reject-ids').value;
+      const ids      = idsStr.split(',').map(Number).filter(Boolean);
       const reason   = document.getElementById('sr-reject-reason').value.trim();
       const category = document.getElementById('sr-reject-cat').value;
       const errEl    = document.getElementById('sr-reject-err');
       if (!reason) { errEl.textContent = '⚠️ Please provide a rejection reason.'; errEl.style.display = 'flex'; return; }
       if (!category) { errEl.textContent = '⚠️ Please select a category.'; errEl.style.display = 'flex'; return; }
-      const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
-        action: 'reject', confirmedBy: user.name, rejectReason: reason, rejectCategory: category
-      });
-      if (r.error) { errEl.textContent = `❌ ${r.error}`; errEl.style.display = 'flex'; return; }
+      let lastErr = null;
+      for (const orderId of ids) {
+        const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
+          action: 'reject', confirmedBy: user.name, rejectReason: reason, rejectCategory: category
+        });
+        if (r.error) lastErr = r.error;
+      }
+      if (lastErr) { errEl.textContent = `❌ ${lastErr}`; errEl.style.display = 'flex'; return; }
       closeModal('m-sr-reject');
-      toast(`Order ${orderId} rejected — retailer notified`);
+      toast(`Order rejected — retailer notified`);
       pollBadge();
       pageSrOrders();
     }
