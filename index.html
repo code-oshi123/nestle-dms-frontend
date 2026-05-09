@@ -6794,9 +6794,10 @@ RULES:
       if (btn) { btn.disabled = true; btn.textContent = `⏳ Confirming…`; }
 
       let confirmed = 0, failed = 0;
-      for (const orderId of ids) {
-        const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
-          action: 'confirm', confirmedBy: user.name, force: true
+      for (let i = 0; i < ids.length; i++) {
+        const r = await api(`/orders/${ids[i]}/confirm`, 'PUT', {
+          action: 'confirm', confirmedBy: user.name, force: true,
+          triggerRoute: i === ids.length - 1
         });
         if (r.error) { failed++; }
         else { confirmed++; }
