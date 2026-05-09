@@ -3628,6 +3628,21 @@ RULES:
         b.products.push({ id: o.id, productId: o.productId, productName: o.productName, items: parseInt(o.items)||0, kg: parseFloat(o.kg)||0 });
         b.totalItems += parseInt(o.items)||0;
         b.totalKg += parseFloat(o.kg)||0;
+        // Use first row that has a delivery PIN — each product gets its own delivery record
+        // and the first row in the SQL result may not be the confirmed one
+        if (!b.deliveryPin && o.deliveryPin) {
+          b.deliveryPin     = o.deliveryPin;
+          b.deliveryStatus  = o.deliveryStatus;
+          b.deliveryId      = o.deliveryId;
+          b.pinVerified     = o.pinVerified;
+          b.receiptConfirmed = o.receiptConfirmed;
+          b.receiptAt       = o.receiptAt;
+          b.receiptNote     = o.receiptNote;
+          b.driverName      = o.driverName;
+        }
+        // Use the most significant order status across the batch
+        const statusRank = { rejected:5, pending:4, confirmed:3, consolidated:2, delivered:1 };
+        if ((statusRank[o.status]||0) > (statusRank[b.status]||0)) b.status = o.status;
       });
       window._rejectedBatches = {};
 
