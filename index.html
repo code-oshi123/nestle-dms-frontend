@@ -3573,8 +3573,35 @@ RULES:
         api('/order-reminder').catch(() => null)
       ]);
 
-      const rejected = data.filter(o => o.status === 'rejected');
-      const awaitingReceipt = data.filter(o => o.deliveryStatus === 'delivered' && !o.receiptConfirmed);
+      // Group flat order rows into batches by exact createdAt timestamp
+      const batchMap = new Map();
+      const batchOrder = [];
+      (Array.isArray(data) ? data : []).forEach(o => {
+        const key = o.createdAtRaw || o.created;
+        if (!batchMap.has(key)) {
+          const b = {
+            key, ids: [], city: o.city, area: o.area, prio: o.prio,
+            status: o.status, created: o.created,
+            deliveryStatus: o.deliveryStatus, deliveryId: o.deliveryId,
+            deliveryPin: o.deliveryPin, pinVerified: o.pinVerified,
+            receiptConfirmed: o.receiptConfirmed, receiptAt: o.receiptAt,
+            receiptNote: o.receiptNote, driverName: o.driverName,
+            rejectCategory: o.rejectCategory, rejectReason: o.rejectReason,
+            products: [], totalItems: 0, totalKg: 0
+          };
+          batchMap.set(key, b);
+          batchOrder.push(b);
+        }
+        const b = batchMap.get(key);
+        b.ids.push(o.id);
+        b.products.push({ id: o.id, productId: o.productId, productName: o.productName, items: parseInt(o.items)||0, kg: parseFloat(o.kg)||0 });
+        b.totalItems += parseInt(o.items)||0;
+        b.totalKg += parseFloat(o.kg)||0;
+      });
+      window._rejectedBatches = {};
+
+      const rejected = batchOrder.filter(b => b.status === 'rejected');
+      const awaitingReceipt = batchOrder.filter(b => b.deliveryStatus === 'delivered' && !b.receiptConfirmed);
 
       const catIcons = {
         out_of_stock: '📦', duplicate_order: '🔄', coverage_area: '🗺️',
@@ -3600,29 +3627,34 @@ RULES:
         ⚠️ ${rejected.length} Rejected Order${rejected.length > 1 ? 's' : ''}
       </div>
       <div style="display:flex;flex-direction:column;gap:10px">
-        ${rejected.map(o => {
-        const cat = o.rejectCategory || 'other';
+        ${rejected.map(b => {
+        window._rejectedBatches[b.ids[0]] = b;
+        const cat = b.rejectCategory || 'other';
         const ico = catIcons[cat] || '📝';
         const lbl = catLabels[cat] || 'Rejected';
         const action = catActions[cat] || '';
+        const idLabel = b.ids.length > 1 ? `Order #${b.ids[0]} +${b.ids.length - 1} more` : `Order #${b.ids[0]}`;
         return `
           <div style="background:var(--white);border:2px solid #FFCDD2;border-radius:12px;padding:16px;border-left:5px solid var(--red)">
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
               <div style="display:flex;align-items:center;gap:8px">
                 <span style="font-size:20px">${ico}</span>
                 <div>
-                  <div style="font-size:13px;font-weight:700;color:var(--red)">${lbl} — Order #${o.id}</div>
-                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(o.city)} · ${o.items} items · ${o.prio} priority</div>
+                  <div style="font-size:13px;font-weight:700;color:var(--red)">${lbl} — ${idLabel}</div>
+                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(b.city)} · ${b.totalItems} items · ${b.prio} priority</div>
                 </div>
               </div>
               <div style="display:flex;gap:8px">
-                <button class="btn btn-ghost btn-sm" onclick="editAndResubmit('${o.id}','${escapeHtml(o.city)}',${o.items},'${o.prio}')">✏️ Edit & Resubmit</button>
-                <button class="btn btn-ghost btn-sm" style="color:var(--brown-l);border-color:var(--cream-dk)" onclick="dismissOrder('${o.id}')">✕ Dismiss</button>
+                <button class="btn btn-ghost btn-sm" onclick="editAndResubmitBatch(${b.ids[0]})">✏️ Edit & Resubmit</button>
+                <button class="btn btn-ghost btn-sm" style="color:var(--brown-l);border-color:var(--cream-dk)" onclick="dismissOrder([${b.ids.join(',')}])">✕ Dismiss</button>
               </div>
             </div>
             <div style="background:#FFF5F5;border-radius:8px;padding:10px 12px;margin-bottom:8px">
               <div style="font-size:11px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Rejection Reason</div>
-              <div style="font-size:13px;color:var(--brown);font-weight:500">${escapeHtml(o.rejectReason || 'No reason provided')}</div>
+              <div style="font-size:13px;color:var(--brown);font-weight:500">${escapeHtml(b.rejectReason || 'No reason provided')}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:8px">
+              ${b.products.map(p => `<span style="font-size:12px;color:var(--brown-m)">• ${escapeHtml(p.productName||'—')} × ${p.items}</span>`).join('')}
             </div>
             ${cat === 'out_of_stock' ? `
             <div style="background:#E8F5E9;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);font-weight:600">
@@ -3669,42 +3701,47 @@ RULES:
     ${receiptBanner}
     <div class="card"><div class="tw"><table>
       <thead><tr><th>ID</th><th>City</th><th>Area</th><th>Items</th><th>Priority</th><th>Order Status</th><th>Delivery</th><th>🔐 Delivery PIN</th><th>Receipt Proof</th><th>Submitted</th></tr></thead>
-      <tbody>${data.length ? data.map(o => `
+      <tbody>${batchOrder.length ? batchOrder.map(b => `
         <tr>
-          <td><span class="mono">${o.id}</span></td>
-          <td>${o.city}${['consolidated', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(o.status) ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="openTrackMap(${o.id},'${o.city || ''}','${o.retailerName || o.retailer || ''}')">🗺️ Track</button>` : ''}</td>
-          <td style="font-size:12px;color:var(--brown-m)">${o.area || '—'}</td>
-          <td>${o.items} items · <strong style="color:var(--blue)">${o.kg ? parseFloat(o.kg).toFixed(1) + 'kg' : '—'}</strong></td>
-          <td>${prioBadge(o.prio)}</td>
-          <td>${orderBadge(o.status)}</td>
-          <td>${o.deliveryStatus ? delBadge(o.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
-            ${o.driverName && o.deliveryStatus && !['pending', 'assigned'].includes(o.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${o.driverName}</div>` : ''}
+          <td><span class="mono">#${b.ids[0]}${b.ids.length > 1 ? '<span style="font-size:10px;color:var(--brown-l)"> +' + (b.ids.length - 1) + '</span>' : ''}</span></td>
+          <td>${b.city}${['consolidated', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(b.status) ? `<br><button class="btn btn-ghost btn-sm" style="margin-top:4px" onclick="openTrackMap(${b.ids[0]},'${b.city || ''}','')">🗺️ Track</button>` : ''}</td>
+          <td style="font-size:12px;color:var(--brown-m)">${b.area || '—'}</td>
+          <td>
+            <div style="font-weight:600;color:var(--brown)">${b.totalItems} items · <strong style="color:var(--blue)">${b.totalKg.toFixed(1)}kg</strong></div>
+            <div style="margin-top:4px;display:flex;flex-direction:column;gap:1px">
+              ${b.products.map(p => `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(p.productName||'—')} × ${p.items}</span>`).join('')}
+            </div>
+          </td>
+          <td>${prioBadge(b.prio)}</td>
+          <td>${orderBadge(b.status)}</td>
+          <td>${b.deliveryStatus ? delBadge(b.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
+            ${b.driverName && b.deliveryStatus && !['pending', 'assigned'].includes(b.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${b.driverName}</div>` : ''}
           </td>
           <td>
-            ${o.deliveryPin && ['pending', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(o.deliveryStatus || '')
+            ${b.deliveryPin && ['pending', 'assigned', 'warehouse_ready', 'loaded', 'in-transit'].includes(b.deliveryStatus || '')
           ? `<div style="background:#1B2A4A;border-radius:10px;padding:8px 14px;display:inline-block;text-align:center;min-width:110px">
                    <div style="font-size:9px;font-weight:700;color:#D4A832;letter-spacing:1.5px;margin-bottom:3px">YOUR PIN</div>
-                   <div style="font-size:24px;font-weight:800;color:#FFFFFF;letter-spacing:8px;font-family:'DM Mono',monospace">${o.deliveryPin}</div>
+                   <div style="font-size:24px;font-weight:800;color:#FFFFFF;letter-spacing:8px;font-family:'DM Mono',monospace">${b.deliveryPin}</div>
                    <div style="font-size:9px;color:rgba(217,200,154,.75);margin-top:3px">Show to driver on arrival</div>
                  </div>`
-          : o.pinVerified
+          : b.pinVerified
             ? `<span class="badge b-green">🔐 PIN Verified ✅</span>`
             : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
           </td>
           <td>
-            ${o.receiptConfirmed
+            ${b.receiptConfirmed
           ? `<div style="display:flex;flex-direction:column;gap:3px">
                    <span class="badge b-green">✅ Receipt Confirmed</span>
-                   <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.receiptAt || ''}</span>
-                   ${o.receiptNote ? `<span style="font-size:11px;color:var(--brown-m);font-style:italic">"${escapeHtml(o.receiptNote)}"</span>` : ''}
+                   <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${b.receiptAt || ''}</span>
+                   ${b.receiptNote ? `<span style="font-size:11px;color:var(--brown-m);font-style:italic">"${escapeHtml(b.receiptNote)}"</span>` : ''}
                  </div>`
-          : o.deliveryStatus === 'delivered'
-            ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${o.deliveryId}','${o.id}','${escapeHtml(o.city)}')">
+          : b.deliveryStatus === 'delivered'
+            ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${b.deliveryId}','${b.ids[0]}','${escapeHtml(b.city)}')">
                    📦 Confirm Receipt
                  </button>`
             : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
           </td>
-          <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${o.created}</td>
+          <td style="font-size:12px;color:var(--brown-l);font-family:'DM Mono',monospace">${b.created}</td>
         </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><div>No orders yet. Click "New Request" to start.</div></div></td></tr>'}</tbody>
     </table></div></div>
 
@@ -3756,11 +3793,24 @@ RULES:
   </div>`);
     }
 
-    async function dismissOrder(orderId) {
+    async function dismissOrder(orderIds) {
+      const ids = Array.isArray(orderIds) ? orderIds : [orderIds];
       if (!confirm('Dismiss this rejected order? It will be removed from your orders list.')) return;
-      const r = await api(`/orders/${orderId}/dismiss`, 'POST');
-      if (r.error) return alert('Could not dismiss: ' + r.error);
+      const results = await Promise.all(ids.map(id => api(`/orders/${id}/dismiss`, 'POST')));
+      const err = results.find(r => r.error);
+      if (err) return alert('Could not dismiss: ' + err.error);
       nav('my-orders');
+    }
+
+    function editAndResubmitBatch(batchKey) {
+      const b = (window._rejectedBatches || {})[batchKey];
+      if (!b) return;
+      sessionStorage.setItem('resubmit', JSON.stringify({
+        city: b.city, area: b.area, prio: b.prio,
+        products: b.products, fromOrderId: b.ids[0], edit: true
+      }));
+      nav('smart-order');
+      toast('✏️ Edit your order and resubmit', '#8B6914');
     }
 
     // ── Quick resubmit — same details, new order
@@ -4006,7 +4056,18 @@ RULES:
           setTimeout(() => {
             if (rd.city)  { const el = document.getElementById('i-city');  if (el) { el.value = rd.city; populateAreas(rd.area || ''); } }
             if (rd.prio)  { const el = document.getElementById('i-prio');  if (el) el.value = rd.prio; }
-            if (rd.items) { const el = document.getElementById('line-1-items'); if (el) { el.value = rd.items; updateLineSummary(); } }
+            if (rd.products && rd.products.length) {
+              rd.products.forEach((p, i) => {
+                if (i > 0) addOrderLine();
+                const n = i === 0 ? 1 : window._lineCounter;
+                const sel = document.getElementById(`line-${n}-product`);
+                const qty = document.getElementById(`line-${n}-items`);
+                if (sel) { sel.value = String(p.productId); sel.dispatchEvent(new Event('change')); }
+                if (qty) { qty.value = p.items; updateLineSummary(); }
+              });
+            } else if (rd.items) {
+              const el = document.getElementById('line-1-items'); if (el) { el.value = rd.items; updateLineSummary(); }
+            }
             if (rd.edit) {
               const notice = document.createElement('div');
               notice.className = 'alert-banner alert-info';
@@ -4992,6 +5053,29 @@ RULES:
     async function pageWhIncoming() {
       const data = await api('/deliveries');
       const relevant = data.filter(d => ['assigned', 'warehouse_ready', 'loaded'].includes(d.status));
+
+      // Group delivery rows into batches by the order's createdAt (bulk orders share the same timestamp)
+      const batchMap = new Map();
+      const batches = [];
+      relevant.forEach(d => {
+        const key = d.orderCreatedAt || String(d.id);
+        if (!batchMap.has(key)) {
+          const b = {
+            key, deliveryIds: [], firstId: d.id,
+            retailer: d.retailer, city: d.city, prio: d.prio, status: d.status,
+            driverName: d.driverName, vehicleId: d.vehicleId,
+            products: [], totalItems: 0, totalKg: 0
+          };
+          batchMap.set(key, b);
+          batches.push(b);
+        }
+        const b = batchMap.get(key);
+        b.deliveryIds.push(d.id);
+        b.products.push({ productName: d.productName, items: parseInt(d.items)||0 });
+        b.totalItems += parseInt(d.items)||0;
+        b.totalKg += parseFloat(d.kg)||0;
+      });
+
       setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Incoming Deliveries</div>
@@ -4999,36 +5083,44 @@ RULES:
     </div>
     <div class="card"><div class="tw"><table>
       <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody>${relevant.length ? relevant.map(d => `
+      <tbody>${batches.length ? batches.map(b => `
         <tr>
-          <td><span class="mono">${d.id}</span></td>
-          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          <td>${d.items}</td>
-          <td style="font-weight:700;color:var(--blue)">${d.kg ? parseFloat(d.kg).toFixed(1) + 'kg' : '—'}</td>
-          <td><span class="badge b-navy">${d.driverName || '—'}</span></td>
-          <td><span class="badge b-blue">${d.vehicleId || '—'}</span></td>
-          <td>${delBadge(d.status)}</td>
+          <td><span class="mono">#${b.firstId}${b.deliveryIds.length > 1 ? '<span style="font-size:10px;color:var(--brown-l)"> +' + (b.deliveryIds.length - 1) + '</span>' : ''}</span></td>
+          <td><strong>${escapeHtml(b.retailer)}</strong></td>
+          <td>${escapeHtml(b.city)}</td>
+          <td>
+            <div style="font-weight:600;color:var(--brown)">${b.totalItems} items</div>
+            <div style="margin-top:3px;display:flex;flex-direction:column;gap:1px">
+              ${b.products.map(p => `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(p.productName||'—')} × ${p.items}</span>`).join('')}
+            </div>
+          </td>
+          <td style="font-weight:700;color:var(--blue)">${b.totalKg.toFixed(1)}kg</td>
+          <td><span class="badge b-navy">${b.driverName || '—'}</span></td>
+          <td><span class="badge b-blue">${b.vehicleId || '—'}</span></td>
+          <td>${delBadge(b.status)}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
-            ${d.status === 'assigned'
-          ? `<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready</button>` : ''}
-            ${d.status === 'warehouse_ready'
-          ? `<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Vehicle Loaded</button>` : ''}
-            ${d.status === 'loaded'
-          ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
-            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')" style="margin-left:auto">🗺️ Track</button>
+            ${b.status === 'assigned'
+              ? `<button class="btn btn-green btn-sm" onclick="markReady([${b.deliveryIds.join(',')}])">✅ Cargo Ready</button>` : ''}
+            ${b.status === 'warehouse_ready'
+              ? `<button class="btn btn-tan btn-sm" onclick="markLoaded([${b.deliveryIds.join(',')}])">📦 Vehicle Loaded</button>` : ''}
+            ${b.status === 'loaded'
+              ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${b.firstId},'${b.city}','${b.retailer}')" style="margin-left:auto">🗺️ Track</button>
           </td>
         </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
     }
 
-    async function markReady(id) {
-      await api(`/deliveries/${id}/warehouse-ready`, 'PUT', {});
+    async function markReady(deliveryIds) {
+      const ids = Array.isArray(deliveryIds) ? deliveryIds : [deliveryIds];
+      await Promise.all(ids.map(id => api(`/deliveries/${id}/warehouse-ready`, 'PUT', {})));
       toast(`✅ Cargo ready — Driver notified 🔔`);
       pollBadge(); pageWhIncoming();
     }
 
-    async function markLoaded(id) {
-      await api(`/deliveries/${id}/loaded`, 'PUT', {});
+    async function markLoaded(deliveryIds) {
+      const ids = Array.isArray(deliveryIds) ? deliveryIds : [deliveryIds];
+      await Promise.all(ids.map(id => api(`/deliveries/${id}/loaded`, 'PUT', {})));
       toast(`📦 Vehicle loaded — Driver notified 🔔`);
       pollBadge(); pageWhIncoming();
     }
