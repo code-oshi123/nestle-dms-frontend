@@ -5131,6 +5131,7 @@ RULES:
             key, deliveryIds: [], firstId: d.id,
             retailer: d.retailer, city: d.city, prio: d.prio, status: d.status,
             driverName: d.driverName, vehicleId: d.vehicleId,
+            orderCreatedAt: d.orderCreatedAt,
             products: [], totalItems: 0, totalKg: 0
           };
           batchMap.set(key, b);
@@ -5149,10 +5150,10 @@ RULES:
       <div class="sec-sub">Mark cargo ready → Driver notified · Mark vehicle loaded → Driver notified 🔔</div></div>
     </div>
     <div class="card"><div class="tw"><table>
-      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Placed</th><th>Actions</th></tr></thead>
       <tbody>${batches.length ? batches.map(b => `
         <tr>
-          <td><span class="mono">#${b.firstId}${b.deliveryIds.length > 1 ? '<span style="font-size:10px;color:var(--brown-l)"> +' + (b.deliveryIds.length - 1) + '</span>' : ''}</span></td>
+          <td><span class="mono">#${b.firstId}</span></td>
           <td><strong>${escapeHtml(b.retailer)}</strong></td>
           <td>${escapeHtml(b.city)}</td>
           <td>
@@ -5171,6 +5172,7 @@ RULES:
           <td><span class="badge b-navy">${b.driverName || '—'}</span></td>
           <td><span class="badge b-blue">${b.vehicleId || '—'}</span></td>
           <td>${delBadge(b.status)}</td>
+          <td style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace;white-space:nowrap">${b.orderCreatedAt ? new Date(b.orderCreatedAt).toLocaleString('en-LK',{timeZone:'Asia/Colombo',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}) : '—'}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             ${b.status === 'assigned'
               ? `<button class="btn btn-green btn-sm" onclick="markReady([${b.deliveryIds.join(',')}])">✅ Cargo Ready</button>` : ''}
@@ -5180,7 +5182,7 @@ RULES:
               ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
             <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${b.firstId},'${b.city}','${b.retailer}')" style="margin-left:auto">🗺️ Track</button>
           </td>
-        </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
+        </tr>`).join('') : '<tr><td colspan="10"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
     }
 
