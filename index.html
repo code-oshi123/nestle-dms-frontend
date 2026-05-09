@@ -3983,6 +3983,9 @@ RULES:
             <span class="lo-qty-display" style="font-size:13px;color:var(--brown-l);white-space:nowrap">${p.items} units</span>
             <input class="lo-qty-input" type="number" value="${p.items}" min="1" data-original-qty="${p.items}"
               style="display:none;width:72px;padding:4px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px">
+            <button class="lo-remove-btn" onclick="removeLastOrderRow(this)"
+              style="display:none;background:none;border:none;cursor:pointer;color:#B71C1C;font-size:18px;line-height:1;padding:0 4px;opacity:0.7"
+              title="Remove product">✕</button>
           </div>`).join('');
         suggestHtml = `
         <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
@@ -4150,13 +4153,18 @@ RULES:
       const isEditing   = inputs[0] && inputs[0].style.display !== 'none';
 
       if (isEditing) {
-        // Cancel — remove dynamically added rows, restore original quantities
+        // Cancel — remove dynamically added rows, restore original quantities, restore hidden rows
         document.querySelectorAll('#last-order-list [data-added="true"]').forEach(el => el.remove());
+        document.querySelectorAll('#last-order-list [data-removed="true"]').forEach(el => {
+          el.removeAttribute('data-removed');
+          el.style.display = '';
+        });
         document.querySelectorAll('#last-order-list .lo-qty-input').forEach(el => {
           el.value = el.dataset.originalQty || el.value;
           el.style.display = 'none';
         });
         document.querySelectorAll('#last-order-list .lo-qty-display').forEach(el => el.style.display = '');
+        document.querySelectorAll('#last-order-list .lo-remove-btn').forEach(el => el.style.display = 'none');
         if (mainBtns)    mainBtns.style.display    = 'flex';
         if (editActions) editActions.style.display  = 'none';
         if (editBtn)     editBtn.style.display      = 'inline-block';
@@ -4165,6 +4173,7 @@ RULES:
         // Enter edit mode
         displays.forEach(el => el.style.display = 'none');
         inputs.forEach(el => el.style.display = 'inline-block');
+        document.querySelectorAll('#last-order-list .lo-remove-btn').forEach(el => el.style.display = 'inline-block');
         if (mainBtns)    mainBtns.style.display    = 'none';
         if (editActions) editActions.style.display  = 'flex';
         if (editBtn)     editBtn.style.display      = 'none';
@@ -4185,6 +4194,18 @@ RULES:
       }
     }
 
+    function removeLastOrderRow(btn) {
+      const row = btn.closest('[data-product-id]');
+      if (!row) return;
+      const remaining = document.querySelectorAll('#last-order-list [data-product-id]:not([data-removed])');
+      if (remaining.length <= 1) {
+        toast('⚠️ At least one product is required', '#ea580c');
+        return;
+      }
+      row.setAttribute('data-removed', 'true');
+      row.style.display = 'none';
+    }
+
     async function confirmLastOrder(btn) {
       const lo = window._lastOrder;
       if (!lo) return;
@@ -4194,7 +4215,7 @@ RULES:
 
     async function submitEditedLastOrder(btn) {
       if (!window._lastOrder) return;
-      const rows = [...document.querySelectorAll('#last-order-list [data-product-id]')];
+      const rows = [...document.querySelectorAll('#last-order-list [data-product-id]:not([data-removed])')];
       const edited = rows.map(row => ({
         productId:   parseInt(row.dataset.productId),
         productName: row.dataset.productName,
