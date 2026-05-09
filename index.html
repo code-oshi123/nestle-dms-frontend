@@ -6796,7 +6796,7 @@ RULES:
       let confirmed = 0, failed = 0;
       for (const orderId of ids) {
         const r = await api(`/orders/${orderId}/confirm`, 'PUT', {
-          action: 'confirm', confirmedBy: user.name
+          action: 'confirm', confirmedBy: user.name, force: true
         });
         if (r.error) { failed++; }
         else { confirmed++; }
