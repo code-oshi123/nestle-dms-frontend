@@ -1,24 +1,20 @@
-// @ts-check
+// playwright.config.js
+const { defineConfig, devices } = require('@playwright/test');
 
-/** @type {import('@playwright/test').PlaywrightTestConfig} */
-const config = {
-  testDir: './tests',
-  fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+module.exports = defineConfig({
+  testDir: '.',
+  fullyParallel: false,
+  retries: 1,
+  workers: 1,
+  reporter: [['html', { open: 'never' }], ['list']],
   use: {
-    baseURL: 'http://localhost:3000', 
+    baseURL: 'https://nestle-dms-frontend.vercel.app/',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    navigationTimeout: 30000,
+    actionTimeout: 15000,
   },
   projects: [
-    { name: 'chromium', use: { browserName: 'chromium' } },
-    { name: 'firefox', use: { browserName: 'firefox' } },
-    { name: 'webkit',  use: { browserName: 'webkit'  } },
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
   ],
-};
-
-module.exports = config;
+});
