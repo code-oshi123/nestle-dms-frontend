@@ -2138,6 +2138,37 @@
       margin-bottom: 10px
     }
 
+    /* WAREHOUSE PRODUCT TOOLTIP */
+    .wh-tip-wrap { position: relative; display: inline-flex; align-items: center; }
+    .wh-tip-box {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1B2A4A;
+      color: #fff;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 12px;
+      white-space: nowrap;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      min-width: 180px;
+    }
+    .wh-tip-wrap:hover .wh-tip-box { opacity: 1; }
+    .wh-tip-box::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #1B2A4A;
+    }
+
     /* REJECTION NOTICE */
     .rejection-notice {
       background: linear-gradient(135deg, #fff8f8, #fff0f0);
@@ -5089,9 +5120,15 @@ RULES:
           <td><strong>${escapeHtml(b.retailer)}</strong></td>
           <td>${escapeHtml(b.city)}</td>
           <td>
-            <div style="font-weight:600;color:var(--brown)">${b.totalItems} items</div>
-            <div style="margin-top:3px;display:flex;flex-direction:column;gap:1px">
-              ${b.products.map(p => `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(p.productName||'—')} × ${p.items}</span>`).join('')}
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-weight:600;color:var(--brown)">${b.totalItems} items</span>
+              ${b.products.length > 1 ? `
+              <div class="wh-tip-wrap">
+                <span style="cursor:default;font-size:14px;line-height:1;color:#6B7280" title="View products">ⓘ</span>
+                <div class="wh-tip-box">
+                  ${b.products.map(p => `<div style="display:flex;justify-content:space-between;gap:20px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.1)"><span>${escapeHtml(p.productName||'—')}</span><span style="font-weight:700;color:#D4A832">× ${p.items}</span></div>`).join('')}
+                </div>
+              </div>` : `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(b.products[0]?.productName||'—')}</span>`}
             </div>
           </td>
           <td style="font-weight:700;color:var(--blue)">${b.totalKg.toFixed(1)}kg</td>
