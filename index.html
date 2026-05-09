@@ -5829,6 +5829,18 @@ RULES:
       }
       if (!valid) return;
 
+      // Delivered must go through PIN verification — redirect to PIN modal
+      if (newStatus === 'delivered') {
+        const label = document.getElementById('s-label').value || '';
+        const parts = label.split('—').map(s => s.trim());
+        const retailerCity = parts[1] || '';
+        const retailer = retailerCity.split(',')[0]?.trim() || '';
+        const city = retailerCity.split(',')[1]?.trim() || '';
+        closeModal('m-status');
+        openPinVerify(id, retailer, city);
+        return;
+      }
+
       const btn = document.getElementById('s-submit-btn');
       btn.disabled = true;
       btn.textContent = 'Saving…';
