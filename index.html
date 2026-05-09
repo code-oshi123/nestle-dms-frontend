@@ -5053,6 +5053,29 @@ RULES:
     async function pageWhIncoming() {
       const data = await api('/deliveries');
       const relevant = data.filter(d => ['assigned', 'warehouse_ready', 'loaded'].includes(d.status));
+
+      // Group delivery rows into batches by the order's createdAt (bulk orders share the same timestamp)
+      const batchMap = new Map();
+      const batches = [];
+      relevant.forEach(d => {
+        const key = d.orderCreatedAt || String(d.id);
+        if (!batchMap.has(key)) {
+          const b = {
+            key, deliveryIds: [], firstId: d.id,
+            retailer: d.retailer, city: d.city, prio: d.prio, status: d.status,
+            driverName: d.driverName, vehicleId: d.vehicleId,
+            products: [], totalItems: 0, totalKg: 0
+          };
+          batchMap.set(key, b);
+          batches.push(b);
+        }
+        const b = batchMap.get(key);
+        b.deliveryIds.push(d.id);
+        b.products.push({ productName: d.productName, items: parseInt(d.items)||0 });
+        b.totalItems += parseInt(d.items)||0;
+        b.totalKg += parseFloat(d.kg)||0;
+      });
+
       setContent(`
     <div class="sec-hdr">
       <div><div class="sec-title">Incoming Deliveries</div>
@@ -5060,36 +5083,44 @@ RULES:
     </div>
     <div class="card"><div class="tw"><table>
       <thead><tr><th>ID</th><th>Retailer</th><th>City</th><th>Items</th><th>Weight</th><th>Driver</th><th>Vehicle</th><th>Status</th><th>Actions</th></tr></thead>
-      <tbody>${relevant.length ? relevant.map(d => `
+      <tbody>${batches.length ? batches.map(b => `
         <tr>
-          <td><span class="mono">${d.id}</span></td>
-          <td><strong>${d.retailer}</strong></td><td>${d.city}</td>
-          <td>${d.items}</td>
-          <td style="font-weight:700;color:var(--blue)">${d.kg ? parseFloat(d.kg).toFixed(1) + 'kg' : '—'}</td>
-          <td><span class="badge b-navy">${d.driverName || '—'}</span></td>
-          <td><span class="badge b-blue">${d.vehicleId || '—'}</span></td>
-          <td>${delBadge(d.status)}</td>
+          <td><span class="mono">#${b.firstId}${b.deliveryIds.length > 1 ? '<span style="font-size:10px;color:var(--brown-l)"> +' + (b.deliveryIds.length - 1) + '</span>' : ''}</span></td>
+          <td><strong>${escapeHtml(b.retailer)}</strong></td>
+          <td>${escapeHtml(b.city)}</td>
+          <td>
+            <div style="font-weight:600;color:var(--brown)">${b.totalItems} items</div>
+            <div style="margin-top:3px;display:flex;flex-direction:column;gap:1px">
+              ${b.products.map(p => `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(p.productName||'—')} × ${p.items}</span>`).join('')}
+            </div>
+          </td>
+          <td style="font-weight:700;color:var(--blue)">${b.totalKg.toFixed(1)}kg</td>
+          <td><span class="badge b-navy">${b.driverName || '—'}</span></td>
+          <td><span class="badge b-blue">${b.vehicleId || '—'}</span></td>
+          <td>${delBadge(b.status)}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
-            ${d.status === 'assigned'
-          ? `<button class="btn btn-green btn-sm" onclick="markReady('${d.id}')">✅ Cargo Ready</button>` : ''}
-            ${d.status === 'warehouse_ready'
-          ? `<button class="btn btn-tan btn-sm" onclick="markLoaded('${d.id}')">📦 Vehicle Loaded</button>` : ''}
-            ${d.status === 'loaded'
-          ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
-            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${d.id},'${d.city}','${d.retailer}')" style="margin-left:auto">🗺️ Track</button>
+            ${b.status === 'assigned'
+              ? `<button class="btn btn-green btn-sm" onclick="markReady([${b.deliveryIds.join(',')}])">✅ Cargo Ready</button>` : ''}
+            ${b.status === 'warehouse_ready'
+              ? `<button class="btn btn-tan btn-sm" onclick="markLoaded([${b.deliveryIds.join(',')}])">📦 Vehicle Loaded</button>` : ''}
+            ${b.status === 'loaded'
+              ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
+            <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${b.firstId},'${b.city}','${b.retailer}')" style="margin-left:auto">🗺️ Track</button>
           </td>
         </tr>`).join('') : '<tr><td colspan="9"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
     </table></div></div>`);
     }
 
-    async function markReady(id) {
-      await api(`/deliveries/${id}/warehouse-ready`, 'PUT', {});
+    async function markReady(deliveryIds) {
+      const ids = Array.isArray(deliveryIds) ? deliveryIds : [deliveryIds];
+      await Promise.all(ids.map(id => api(`/deliveries/${id}/warehouse-ready`, 'PUT', {})));
       toast(`✅ Cargo ready — Driver notified 🔔`);
       pollBadge(); pageWhIncoming();
     }
 
-    async function markLoaded(id) {
-      await api(`/deliveries/${id}/loaded`, 'PUT', {});
+    async function markLoaded(deliveryIds) {
+      const ids = Array.isArray(deliveryIds) ? deliveryIds : [deliveryIds];
+      await Promise.all(ids.map(id => api(`/deliveries/${id}/loaded`, 'PUT', {})));
       toast(`📦 Vehicle loaded — Driver notified 🔔`);
       pollBadge(); pageWhIncoming();
     }
