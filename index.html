@@ -5172,7 +5172,7 @@ RULES:
           <td><span class="badge b-navy">${b.driverName || '—'}</span></td>
           <td><span class="badge b-blue">${b.vehicleId || '—'}</span></td>
           <td>${delBadge(b.status)}</td>
-          <td style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace;white-space:nowrap">${b.orderCreatedAt ? new Date(b.orderCreatedAt).toLocaleString('en-LK',{timeZone:'Asia/Colombo',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}) : '—'}</td>
+          <td style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace;white-space:nowrap">${b.orderCreatedAt || '—'}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             ${b.status === 'assigned'
               ? `<button class="btn btn-green btn-sm" onclick="markReady([${b.deliveryIds.join(',')}])">✅ Cargo Ready</button>` : ''}
