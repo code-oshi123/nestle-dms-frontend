@@ -2749,6 +2749,7 @@
       <div class="modal-title">📋 Update Delivery Status</div>
       <div class="modal-body">
         <input type="hidden" id="s-id" />
+        <input type="hidden" id="s-extra-ids" value="[]" />
         <div class="fg"><label>Delivery</label><input id="s-label" disabled /></div>
         <div class="fg"><label>New Status <span style="color:var(--red)">*</span></label>
           <select id="s-status" onchange="onStatusChange()">
@@ -2839,6 +2840,7 @@
       <div class="modal-title" style="background:linear-gradient(135deg,#1B2A4A,#2d4a7a)">🔐 PIN Verification</div>
       <div class="modal-body" style="text-align:center">
         <input type="hidden" id="pv-id" />
+        <input type="hidden" id="pv-extra-ids" value="[]" />
         <div style="font-size:46px;margin-bottom:8px">🔐</div>
         <div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px" id="pv-label">Verify Delivery
         </div>
@@ -5364,7 +5366,8 @@ RULES:
         const stopsData = rt.stops_data ? JSON.parse(rt.stops_data) : [];
         for (let i = 0; i < stopsData.length; i++) {
           const sd = stopsData[i];
-          const del = sd.deliveryId ? deliveryMap[sd.deliveryId] : null;
+          const sdIds = sd.deliveryIds || (sd.deliveryId ? [sd.deliveryId] : []);
+          const del = sdIds.length ? deliveryMap[sdIds[0]] : null;
           if (del && ['loaded', 'in-transit'].includes(del.status)) {
             nextStop = { ...sd, delivStatus: del.status, warehouseLabel: rt.warehouse, vehicleId: rt.vehicleId };
             nextStopIdx = i;
@@ -5381,7 +5384,7 @@ RULES:
       <div style="font-size:34px;font-weight:800;color:#FFFFFF;font-family:'Cormorant Garamond',serif;margin-bottom:6px;line-height:1.1">${nextStop.city}</div>
       <div style="font-size:15px;font-weight:700;color:#FAF5E8;margin-bottom:16px">
         ${escapeHtml(nextStop.retailer || '—')} &nbsp;·&nbsp; ${nextStop.items || 0} items
-        ${(() => { const del = nextStop.deliveryId ? deliveryMap[nextStop.deliveryId] : null; return del && del.kg ? `&nbsp;·&nbsp; <span style="color:#90CAF9;font-weight:800">${parseFloat(del.kg).toFixed(1)}kg</span>` : ''; })()}
+        ${nextStop.kg ? `&nbsp;·&nbsp; <span style="color:#90CAF9;font-weight:800">${parseFloat(nextStop.kg).toFixed(1)}kg</span>` : ''}
         ${nextStop.priority ? `&nbsp;·&nbsp; <span style="color:#D4A832;text-transform:capitalize;font-weight:800">${nextStop.priority}</span>` : ''}
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px">
@@ -5462,7 +5465,8 @@ RULES:
         const mins = (rt.durMins || 0) % 60;
 
         const timelineStops = stopsData.map((sd, i) => {
-          const del = sd.deliveryId ? deliveryMap[sd.deliveryId] : null;
+          const sdIds = sd.deliveryIds || (sd.deliveryId ? [sd.deliveryId] : []);
+          const del = sdIds.length ? deliveryMap[sdIds[0]] : null;
           const st = del ? del.status : 'pending';
           const isDone = st === 'delivered';
           const isActive = ['loaded', 'in-transit'].includes(st);
@@ -5486,7 +5490,7 @@ RULES:
                 <span style="font-size:15px">${checkmark}</span>
                 <div>
                   <div style="font-size:14px;font-weight:600;color:var(--brown)">${i + 1}. ${sd.city || cities[i] || '—'}</div>
-                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(sd.retailer || '—')} · ${sd.items || 0} items${del && del.kg ? ' · <strong style="color:var(--blue)">' + parseFloat(del.kg).toFixed(1) + 'kg</strong>' : ''}${sd.priority ? ` · <span style="color:${sd.priority === 'urgent' ? 'var(--red)' : sd.priority === 'high' ? 'var(--orange)' : 'var(--brown-l)'};font-weight:600">${sd.priority}</span>` : ''}</div>
+                  <div style="font-size:12px;color:var(--brown-m)">${escapeHtml(sd.retailer || '—')} · ${sd.items || 0} items${sd.kg ? ' · <strong style="color:var(--blue)">' + parseFloat(sd.kg).toFixed(1) + 'kg</strong>' : ''}${sdIds.length > 1 ? ` · <span style="color:var(--brown-l);font-size:11px">${sdIds.length} orders</span>` : ''}${sd.priority ? ` · <span style="color:${sd.priority === 'urgent' ? 'var(--red)' : sd.priority === 'high' ? 'var(--orange)' : 'var(--brown-l)'};font-weight:600">${sd.priority}</span>` : ''}</div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
@@ -5499,19 +5503,16 @@ RULES:
             ${isNext && !isDone ? `
               <button class="btn btn-orange btn-sm" style="margin-top:10px;width:100%"
                 onclick="${del && del.status === 'in-transit'
-                ? `openPinVerify('${sd.deliveryId}','${escapeHtml(sd.retailer || '')}','${escapeHtml(sd.city || cities[i] || '')}')`
-                : `openStatus('${sd.deliveryId}','${escapeHtml(sd.retailer || '')}','${escapeHtml(sd.city || cities[i] || '')}','${del ? del.status : ''}')`}">
+                ? `openPinVerify('${sdIds[0]}','${escapeHtml(sd.retailer || '')}','${escapeHtml(sd.city || cities[i] || '')}',${JSON.stringify(sdIds)})`
+                : `openStatus('${sdIds[0]}','${escapeHtml(sd.retailer || '')}','${escapeHtml(sd.city || cities[i] || '')}','${del ? del.status : ''}',${JSON.stringify(sdIds)})`}">
                 ${del && del.status === 'in-transit' ? '🔐 Verify PIN & Deliver' : '🚛 Mark In Transit'}
               </button>` : ''}
           </div>
         </div>`;
         }).join('');
 
-        // Calculate total weight across all stops
-        const routeTotalKg = stopsData.reduce((sum, sd) => {
-          const del = sd.deliveryId ? deliveryMap[sd.deliveryId] : null;
-          return sum + (del && del.kg ? parseFloat(del.kg) : 0);
-        }, 0);
+        // Calculate total weight across all stops (sd.kg is already summed per grouped stop)
+        const routeTotalKg = stopsData.reduce((sum, sd) => sum + (parseFloat(sd.kg) || 0), 0);
         const urgentStops = stopsData.filter(sd => sd.priority === 'urgent').length;
         const highStops = stopsData.filter(sd => sd.priority === 'high').length;
         const normalStops = stopsData.filter(sd => sd.priority === 'normal').length;
@@ -5733,8 +5734,9 @@ RULES:
     </div>`);
     }
 
-    function openStatus(id, retailer, city, currentStatus) {
+    function openStatus(id, retailer, city, currentStatus, deliveryIds) {
       document.getElementById('s-id').value = id;
+      document.getElementById('s-extra-ids').value = JSON.stringify(deliveryIds && deliveryIds.length ? deliveryIds : [id]);
       document.getElementById('s-label').value = `${id} — ${retailer}, ${city}`;
       document.getElementById('s-note').value = '';
       document.getElementById('s-note-err').classList.remove('show');
@@ -5854,6 +5856,13 @@ RULES:
 
       if (newStatus === 'in-transit') {
         startGps(id);
+        // Also mark co-stop deliveries in-transit (same retailer, same route stop)
+        const extraIds = JSON.parse(document.getElementById('s-extra-ids').value || '[]');
+        for (const eid of extraIds) {
+          if (String(eid) !== String(id)) {
+            await api(`/deliveries/${eid}/status`, 'PUT', { newStatus: 'in-transit', note, updatedBy: user.id });
+          }
+        }
         toast('🚛 In Transit — GPS tracking started 📍', '#1565C0');
       } else if (newStatus === 'delivered') {
         stopGps();
@@ -7014,8 +7023,9 @@ RULES:
       if (pin.length === 4) setTimeout(submitPin, 200);
     }
 
-    function openPinVerify(deliveryId, retailer, city) {
+    function openPinVerify(deliveryId, retailer, city, deliveryIds) {
       document.getElementById('pv-id').value = deliveryId;
+      document.getElementById('pv-extra-ids').value = JSON.stringify(deliveryIds && deliveryIds.length ? deliveryIds : [deliveryId]);
       document.getElementById('pv-label').textContent = `${retailer} — ${city}`;
       ['pin-1', 'pin-2', 'pin-3', 'pin-4'].forEach(id => {
         const el = document.getElementById(id);
@@ -7044,6 +7054,13 @@ RULES:
       const r = await api(`/deliveries/${id}/verify-pin`, 'POST', { pin });
 
       if (r.ok) {
+        // Also verify & deliver all co-stop deliveries (same PIN, same retailer visit)
+        const extraIds = JSON.parse(document.getElementById('pv-extra-ids').value || '[]');
+        for (const eid of extraIds) {
+          if (String(eid) !== String(id)) {
+            await api(`/deliveries/${eid}/verify-pin`, 'POST', { pin });
+          }
+        }
         // Success — green boxes
         ['pin-1', 'pin-2', 'pin-3', 'pin-4'].forEach(id => {
           const el = document.getElementById(id);
