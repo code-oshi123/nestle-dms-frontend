@@ -5132,6 +5132,7 @@ RULES:
             retailer: d.retailer, city: d.city, prio: d.prio, status: d.status,
             driverName: d.driverName, vehicleId: d.vehicleId,
             orderCreatedAt: d.orderCreatedAt,
+            orderPlacedAt: d.orderPlacedAt,
             products: [], totalItems: 0, totalKg: 0
           };
           batchMap.set(key, b);
@@ -5172,7 +5173,7 @@ RULES:
           <td><span class="badge b-navy">${b.driverName || '—'}</span></td>
           <td><span class="badge b-blue">${b.vehicleId || '—'}</span></td>
           <td>${delBadge(b.status)}</td>
-          <td style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace;white-space:nowrap">${b.orderCreatedAt || '—'}</td>
+          <td style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace;white-space:nowrap">${b.orderPlacedAt || '—'}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             ${b.status === 'assigned'
               ? `<button class="btn btn-green btn-sm" onclick="markReady([${b.deliveryIds.join(',')}])">✅ Cargo Ready</button>` : ''}
