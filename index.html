@@ -3620,6 +3620,7 @@ RULES:
             receiptConfirmed: o.receiptConfirmed, receiptAt: o.receiptAt,
             receiptNote: o.receiptNote, driverName: o.driverName,
             rejectCategory: o.rejectCategory, rejectReason: o.rejectReason,
+            stopsAhead: o.stopsAhead, eta: o.eta,
             products: [], totalItems: 0, totalKg: 0
           };
           batchMap.set(key, b);
@@ -3641,6 +3642,8 @@ RULES:
           b.receiptAt       = o.receiptAt;
           b.receiptNote     = o.receiptNote;
           b.driverName      = o.driverName;
+          b.stopsAhead      = o.stopsAhead;
+          b.eta             = o.eta;
         }
         // Use the most significant order status across the batch
         const statusRank = { rejected:5, pending:4, confirmed:3, consolidated:2, delivered:1 };
@@ -3763,6 +3766,7 @@ RULES:
           <td>${prioBadge(b.prio)}</td>
           <td>${orderBadge(b.status)}</td>
           <td>${b.deliveryStatus ? delBadge(b.deliveryStatus) : '<span style="color:var(--brown-l);font-size:12px">—</span>'}
+            ${b.deliveryStatus === 'in-transit' && b.stopsAhead != null ? `<div style="font-size:11px;font-weight:700;color:#1565C0;margin-top:3px">${b.stopsAhead === 0 ? "🎯 You're next!" : `${b.stopsAhead} stop${b.stopsAhead > 1 ? 's' : ''} before you`}${b.eta ? ` · ETA ${b.eta}` : ''}</div>` : ''}
             ${b.driverName && b.deliveryStatus && !['pending', 'assigned'].includes(b.deliveryStatus) ? `<div style="font-size:11px;color:var(--brown-l);margin-top:2px">🚛 ${b.driverName}</div>` : ''}
           </td>
           <td>
@@ -5856,14 +5860,7 @@ RULES:
 
       if (newStatus === 'in-transit') {
         startGps(id);
-        // Also mark co-stop deliveries in-transit (same retailer, same route stop)
-        const extraIds = JSON.parse(document.getElementById('s-extra-ids').value || '[]');
-        for (const eid of extraIds) {
-          if (String(eid) !== String(id)) {
-            await api(`/deliveries/${eid}/status`, 'PUT', { newStatus: 'in-transit', note, updatedBy: user.id });
-          }
-        }
-        toast('🚛 In Transit — GPS tracking started 📍', '#1565C0');
+        toast('🚛 In Transit — All retailers notified 📍', '#1565C0');
       } else if (newStatus === 'delivered') {
         stopGps();
         toast('✅ Delivered — All 4 parties notified 🔔', '#16a34a');
