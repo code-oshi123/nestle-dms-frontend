@@ -4199,8 +4199,19 @@ RULES:
               .sort((a, b) => (a.productName || '').localeCompare(b.productName || ''))
               .forEach(s => {
                 const opt = document.createElement('option');
+                const av = parseInt(s.availableUnits);
                 opt.value = s.id;
-                opt.textContent = s.productName || `Product ${s.id}`;
+                opt.dataset.name = s.productName || `Product ${s.id}`;
+                if (av <= 0) {
+                  opt.textContent = `${s.productName}  —  out of stock`;
+                  opt.disabled = true;
+                  opt.style.color = '#9ca3af';
+                } else if (av < 100) {
+                  opt.textContent = `${s.productName}  —  ${av} left`;
+                  opt.style.color = '#b45309';
+                } else {
+                  opt.textContent = s.productName || `Product ${s.id}`;
+                }
                 select.appendChild(opt);
               });
           }
@@ -4245,7 +4256,7 @@ RULES:
       const qtyInput = document.getElementById('lo-add-qty');
       const productId = parseInt(select?.value);
       if (!productId) return;
-      const productName = select.options[select.selectedIndex]?.text || '';
+      const productName = select.options[select.selectedIndex]?.dataset.name || select.options[select.selectedIndex]?.text || '';
       const qty = Math.max(1, parseInt(qtyInput?.value) || 1);
 
       // If already in list, just increase its quantity
