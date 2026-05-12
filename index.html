@@ -3982,17 +3982,25 @@ RULES:
       let suggestHtml = '';
       if (hasLast) {
         const lo = window._lastOrder;
-        const productRows = lo.products.map(p => `
+        const productRows = lo.products.map(p => {
+          const st = window._stockMap[p.productId];
+          const av = st ? parseInt(st.availableUnits) : null;
+          const badge = av !== null && av < 100
+            ? `<span style="font-size:10px;font-weight:700;color:#B71C1C;background:#FEE2E2;padding:2px 6px;border-radius:4px;white-space:nowrap">⚠️ Only ${av} left</span>`
+            : '';
+          return `
           <div data-product-id="${p.productId}" data-product-name="${escapeHtml(p.productName || '')}"
                style="display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--cream-dk);gap:8px">
             <span style="font-size:13px;font-weight:600;color:var(--brown);flex:1">${escapeHtml(p.productName || '—')}</span>
+            ${badge}
             <span class="lo-qty-display" style="font-size:13px;color:var(--brown-l);white-space:nowrap">${p.items} units</span>
             <input class="lo-qty-input" type="number" value="${p.items}" min="1" data-original-qty="${p.items}"
               style="display:none;width:72px;padding:4px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px">
             <button class="lo-remove-btn" onclick="removeLastOrderRow(this)"
               style="display:none;background:none;border:none;cursor:pointer;color:#B71C1C;font-size:18px;line-height:1;padding:0 4px;opacity:0.7"
               title="Remove product">✕</button>
-          </div>`).join('');
+          </div>`;
+        }).join('');
         suggestHtml = `
         <div class="card" style="max-width:760px;margin-bottom:16px;border:1.5px solid #a8d5ba">
           <div class="card-title" style="color:var(--green);margin-bottom:4px">✨ Personalised Suggestions
@@ -4269,20 +4277,75 @@ RULES:
 
     async function _submitLastOrderBatch(products, btn) {
       const lo      = window._lastOrder;
-      const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
       const province    = user.city || lo.city;
       const validAreas  = CITY_AREAS[province] || [];
       const resolvedArea = (validAreas.length && !validAreas.includes(lo.area)) ? validAreas[0] : lo.area;
-      const orders  = products.map(p => ({
-        city:        province,
-        area:        resolvedArea,
-        productId:   p.productId,
-        productName: p.productName,
-        items:       p.items,
-        kg:          parseFloat(((window._loWeights[p.productId] || 0) * p.items).toFixed(2)),
-        priority:    lo.priority || 'normal',
-        notes:       '',
-        orderDate:   todayStr
+
+      // Pre-submission stock gate
+      const toWaitlist = [], canPlace = [];
+      for (const p of products) {
+        const st = window._stockMap[p.productId];
+        const av = st ? parseInt(st.availableUnits) : null;
+        if (av !== null && p.items > av) {
+          toWaitlist.push({ productId: p.productId, productName: p.productName, requestedQty: p.items, availableUnits: av,
+            reason: av > 0 ? `Only ${av} units available (you requested ${p.items})` : `Out of stock (you requested ${p.items})` });
+        } else {
+          canPlace.push(p);
+        }
+      }
+
+      if (toWaitlist.length) {
+        const issueList = toWaitlist.map(p =>
+          `<div style="padding:8px 0;border-bottom:1px solid var(--cream-dk)">
+            <strong style="color:var(--brown)">${escapeHtml(p.productName)}</strong>
+            <div style="font-size:12px;color:#B71C1C;margin-top:2px">❌ ${escapeHtml(p.reason)}</div>
+          </div>`
+        ).join('');
+        const canPlaceNote = canPlace.length
+          ? `<div style="margin-top:12px;font-size:13px;color:#166534;background:#dcfce7;padding:8px 12px;border-radius:8px">✅ ${canPlace.length} other item${canPlace.length > 1 ? 's' : ''} will be placed normally.</div>`
+          : '';
+        const mc = document.getElementById('m-waitlist-content');
+        if (mc) {
+          const titleEl = mc.closest('.modal')?.querySelector('.modal-title');
+          if (titleEl) titleEl.textContent = '⚠️ Stock Issue';
+          mc.innerHTML = `
+            <div style="margin-bottom:12px;font-size:13px;color:var(--brown)">The following items cannot be fulfilled:</div>
+            ${issueList}${canPlaceNote}
+            <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+              <button class="btn btn-ghost" onclick="closeModal('m-waitlist-modal');if(window._pendingBatchBtn){window._pendingBatchBtn.disabled=false;window._pendingBatchBtn.textContent='✓ Confirm Order';}">Cancel</button>
+              <button class="btn btn-green" onclick="closeModal('m-waitlist-modal');_executeBatchWithWaitlist();">${canPlace.length ? 'Place available + Join Waitlist' : 'Join Waitlist'}</button>
+            </div>`;
+          window._pendingBatch = { canPlace, toWaitlist, province, resolvedArea, btn };
+          window._pendingBatchBtn = btn;
+          openModal('m-waitlist-modal');
+        }
+        return;
+      }
+
+      await _doBatchOrders(products, btn, province, resolvedArea);
+    }
+
+    async function _executeBatchWithWaitlist() {
+      const { canPlace, toWaitlist, province, resolvedArea, btn } = window._pendingBatch || {};
+      window._pendingBatch = null;
+      for (const p of (toWaitlist || [])) {
+        await joinWaitlist(p.productId, p.productName, p.requestedQty, 'full', province, resolvedArea);
+      }
+      if (canPlace && canPlace.length) {
+        await _doBatchOrders(canPlace, btn, province, resolvedArea);
+      } else {
+        nav('my-orders');
+      }
+    }
+
+    async function _doBatchOrders(products, btn, province, resolvedArea) {
+      const lo = window._lastOrder;
+      const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+      const orders = products.map(p => ({
+        city: province, area: resolvedArea,
+        productId: p.productId, productName: p.productName, items: p.items,
+        kg: parseFloat(((window._loWeights[p.productId] || 0) * p.items).toFixed(2)),
+        priority: lo.priority || 'normal', notes: '', orderDate: todayStr
       }));
       const r = await api('/orders/bulk', 'POST', { retailerId: user.id, retailerName: user.name, orders });
       if (r.error) {
@@ -4295,11 +4358,7 @@ RULES:
         const skipped = r.failed?.length || 0;
         toast(`✅ ${placed} order${placed > 1 ? 's' : ''} placed — Sales Rep notified 🔔${skipped ? ` · ${skipped} line(s) need attention` : ''}`, '#16a34a');
         pollBadge();
-        if (skipped) {
-          showWaitlistOptions(r.failed, province, resolvedArea);
-        } else {
-          nav('my-orders');
-        }
+        if (skipped) { showWaitlistOptions(r.failed, province, resolvedArea); } else { nav('my-orders'); }
       } else if (r.failed?.length) {
         toast(`❌ All lines failed — stock unavailable`, '#B71C1C');
         showWaitlistOptions(r.failed, province, resolvedArea);
@@ -6806,7 +6865,11 @@ RULES:
         formContainer.style.display = 'block';
       } else {
         const modalContent = document.getElementById('m-waitlist-content');
-        if (modalContent) { modalContent.innerHTML = html; openModal('m-waitlist-modal'); }
+        if (modalContent) {
+          const titleEl = modalContent.closest('.modal')?.querySelector('.modal-title');
+          if (titleEl) titleEl.textContent = '⏳ Stock Issues — Choose an Option';
+          modalContent.innerHTML = html; openModal('m-waitlist-modal');
+        }
       }
     }
 
