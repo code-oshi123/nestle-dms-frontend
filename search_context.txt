@@ -1,0 +1,804 @@
+\n--- Context for note ---\n2709:               </button>
+2710:               <button type="button" class="reject-cat-btn" data-cat="other" onclick="selectRejectCat(this)"
+2711:                 style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif;transition:all .15s">
+2712:                 <div style="font-size:16px;margin-bottom:3px">📝</div>
+2713:                 <div style="font-size:11px;font-weight:700;color:var(--brown)">Other</div>
+2714:                 <div style="font-size:10px;color:var(--gray)">Describe in notes below</div>
+2715:               </button>
+2716:             </div>
+2717:             <input type="hidden" id="mc-category" value="" />
+2718:             <div class="field-err" id="mc-cat-err">Please select a rejection category.</div>
+2719:           </div>
+---2724:             🔔 <strong>Auto-notify enabled</strong> — Retailer will be automatically notified when this product is back
+2725:             in stock.
+2726:           </div>
+2727: 
+2728:           <div class="fg">
+2729:             <label>Additional Note <span style="color:var(--red)">*</span></label>
+2730:             <input id="mc-reason" placeholder="Provide specific details for the retailer…" />
+2731:             <div class="field-err" id="mc-reason-err">Please add a note for the retailer.</div>
+2732:           </div>
+2733:         </div>
+2734: 
+---2726:           </div>
+2727: 
+2728:           <div class="fg">
+2729:             <label>Additional Note <span style="color:var(--red)">*</span></label>
+2730:             <input id="mc-reason" placeholder="Provide specific details for the retailer…" />
+2731:             <div class="field-err" id="mc-reason-err">Please add a note for the retailer.</div>
+2732:           </div>
+2733:         </div>
+2734: 
+2735:         <div class="modal-actions">
+2736:           <button class="btn btn-ghost" onclick="closeModal('m-confirm')">Cancel</button>
+---2794:             </button>
+2795:             <button type="button" class="fail-type-btn" data-type="other" onclick="selectFailType(this)"
+2796:               style="padding:10px 8px;border:2px solid var(--cream-dk);border-radius:10px;background:var(--white);cursor:pointer;text-align:left;font-family:'Jost',sans-serif">
+2797:               <div style="font-size:18px;margin-bottom:4px">⚠️</div>
+2798:               <div style="font-size:12px;font-weight:700;color:var(--brown)">Other</div>
+2799:               <div style="font-size:10px;color:var(--gray)">Describe in notes below</div>
+2800:             </button>
+2801:           </div>
+2802:           <input type="hidden" id="s-failtype" value="" />
+2803:           <div class="field-err" id="s-failtype-err">Please select a failure reason.</div>
+2804:         </div>
+---2800:             </button>
+2801:           </div>
+2802:           <input type="hidden" id="s-failtype" value="" />
+2803:           <div class="field-err" id="s-failtype-err">Please select a failure reason.</div>
+2804:         </div>
+2805:         <div class="fg" id="s-note-wrap">
+2806:           <label>Note / Details <span id="s-note-req" style="color:var(--red);display:none">*</span></label>
+2807:           <input id="s-note" placeholder="Additional details…" />
+2808:           <div class="field-err" id="s-note-err">A note is required when marking as failed.</div>
+2809:         </div>
+2810:         <!-- Auto-reassign notice -->
+---2801:           </div>
+2802:           <input type="hidden" id="s-failtype" value="" />
+2803:           <div class="field-err" id="s-failtype-err">Please select a failure reason.</div>
+2804:         </div>
+2805:         <div class="fg" id="s-note-wrap">
+2806:           <label>Note / Details <span id="s-note-req" style="color:var(--red);display:none">*</span></label>
+2807:           <input id="s-note" placeholder="Additional details…" />
+2808:           <div class="field-err" id="s-note-err">A note is required when marking as failed.</div>
+2809:         </div>
+2810:         <!-- Auto-reassign notice -->
+2811:         <div id="s-reassign-notice"
+---2802:           <input type="hidden" id="s-failtype" value="" />
+2803:           <div class="field-err" id="s-failtype-err">Please select a failure reason.</div>
+2804:         </div>
+2805:         <div class="fg" id="s-note-wrap">
+2806:           <label>Note / Details <span id="s-note-req" style="color:var(--red);display:none">*</span></label>
+2807:           <input id="s-note" placeholder="Additional details…" />
+2808:           <div class="field-err" id="s-note-err">A note is required when marking as failed.</div>
+2809:         </div>
+2810:         <!-- Auto-reassign notice -->
+2811:         <div id="s-reassign-notice"
+2812:           style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:var(--green)">
+---2803:           <div class="field-err" id="s-failtype-err">Please select a failure reason.</div>
+2804:         </div>
+2805:         <div class="fg" id="s-note-wrap">
+2806:           <label>Note / Details <span id="s-note-req" style="color:var(--red);display:none">*</span></label>
+2807:           <input id="s-note" placeholder="Additional details…" />
+2808:           <div class="field-err" id="s-note-err">A note is required when marking as failed.</div>
+2809:         </div>
+2810:         <!-- Auto-reassign notice -->
+2811:         <div id="s-reassign-notice"
+2812:           style="display:none;background:#E8F5E9;border:1px solid #A5D6A7;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:12px;color:var(--green)">
+2813:           🔄 <strong>Auto-reassignment enabled</strong> — system will automatically find the next available driver and
+---3448: DELIVERY TRACKING:
+3449: ${trackingInfo || 'No active delivery'}
+3450: Available cities: ${cities.join(', ')}
+3451: 
+3452: YOUR CAPABILITIES:
+3453: 1. PLACE ORDERS — Extract: product name, quantity (integer), city, priority (normal/high/urgent). Output: <ORDER>{"product":"Milo Activ-Go Chocolate Malt Drink","productId":1,"items":30,"city":"Colombo","priority":"normal","notes":""}</ORDER>
+3454: 2. SPEND TRACKING — "What have I spent this month/week?" — Use ORDER HISTORY above. Each row has a price field (from DB). Multiply items × price per row. Skip rejected orders. Show Rs. total + breakdown by product.
+3455: 3. TOP PRODUCTS — "What are my most ordered products?" — Use TOP ORDERED PRODUCTS data above.
+3456: 4. PRODUCT INFO — If asked to "list all products" or "what products are available", ALWAYS use this exact numbered list:
+3457: 1. Milo Active Go 1kg · Beverage / Chocolate malt drink
+3458: 2. Milo Active Go 400g · Beverage / Chocolate malt drink
+---3482: - If product name is ambiguous, ask for clarification
+3483: - If city is not in the list, say it is not covered
+3484: - Always show money amounts in Rs. (LKR)
+3485: - Keep responses short — 2-4 sentences max unless listing data
+3486: - Use emojis naturally
+3487: - For spend: show grand total + per-product breakdown; note if a product couldn't be price-matched
+3488: - If you detect an order intent, ALWAYS output the <ORDER> JSON block at the end of your message`;
+3489: 
+3490:         // Call via backend proxy — keeps API key secure on server
+3491:         const data = await api('/ai/chat', 'POST', {
+3492:           messages: aiChatHistory,
+---3514:             <div style="display:flex;flex-direction:column;gap:6px">
+3515:               <div>📦 <strong>${escapeHtml(aiPendingOrder.product)}</strong></div>
+3516:               <div>🔢 Quantity: <strong>${aiPendingOrder.items} units</strong></div>
+3517:               <div>📍 City: <strong>${escapeHtml(aiPendingOrder.city)}</strong></div>
+3518:               <div>⚡ Priority: <strong style="text-transform:capitalize">${aiPendingOrder.priority}</strong></div>
+3519:               ${aiPendingOrder.notes ? `<div>📝 Note: ${escapeHtml(aiPendingOrder.notes)}</div>` : ''}
+3520:             </div>`;
+3521:               card.style.display = 'block';
+3522:             }
+3523:           } catch (e) { console.warn('Order parse error', e); }
+3524:         }
+---3575:           productName: aiPendingOrder.product,
+3576:           specifics: aiPendingOrder.product,
+3577:           items: parseInt(aiPendingOrder.items),
+3578:           kg: productWeights[aiPendingOrder.productId] ? productWeights[aiPendingOrder.productId] * parseInt(aiPendingOrder.items) : 0,
+3579:           priority: aiPendingOrder.priority || 'normal',
+3580:           notes: aiPendingOrder.notes || ''
+3581:         });
+3582: 
+3583:         if (r.id) {
+3584:           addAiMessage(`✅ Order #${r.id} placed successfully! The Order Processing Team has been notified. You can track it in My Orders. Is there anything else I can help with?`, 'ai');
+3585:           pollBadge();
+---3616:             key, ids: [], city: o.city, area: o.area, prio: o.prio,
+3617:             status: o.status, created: o.created,
+3618:             deliveryStatus: o.deliveryStatus, deliveryId: o.deliveryId,
+3619:             deliveryPin: o.deliveryPin, pinVerified: o.pinVerified,
+3620:             receiptConfirmed: o.receiptConfirmed, receiptAt: o.receiptAt,
+3621:             receiptNote: o.receiptNote, driverName: o.driverName,
+3622:             rejectCategory: o.rejectCategory, rejectReason: o.rejectReason,
+3623:             stopsAhead: o.stopsAhead, eta: o.eta,
+3624:             products: [], totalItems: 0, totalKg: 0
+3625:           };
+3626:           batchMap.set(key, b);
+---3638:           b.deliveryStatus  = o.deliveryStatus;
+3639:           b.deliveryId      = o.deliveryId;
+3640:           b.pinVerified     = o.pinVerified;
+3641:           b.receiptConfirmed = o.receiptConfirmed;
+3642:           b.receiptAt       = o.receiptAt;
+3643:           b.receiptNote     = o.receiptNote;
+3644:           b.driverName      = o.driverName;
+3645:           b.stopsAhead      = o.stopsAhead;
+3646:           b.eta             = o.eta;
+3647:         }
+3648:         // Use the most significant order status across the batch
+---3783:           <td>
+3784:             ${b.receiptConfirmed
+3785:           ? `<div style="display:flex;flex-direction:column;gap:3px">
+3786:                    <span class="badge b-green">✅ Receipt Confirmed</span>
+3787:                    <span style="font-size:10px;color:var(--brown-l);font-family:'DM Mono',monospace">${b.receiptAt || ''}</span>
+3788:                    ${b.receiptNote ? `<span style="font-size:11px;color:var(--brown-m);font-style:italic">"${escapeHtml(b.receiptNote)}"</span>` : ''}
+3789:                  </div>`
+3790:           : b.deliveryStatus === 'delivered'
+3791:             ? `<button class="btn btn-green btn-sm" onclick="openConfirmReceipt('${b.deliveryId}','${b.ids[0]}','${escapeHtml(b.city)}')">
+3792:                    📦 Confirm Receipt
+3793:                  </button>`
+---3828:         <div style="background:var(--green-bg);border:1px solid #A5D6A7;border-radius:var(--r-sm);padding:14px 16px;margin-bottom:16px">
+3829:           <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px">✅ Confirming delivery to <span id="cr-city"></span></div>
+3830:           <div style="font-size:12px;color:var(--brown-m)">Order <span id="cr-order-label" style="font-family:'DM Mono',monospace;color:var(--tan)"></span></div>
+3831:         </div>
+3832:         <div class="fg">
+3833:           <label>Note <span style="color:var(--brown-l);font-weight:400;text-transform:none">(optional)</span></label>
+3834:           <input id="cr-note" placeholder="e.g. Goods received in good condition, signed by manager…"/>
+3835:         </div>
+3836:         <div class="alert-banner alert-info" style="margin-bottom:0">
+3837:           ℹ️ This confirmation is your digital proof of receipt. Driver and Order Team will be notified.
+3838:         </div>
+---3829:           <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px">✅ Confirming delivery to <span id="cr-city"></span></div>
+3830:           <div style="font-size:12px;color:var(--brown-m)">Order <span id="cr-order-label" style="font-family:'DM Mono',monospace;color:var(--tan)"></span></div>
+3831:         </div>
+3832:         <div class="fg">
+3833:           <label>Note <span style="color:var(--brown-l);font-weight:400;text-transform:none">(optional)</span></label>
+3834:           <input id="cr-note" placeholder="e.g. Goods received in good condition, signed by manager…"/>
+3835:         </div>
+3836:         <div class="alert-banner alert-info" style="margin-bottom:0">
+3837:           ℹ️ This confirmation is your digital proof of receipt. Driver and Order Team will be notified.
+3838:         </div>
+3839:         <div class="modal-actions">
+---3885:     function openConfirmReceipt(deliveryId, orderId, city) {
+3886:       document.getElementById('cr-delivery-id').value = deliveryId;
+3887:       document.getElementById('cr-order-id').value = orderId;
+3888:       document.getElementById('cr-city').textContent = city;
+3889:       document.getElementById('cr-order-label').textContent = orderId;
+3890:       document.getElementById('cr-note').value = '';
+3891:       const btn = document.getElementById('cr-btn');
+3892:       if (btn) { btn.disabled = false; btn.textContent = '✅ Confirm Receipt & Notify'; }
+3893:       openModal('m-confirm-receipt');
+3894:     }
+3895: 
+---3893:       openModal('m-confirm-receipt');
+3894:     }
+3895: 
+3896:     async function saveConfirmReceipt() {
+3897:       const deliveryId = document.getElementById('cr-delivery-id').value;
+3898:       const note = document.getElementById('cr-note').value.trim();
+3899:       const btn = document.getElementById('cr-btn');
+3900:       btn.disabled = true; btn.textContent = 'Confirming…';
+3901:       const r = await api(`/deliveries/${deliveryId}/confirm-receipt`, 'PUT', { note });
+3902:       btn.disabled = false; btn.textContent = '✅ Confirm Receipt & Notify';
+3903:       if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+---3896:     async function saveConfirmReceipt() {
+3897:       const deliveryId = document.getElementById('cr-delivery-id').value;
+3898:       const note = document.getElementById('cr-note').value.trim();
+3899:       const btn = document.getElementById('cr-btn');
+3900:       btn.disabled = true; btn.textContent = 'Confirming…';
+3901:       const r = await api(`/deliveries/${deliveryId}/confirm-receipt`, 'PUT', { note });
+3902:       btn.disabled = false; btn.textContent = '✅ Confirm Receipt & Notify';
+3903:       if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+3904:       closeModal('m-confirm-receipt');
+3905:       toast('✅ Receipt confirmed — Driver & Order Team notified 🔔', '#16a34a');
+3906:       pollBadge();
+---4079:               <option value="">Select province first…</option>
+4080:             </select>
+4081:             <div class="field-err" id="err-area">Please select an area.</div>
+4082:           </div>
+4083:           <div class="fg" style="grid-column:1/-1">
+4084:             <label>Notes</label>
+4085:             <input id="i-notes" placeholder="Special instructions…"/>
+4086:           </div>
+4087:         </div>
+4088:         <div style="margin-top:20px">
+4089:           <div style="font-weight:700;color:var(--brown);margin-bottom:10px;font-size:14px">📦 Products to Order</div>
+---4080:             </select>
+4081:             <div class="field-err" id="err-area">Please select an area.</div>
+4082:           </div>
+4083:           <div class="fg" style="grid-column:1/-1">
+4084:             <label>Notes</label>
+4085:             <input id="i-notes" placeholder="Special instructions…"/>
+4086:           </div>
+4087:         </div>
+4088:         <div style="margin-top:20px">
+4089:           <div style="font-weight:700;color:var(--brown);margin-bottom:10px;font-size:14px">📦 Products to Order</div>
+4090:           <div id="order-lines"></div>
+---4310:           `<div style="padding:8px 0;border-bottom:1px solid var(--cream-dk)">
+4311:             <strong style="color:var(--brown)">${escapeHtml(p.productName)}</strong>
+4312:             <div style="font-size:12px;color:#B71C1C;margin-top:2px">❌ ${escapeHtml(p.reason)}</div>
+4313:           </div>`
+4314:         ).join('');
+4315:         const canPlaceNote = canPlace.length
+4316:           ? `<div style="margin-top:12px;font-size:13px;color:#166534;background:#dcfce7;padding:8px 12px;border-radius:8px">✅ ${canPlace.length} other item${canPlace.length > 1 ? 's' : ''} will be placed normally.</div>`
+4317:           : '';
+4318:         const mc = document.getElementById('m-waitlist-content');
+4319:         if (mc) {
+4320:           const titleEl = mc.closest('.modal')?.querySelector('.modal-title');
+---4319:         if (mc) {
+4320:           const titleEl = mc.closest('.modal')?.querySelector('.modal-title');
+4321:           if (titleEl) titleEl.textContent = '⚠️ Stock Issue';
+4322:           mc.innerHTML = `
+4323:             <div style="margin-bottom:12px;font-size:13px;color:var(--brown)">The following items cannot be fulfilled:</div>
+4324:             ${issueList}${canPlaceNote}
+4325:             <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+4326:               <button class="btn btn-ghost" onclick="closeModal('m-waitlist-modal');if(window._pendingBatchBtn){window._pendingBatchBtn.disabled=false;window._pendingBatchBtn.textContent='✓ Confirm Order';}">Cancel</button>
+4327:               <button class="btn btn-green" onclick="closeModal('m-waitlist-modal');_executeBatchWithWaitlist();">${canPlace.length ? 'Place available + Join Waitlist' : 'Join Waitlist'}</button>
+4328:             </div>`;
+4329:           window._pendingBatch = { canPlace, toWaitlist, province, resolvedArea, btn };
+---4354:       const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Colombo' });
+4355:       const orders = products.map(p => ({
+4356:         city: province, area: resolvedArea,
+4357:         productId: p.productId, productName: p.productName, items: p.items,
+4358:         kg: parseFloat(((window._loWeights[p.productId] || 0) * p.items).toFixed(2)),
+4359:         priority: lo.priority || 'normal', notes: '', orderDate: todayStr
+4360:       }));
+4361:       const r = await api('/orders/bulk', 'POST', { retailerId: user.id, retailerName: user.name, orders });
+4362:       if (r.error) {
+4363:         toast(`❌ ${r.error}`, '#B71C1C');
+4364:         if (btn) { btn.disabled = false; btn.textContent = '✓ Confirm Order'; }
+---4443:             <option value="">Select province first…</option>
+4444:           </select>
+4445:           <div class="field-err" id="err-area">Please select an area.</div>
+4446:         </div>
+4447:         <div class="fg" style="grid-column:1/-1">
+4448:           <label>Notes</label>
+4449:           <input id="i-notes" placeholder="Special instructions for all products…"/>
+4450:         </div>
+4451:       </div>
+4452: 
+4453:       <div style="margin-top:20px">
+---4444:           </select>
+4445:           <div class="field-err" id="err-area">Please select an area.</div>
+4446:         </div>
+4447:         <div class="fg" style="grid-column:1/-1">
+4448:           <label>Notes</label>
+4449:           <input id="i-notes" placeholder="Special instructions for all products…"/>
+4450:         </div>
+4451:       </div>
+4452: 
+4453:       <div style="margin-top:20px">
+4454:         <div style="font-weight:700;color:var(--brown);margin-bottom:10px;font-size:14px">📦 Products to Order</div>
+---4524:       const cityEl = document.getElementById('i-city');
+4525:       const areaEl = document.getElementById('i-area');
+4526:       const itemsEl = document.getElementById('i-items');
+4527:       const productEl = document.getElementById('i-product');
+4528:       const prio = document.getElementById('i-prio').value;
+4529:       const notes = document.getElementById('i-notes').value.trim();
+4530:       const errBox = document.getElementById('submit-err');
+4531: 
+4532:       let valid = true;
+4533: 
+4534:       // City
+---4581: 
+4582:       // ── Real-time stock gate: if last check shows insufficient, open modal instead of posting
+4583:       if (window._stockCheck && window._stockCheck.productId === productIdNum) {
+4584:         const avail = parseInt(window._stockCheck.availableUnits);
+4585:         if (avail <= 0 || itemsNum > avail) {
+4586:           window._pendingOrder = { productIdNum, productName, cityEl, areaEl, prio, notes, itemsNum, specifics };
+4587:           showStockModal(window._stockCheck, itemsNum);
+4588:           return;
+4589:         }
+4590:       }
+4591: 
+---4602:           const pid = document.getElementById('i-product')?.value;
+4603:           const wt = productWeights[pid] || 0;
+4604:           return wt > 0 ? parseFloat((wt * itemsNum).toFixed(2)) : 0;
+4605:         })(),
+4606:         priority: prio,
+4607:         notes
+4608:       });
+4609: 
+4610:       if (r.stockError) {
+4611:         // Refresh stock info and open modal so retailer can choose partial / waiting list
+4612:         const fresh = await api(`/stock/${productIdNum}`).catch(() => null);
+---4610:       if (r.stockError) {
+4611:         // Refresh stock info and open modal so retailer can choose partial / waiting list
+4612:         const fresh = await api(`/stock/${productIdNum}`).catch(() => null);
+4613:         if (fresh && !fresh.error) {
+4614:           window._stockCheck = { ...fresh, productId: productIdNum };
+4615:           window._pendingOrder = { productIdNum, productName, cityEl, areaEl, prio, notes, itemsNum, specifics };
+4616:           showStockModal(window._stockCheck, itemsNum);
+4617:         } else {
+4618:           errBox.textContent = `❌ Stock unavailable: ${r.error}. Please reduce your order quantity.`;
+4619:           errBox.style.display = 'flex';
+4620:           toast(`❌ ${r.error}`, '#B71C1C');
+---4733:       document.getElementById('mc-category').value = cat;
+4734:       document.getElementById('mc-cat-err').classList.remove('show');
+4735:       // Show auto-notify notice for out_of_stock
+4736:       const notice = document.getElementById('mc-stock-watch-notice');
+4737:       notice.style.display = cat === 'out_of_stock' ? 'block' : 'none';
+4738:       // Auto-fill note placeholder based on category
+4739:       const placeholders = {
+4740:         out_of_stock: 'Specify which product is out of stock and approximate restock date if known…',
+4741:         duplicate_order: 'Specify the existing order ID that this duplicates…',
+4742:         coverage_area: 'Specify which areas are currently covered and when coverage may expand…',
+4743:         suspicious_quantity: 'Specify the expected reasonable quantity and ask them to resubmit correctly…',
+---4859: 
+4860:       setContent(`
+4861:     <div class="sec-hdr">
+4862:       <div>
+4863:         <div class="sec-title">Sales Analytics Dashboard</div>
+4864:         <div class="sec-sub">Read-only overview · Last 30 days unless noted · Orders confirmed by Sales Representatives</div>
+4865:       </div>
+4866:     </div>
+4867: 
+4868:     <!-- KPI Row -->
+4869:     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px">
+---5810: 
+5811:     function openStatus(id, retailer, city, currentStatus, deliveryIds) {
+5812:       document.getElementById('s-id').value = id;
+5813:       document.getElementById('s-extra-ids').value = JSON.stringify(deliveryIds && deliveryIds.length ? deliveryIds : [id]);
+5814:       document.getElementById('s-label').value = `${id} — ${retailer}, ${city}`;
+5815:       document.getElementById('s-note').value = '';
+5816:       document.getElementById('s-note-err').classList.remove('show');
+5817:       document.getElementById('s-note').classList.remove('err');
+5818: 
+5819:       // Pre-select logical next status
+5820:       const sel = document.getElementById('s-status');
+---5811:     function openStatus(id, retailer, city, currentStatus, deliveryIds) {
+5812:       document.getElementById('s-id').value = id;
+5813:       document.getElementById('s-extra-ids').value = JSON.stringify(deliveryIds && deliveryIds.length ? deliveryIds : [id]);
+5814:       document.getElementById('s-label').value = `${id} — ${retailer}, ${city}`;
+5815:       document.getElementById('s-note').value = '';
+5816:       document.getElementById('s-note-err').classList.remove('show');
+5817:       document.getElementById('s-note').classList.remove('err');
+5818: 
+5819:       // Pre-select logical next status
+5820:       const sel = document.getElementById('s-status');
+5821:       if (currentStatus === 'loaded' || currentStatus === 'warehouse_ready' || currentStatus === 'assigned') {
+---5812:       document.getElementById('s-id').value = id;
+5813:       document.getElementById('s-extra-ids').value = JSON.stringify(deliveryIds && deliveryIds.length ? deliveryIds : [id]);
+5814:       document.getElementById('s-label').value = `${id} — ${retailer}, ${city}`;
+5815:       document.getElementById('s-note').value = '';
+5816:       document.getElementById('s-note-err').classList.remove('show');
+5817:       document.getElementById('s-note').classList.remove('err');
+5818: 
+5819:       // Pre-select logical next status
+5820:       const sel = document.getElementById('s-status');
+5821:       if (currentStatus === 'loaded' || currentStatus === 'warehouse_ready' || currentStatus === 'assigned') {
+5822:         sel.value = 'in-transit';
+---5844:       if (notice) notice.style.display = btn.dataset.type === 'vehicle_breakdown' ? 'block' : 'none';
+5845:     }
+5846: 
+5847:     function onStatusChange() {
+5848:       const status = document.getElementById('s-status').value;
+5849:       const reqLabel = document.getElementById('s-note-req');
+5850:       const noteInput = document.getElementById('s-note');
+5851:       const btn = document.getElementById('s-submit-btn');
+5852:       const failWrap = document.getElementById('s-failtype-wrap');
+5853:       const notice = document.getElementById('s-reassign-notice');
+5854: 
+---5845:     }
+5846: 
+5847:     function onStatusChange() {
+5848:       const status = document.getElementById('s-status').value;
+5849:       const reqLabel = document.getElementById('s-note-req');
+5850:       const noteInput = document.getElementById('s-note');
+5851:       const btn = document.getElementById('s-submit-btn');
+5852:       const failWrap = document.getElementById('s-failtype-wrap');
+5853:       const notice = document.getElementById('s-reassign-notice');
+5854: 
+5855:       // Reset fail type selection
+---5861:       if (notice) notice.style.display = 'none';
+5862: 
+5863:       if (status === 'failed') {
+5864:         failWrap.style.display = 'block';
+5865:         reqLabel.style.display = 'inline';
+5866:         noteInput.placeholder = 'Additional details about the failure…';
+5867:         btn.className = 'btn btn-red';
+5868:         btn.textContent = '❌ Mark Failed & Notify All';
+5869:       } else if (status === 'delivered') {
+5870:         failWrap.style.display = 'none';
+5871:         reqLabel.style.display = 'none';
+---5867:         btn.className = 'btn btn-red';
+5868:         btn.textContent = '❌ Mark Failed & Notify All';
+5869:       } else if (status === 'delivered') {
+5870:         failWrap.style.display = 'none';
+5871:         reqLabel.style.display = 'none';
+5872:         noteInput.placeholder = 'Optional: signed by manager, left at gate…';
+5873:         btn.className = 'btn btn-green';
+5874:         btn.textContent = '✅ Mark Delivered & Notify All';
+5875:       } else {
+5876:         failWrap.style.display = 'none';
+5877:         reqLabel.style.display = 'none';
+---5873:         btn.className = 'btn btn-green';
+5874:         btn.textContent = '✅ Mark Delivered & Notify All';
+5875:       } else {
+5876:         failWrap.style.display = 'none';
+5877:         reqLabel.style.display = 'none';
+5878:         noteInput.placeholder = 'Optional: departed 14:30, en route via highway…';
+5879:         btn.className = 'btn btn-tan';
+5880:         btn.textContent = '🚛 Mark In Transit & Notify All';
+5881:       }
+5882:     }
+5883: 
+---5882:     }
+5883: 
+5884:     async function saveStatus() {
+5885:       const id = document.getElementById('s-id').value;
+5886:       const newStatus = document.getElementById('s-status').value;
+5887:       const note = document.getElementById('s-note').value.trim();
+5888:       const failType = document.getElementById('s-failtype')?.value || '';
+5889:       const noteErr = document.getElementById('s-note-err');
+5890:       const noteInput = document.getElementById('s-note');
+5891:       let valid = true;
+5892: 
+---5884:     async function saveStatus() {
+5885:       const id = document.getElementById('s-id').value;
+5886:       const newStatus = document.getElementById('s-status').value;
+5887:       const note = document.getElementById('s-note').value.trim();
+5888:       const failType = document.getElementById('s-failtype')?.value || '';
+5889:       const noteErr = document.getElementById('s-note-err');
+5890:       const noteInput = document.getElementById('s-note');
+5891:       let valid = true;
+5892: 
+5893:       // Validate: note required for failed
+5894:       if (newStatus === 'failed' && !note) {
+---5885:       const id = document.getElementById('s-id').value;
+5886:       const newStatus = document.getElementById('s-status').value;
+5887:       const note = document.getElementById('s-note').value.trim();
+5888:       const failType = document.getElementById('s-failtype')?.value || '';
+5889:       const noteErr = document.getElementById('s-note-err');
+5890:       const noteInput = document.getElementById('s-note');
+5891:       let valid = true;
+5892: 
+5893:       // Validate: note required for failed
+5894:       if (newStatus === 'failed' && !note) {
+5895:         noteErr.classList.add('show'); noteInput.classList.add('err');
+---5888:       const failType = document.getElementById('s-failtype')?.value || '';
+5889:       const noteErr = document.getElementById('s-note-err');
+5890:       const noteInput = document.getElementById('s-note');
+5891:       let valid = true;
+5892: 
+5893:       // Validate: note required for failed
+5894:       if (newStatus === 'failed' && !note) {
+5895:         noteErr.classList.add('show'); noteInput.classList.add('err');
+5896:         noteInput.focus(); valid = false;
+5897:       } else {
+5898:         noteErr.classList.remove('show'); noteInput.classList.remove('err');
+---5889:       const noteErr = document.getElementById('s-note-err');
+5890:       const noteInput = document.getElementById('s-note');
+5891:       let valid = true;
+5892: 
+5893:       // Validate: note required for failed
+5894:       if (newStatus === 'failed' && !note) {
+5895:         noteErr.classList.add('show'); noteInput.classList.add('err');
+5896:         noteInput.focus(); valid = false;
+5897:       } else {
+5898:         noteErr.classList.remove('show'); noteInput.classList.remove('err');
+5899:       }
+---5890:       const noteInput = document.getElementById('s-note');
+5891:       let valid = true;
+5892: 
+5893:       // Validate: note required for failed
+5894:       if (newStatus === 'failed' && !note) {
+5895:         noteErr.classList.add('show'); noteInput.classList.add('err');
+5896:         noteInput.focus(); valid = false;
+5897:       } else {
+5898:         noteErr.classList.remove('show'); noteInput.classList.remove('err');
+5899:       }
+5900:       // Validate: failType required for failed
+---5891:       let valid = true;
+5892: 
+5893:       // Validate: note required for failed
+5894:       if (newStatus === 'failed' && !note) {
+5895:         noteErr.classList.add('show'); noteInput.classList.add('err');
+5896:         noteInput.focus(); valid = false;
+5897:       } else {
+5898:         noteErr.classList.remove('show'); noteInput.classList.remove('err');
+5899:       }
+5900:       // Validate: failType required for failed
+5901:       if (newStatus === 'failed' && !failType) {
+---5893:       // Validate: note required for failed
+5894:       if (newStatus === 'failed' && !note) {
+5895:         noteErr.classList.add('show'); noteInput.classList.add('err');
+5896:         noteInput.focus(); valid = false;
+5897:       } else {
+5898:         noteErr.classList.remove('show'); noteInput.classList.remove('err');
+5899:       }
+5900:       // Validate: failType required for failed
+5901:       if (newStatus === 'failed' && !failType) {
+5902:         document.getElementById('s-failtype-err').classList.add('show');
+5903:         valid = false;
+---5920: 
+5921:       const btn = document.getElementById('s-submit-btn');
+5922:       btn.disabled = true;
+5923:       btn.textContent = 'Saving…';
+5924: 
+5925:       const result = await api(`/deliveries/${id}/status`, 'PUT', { newStatus, note, failType, updatedBy: user.id });
+5926:       btn.disabled = false;
+5927:       onStatusChange();
+5928: 
+5929:       if (result.error) { toast(`❌ ${result.error}`, '#dc2626'); return; }
+5930: 
+---5984:       <div style="flex:1">
+5985:         <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+5986:           ${delBadge(h.status)}
+5987:           <span style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace">${h.time || ''}</span>
+5988:         </div>
+5989:         ${h.note ? `<div style="font-size:12px;color:var(--brown-m);font-style:italic">Note: ${escapeHtml(h.note)}</div>` : ''}
+5990:       </div>
+5991:     </div>`).join('') :
+5992:         '<div style="text-align:center;padding:20px;color:var(--brown-l);font-size:13px">No status history yet.</div>';
+5993:       document.getElementById('m-route-detail-body').innerHTML = `
+5994:     <div style="margin-bottom:14px">
+---6795:     }
+6796: 
+6797:     async function submitBulkOrder() {
+6798:       const cityEl  = document.getElementById('i-city');
+6799:       const areaEl  = document.getElementById('i-area');
+6800:       const notesEl = document.getElementById('i-notes');
+6801:       const prioEl  = document.getElementById('i-prio');
+6802:       const dateEl  = document.getElementById('i-order-date');
+6803:       const errBox  = document.getElementById('submit-err');
+6804:       let valid = true;
+6805:       if (!cityEl?.value) { document.getElementById('err-city')?.classList.add('show'); valid = false; }
+---6817:         const wt = productWeights[productId] || 0;
+6818:         orders.push({
+6819:           city: cityEl.value, area: areaEl.value,
+6820:           productId, productName, items,
+6821:           kg: wt > 0 ? parseFloat((wt * items).toFixed(2)) : 0,
+6822:           priority: prioEl.value, notes: notesEl.value.trim(),
+6823:           orderDate: dateEl?.value || null
+6824:         });
+6825:       });
+6826: 
+6827:       if (!valid) { errBox.textContent = '⚠️ Please fix the errors above.'; errBox.style.display = 'flex'; return; }
+---7047:         kg: (() => {
+7048:           const wt = productWeights[o.productIdNum] || 0;
+7049:           return wt > 0 ? parseFloat((wt * avail).toFixed(2)) : 0;
+7050:         })(),
+7051:         priority:    o.prio,
+7052:         notes:       o.notes,
+7053:         isPartial:   true,
+7054:         originalQty: o.itemsNum
+7055:       });
+7056: 
+7057:       if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+---\n--- Context for total units ---\n4091:           <button class="btn btn-ghost" onclick="addOrderLine()" style="margin-top:10px;width:100%;border:1.5px dashed var(--cream-dk)">+ Add Another Product</button>
+4092:         </div>
+4093:         <div class="card" style="background:var(--cream);margin-top:16px">
+4094:           <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--brown-m)">
+4095:             <span>📦 <strong id="sum-lines">0</strong> product(s)</span>
+4096:             <span>🔢 <strong id="sum-items">0</strong> total units</span>
+4097:             <span>⚖️ <strong id="sum-kg">0.0</strong> kg total</span>
+4098:           </div>
+4099:         </div>
+4100:         <div id="submit-err" class="alert-banner alert-error" style="display:none;margin-top:12px"></div>
+4101:         <button class="btn btn-tan" onclick="submitBulkOrder()" style="margin-top:16px;width:100%;font-size:15px;padding:14px">
+---\n--- Context for total kg ---\n\n--- Context for demand ---\n5112:       <div class="sec-sub">Update stock — retailers on the waiting list and rejected orders are auto-notified 🔔</div></div>
+5113:     </div>
+5114:     <div class="card">
+5115:       <div class="card-title">📋 Current Stock Levels</div>
+5116:       <div class="tw"><table>
+5117:         <thead><tr><th>Product</th><th>Units Available</th><th>Weight</th><th>Threshold</th><th>Demand</th><th>Suggested Restock</th><th>Update Stock</th></tr></thead>
+5118:         <tbody>${stocks.length ? stocks.map(p => {
+5119:           const units     = parseInt(p.availableUnits) || 0;
+5120:           const threshold = parseInt(p.lowStockThreshold) || 50;
+5121:           const isLow     = units > 0 && units <= threshold;
+5122:           const isOut     = units <= 0;
+---5118:         <tbody>${stocks.length ? stocks.map(p => {
+5119:           const units     = parseInt(p.availableUnits) || 0;
+5120:           const threshold = parseInt(p.lowStockThreshold) || 50;
+5121:           const isLow     = units > 0 && units <= threshold;
+5122:           const isOut     = units <= 0;
+5123:           const totalDemand = parseInt(p.waitingCount || 0) + parseInt(p.watchCount || 0);
+5124:           const suggested = parseInt(p.suggestedRestock) || 0;
+5125:           return `
+5126:           <tr style="${isOut ? 'background:#FFF5F5' : isLow ? 'background:#FFFDE7' : ''}">
+5127:             <td>
+5128:               <strong>${escapeHtml(p.productName || '—')}</strong>
+---5139:               <input type="number" min="0" id="threshold-${p.id}" value="${threshold}"
+5140:                 style="width:70px;padding:5px 7px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:12px"/>
+5141:               <span style="font-size:11px;color:var(--brown-l);margin-left:4px">units</span>
+5142:             </td>
+5143:             <td>
+5144:               ${totalDemand > 0
+5145:                 ? `<div style="display:flex;flex-direction:column;gap:3px">
+5146:                     ${parseInt(p.waitingCount || 0) > 0 ? `<span class="badge b-navy" style="font-size:10px">⏳ ${p.waitingCount} waitlist</span>` : ''}
+5147:                     ${parseInt(p.watchCount  || 0) > 0 ? `<span class="badge b-orange" style="font-size:10px">🔔 ${p.watchCount} watching</span>` : ''}
+5148:                    </div>`
+5149:                 : '<span style="font-size:12px;color:var(--brown-l)">—</span>'}
+---5158:             <td style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+5159:               <input type="number" min="0" id="units-${p.id}" value="${units}"
+5160:                 style="width:80px;padding:6px 8px;border:1.5px solid var(--cream-dk);border-radius:6px;font-family:'Jost',sans-serif;font-size:13px"/>
+5161:               <button class="btn btn-ghost btn-sm" onclick="useSuggested('${p.id}')">← Use</button>
+5162:               <button class="btn btn-tan btn-sm" onclick="updateStock('${p.id}','${escapeHtml(p.productName || '')}',${p.availableKg || 0})">
+5163:                 ✅ Update${totalDemand > 0 ? ' & Notify 🔔' : ''}
+5164:               </button>
+5165:             </td>
+5166:           </tr>`}).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
+5167:       </table></div>
+5168:     </div>
+---5166:           </tr>`}).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
+5167:       </table></div>
+5168:     </div>
+5169:     <div class="alert-banner alert-info">
+5170:       🔔 <strong>Auto-notify:</strong> Updating stock notifies waiting list retailers and those with rejected "Out of Stock" orders.
+5171:       &nbsp;·&nbsp; <strong>Suggested Restock</strong> = avg daily demand (last 30 days) × 14-day buffer — editable before applying.
+5172:     </div>`);
+5173:     }
+5174: 
+5175:     function useSuggested(productId) {
+5176:       const suggested = document.getElementById(`suggest-${productId}`)?.value;
+---\n--- Context for warehouse dashboard ---\n4989:         pollBadge(); // ── FIX: poll badge on success
+4990:       }
+4991:     }
+4992: 
+4993:     // ══ WAREHOUSE PAGES ═════════════════════════════
+4994:     // ══ WAREHOUSE DASHBOARD ═════════════════════════
+4995:     async function pageWhDashboard() {
+4996:       const d = await api('/warehouse/dashboard');
+4997:       if (d.error) { setContent(`<div class="alert-banner alert-error">❌ ${d.error}</div>`); return; }
+4998: 
+4999:       const lowList = (d.lowStockProducts || []);
+---5006:           ${sub ? `<div style="font-size:11px;color:var(--brown-l);margin-top:4px">${sub}</div>` : ''}
+5007:         </div>`;
+5008: 
+5009:       setContent(`
+5010:       <div class="sec-hdr">
+5011:         <div><div class="sec-title">Warehouse Dashboard</div>
+5012:         <div class="sec-sub">Live stock overview · waitlist queue · low stock alerts</div></div>
+5013:         <div style="display:flex;align-items:center;gap:8px">
+5014:           <span style="width:8px;height:8px;border-radius:50%;background:#16a34a;display:inline-block"></span>
+5015:           <span style="font-size:12px;font-weight:600;color:#16a34a">Live</span>
+5016:         </div>
+---\n--- Context for waiting list ---\n3809:             📦 Place Partial Order
+3810:           </button>
+3811:           <button class="btn" id="ms-wait-btn"
+3812:             style="background:#E8F5E9;color:#1B5E20;border:1.5px solid #A5D6A7;font-weight:600"
+3813:             onclick="joinWaitingList()">
+3814:             📋 Join Waiting List
+3815:           </button>
+3816:           <button class="btn btn-ghost" onclick="closeModal('m-stock')">Cancel</button>
+3817:         </div>
+3818:       </div>
+3819:     </div>
+---4606:         priority: prio,
+4607:         notes
+4608:       });
+4609: 
+4610:       if (r.stockError) {
+4611:         // Refresh stock info and open modal so retailer can choose partial / waiting list
+4612:         const fresh = await api(`/stock/${productIdNum}`).catch(() => null);
+4613:         if (fresh && !fresh.error) {
+4614:           window._stockCheck = { ...fresh, productId: productIdNum };
+4615:           window._pendingOrder = { productIdNum, productName, cityEl, areaEl, prio, notes, itemsNum, specifics };
+4616:           showStockModal(window._stockCheck, itemsNum);
+---5107:       // suggestedRestock is now folded into each stock row by the backend
+5108: 
+5109:       setContent(`
+5110:     <div class="sec-hdr">
+5111:       <div><div class="sec-title">Stock Levels</div>
+5112:       <div class="sec-sub">Update stock — retailers on the waiting list and rejected orders are auto-notified 🔔</div></div>
+5113:     </div>
+5114:     <div class="card">
+5115:       <div class="card-title">📋 Current Stock Levels</div>
+5116:       <div class="tw"><table>
+5117:         <thead><tr><th>Product</th><th>Units Available</th><th>Weight</th><th>Threshold</th><th>Demand</th><th>Suggested Restock</th><th>Update Stock</th></tr></thead>
+---5165:             </td>
+5166:           </tr>`}).join('') : '<tr><td colspan="7"><div class="empty"><div class="empty-icon">📦</div><div>No stock records found.</div></div></td></tr>'}</tbody>
+5167:       </table></div>
+5168:     </div>
+5169:     <div class="alert-banner alert-info">
+5170:       🔔 <strong>Auto-notify:</strong> Updating stock notifies waiting list retailers and those with rejected "Out of Stock" orders.
+5171:       &nbsp;·&nbsp; <strong>Suggested Restock</strong> = avg daily demand (last 30 days) × 14-day buffer — editable before applying.
+5172:     </div>`);
+5173:     }
+5174: 
+5175:     function useSuggested(productId) {
+---5327:           </tbody></table></div>`;
+5328:       }
+5329: 
+5330:       setContent(`
+5331:       <div class="sec-hdr">
+5332:         <div><div class="sec-title">Waiting List</div>
+5333:         <div class="sec-sub">Full waitlist = retailer waiting for full stock · Partial = retailer accepting available units</div></div>
+5334:       </div>
+5335:       <div class="card" style="margin-bottom:16px">
+5336:         <div class="card-title" style="display:flex;align-items:center;gap:8px">
+5337:           📋 Full Quantity Waitlist
+---5357:       toast('✅ Entry fulfilled — retailer notified 🔔', '#16a34a');
+5358:       pollBadge(); pageWhWaitlist();
+5359:     }
+5360: 
+5361:     async function removeWaitlistEntry(id) {
+5362:       if (!confirm('Cancel this waiting list entry? The retailer will be notified and reserved stock will be returned.')) return;
+5363:       const r = await api(`/waiting-list/${id}`, 'DELETE');
+5364:       if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
+5365:       toast('✅ Entry cancelled — retailer notified');
+5366:       pollBadge(); pageWhWaitlist();
+5367:     }
+---7008:       const prodName = escapeHtml(stockInfo.productName || 'this product');
+7009:       const isOut    = avail <= 0;
+7010: 
+7011:       document.getElementById('ms-title').textContent = isOut ? '❌ Out of Stock' : '⚠️ Limited Stock Available';
+7012:       document.getElementById('ms-body').innerHTML = isOut
+7013:         ? `<strong>${prodName}</strong> is currently out of stock.<br><br>Join the waiting list and we will notify you as soon as stock is replenished.`
+7014:         : `Only <strong>${avail} units</strong> of <strong>${prodName}</strong> are available.<br>You requested <strong>${requestedQty} units</strong>.<br><br>You can place a partial order for the available quantity, or join the waiting list for the full amount.`;
+7015: 
+7016:       const partialBtn = document.getElementById('ms-partial-btn');
+7017:       if (!isOut && avail > 0) {
+7018:         partialBtn.style.display = 'block';
+---7009:       const isOut    = avail <= 0;
+7010: 
+7011:       document.getElementById('ms-title').textContent = isOut ? '❌ Out of Stock' : '⚠️ Limited Stock Available';
+7012:       document.getElementById('ms-body').innerHTML = isOut
+7013:         ? `<strong>${prodName}</strong> is currently out of stock.<br><br>Join the waiting list and we will notify you as soon as stock is replenished.`
+7014:         : `Only <strong>${avail} units</strong> of <strong>${prodName}</strong> are available.<br>You requested <strong>${requestedQty} units</strong>.<br><br>You can place a partial order for the available quantity, or join the waiting list for the full amount.`;
+7015: 
+7016:       const partialBtn = document.getElementById('ms-partial-btn');
+7017:       if (!isOut && avail > 0) {
+7018:         partialBtn.style.display = 'block';
+7019:         partialBtn.textContent   = `📦 Place Partial Order (${avail} units)`;
+---7020:       } else {
+7021:         partialBtn.style.display = 'none';
+7022:       }
+7023: 
+7024:       const waitBtn = document.getElementById('ms-wait-btn');
+7025:       waitBtn.textContent = `📋 Join Waiting List for ${requestedQty} units`;
+7026: 
+7027:       openModal('m-stock');
+7028:     }
+7029: 
+7030:     async function placePartialOrder() {
+---7076: 
+7077:       if (r.error && !r.error.includes('already on')) {
+7078:         toast(`❌ ${r.error}`, '#B71C1C'); return;
+7079:       }
+7080:       if (r.error && r.error.includes('already on')) {
+7081:         toast(`ℹ️ You are already on the waiting list for this product`); return;
+7082:       }
+7083:       toast(`📋 Added to waiting list — you'll be notified when stock is replenished 🔔`);
+7084:       window._stockCheck = null; window._pendingOrder = null;
+7085:       pollBadge(); nav('my-orders');
+7086:     }
+---7078:         toast(`❌ ${r.error}`, '#B71C1C'); return;
+7079:       }
+7080:       if (r.error && r.error.includes('already on')) {
+7081:         toast(`ℹ️ You are already on the waiting list for this product`); return;
+7082:       }
+7083:       toast(`📋 Added to waiting list — you'll be notified when stock is replenished 🔔`);
+7084:       window._stockCheck = null; window._pendingOrder = null;
+7085:       pollBadge(); nav('my-orders');
+7086:     }
+7087: 
+7088:     // ── PIN VERIFICATION ─────────────────────────
+---
