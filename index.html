@@ -118,9 +118,17 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     @keyframes slideUp {
       from {
         opacity: 0;
@@ -1769,6 +1777,932 @@
       font-weight: 700
     }
 
+    /* ══ COMMAND CENTER (Sales Manager Dashboard) ══════════════════════════ */
+    .cc-hero {
+      background: linear-gradient(135deg, #2a1c06 0%, #3D2B0A 45%, #6B4E1A 100%);
+      color: var(--cream);
+      border-radius: 16px;
+      padding: 22px 26px;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(61, 43, 10, 0.25);
+    }
+
+    .cc-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 90% 20%, rgba(212, 168, 50, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 10% 80%, rgba(166, 124, 30, 0.14) 0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    .cc-hero-inner {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cc-hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      line-height: 1.2;
+    }
+
+    .cc-hero-sub {
+      font-size: 12.5px;
+      color: rgba(247, 240, 223, 0.72);
+      margin-top: 4px;
+      letter-spacing: 0.4px;
+    }
+
+    .cc-hero-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .cc-chip {
+      background: rgba(255, 253, 248, 0.10);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 253, 248, 0.15);
+      color: var(--cream);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      letter-spacing: 0.3px;
+    }
+
+    .cc-chip select {
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .cc-chip select option {
+      color: #1a1a1a;
+    }
+
+    .cc-live-dot {
+      width: 8px;
+      height: 8px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: ccLivePulse 1.4s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.6);
+    }
+
+    @keyframes ccLivePulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55);
+      }
+
+      50% {
+        box-shadow: 0 0 0 7px rgba(74, 222, 128, 0);
+      }
+    }
+
+    /* KPI grid */
+    .cc-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    @media (max-width: 1024px) {
+      .cc-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .cc-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+    }
+
+    .cc-kpi {
+      background: var(--white);
+      border: 1px solid var(--cream-dk);
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+      transition: transform .18s, box-shadow .18s;
+    }
+
+    .cc-kpi:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 28px rgba(61, 43, 10, .14);
+    }
+
+    .cc-kpi::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--tan), var(--goldL));
+    }
+
+    .cc-kpi.cc-kpi-blue::before {
+      background: linear-gradient(90deg, #1565C0, #42a5f5);
+    }
+
+    .cc-kpi.cc-kpi-green::before {
+      background: linear-gradient(90deg, #15803d, #22c55e);
+    }
+
+    .cc-kpi.cc-kpi-orange::before {
+      background: linear-gradient(90deg, #c2410c, #f97316);
+    }
+
+    .cc-kpi.cc-kpi-red::before {
+      background: linear-gradient(90deg, #b91c1c, #ef4444);
+    }
+
+    .cc-kpi.cc-kpi-purple::before {
+      background: linear-gradient(90deg, #6A1B9A, #a855f7);
+    }
+
+    .cc-kpi-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .cc-kpi-ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .cc-kpi-trend {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .cc-kpi-trend.up {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .cc-kpi-trend.down {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .cc-kpi-trend.flat {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .cc-kpi-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--brown);
+      line-height: 1.05;
+      letter-spacing: -0.3px;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    .cc-kpi-lbl {
+      font-size: 11px;
+      color: var(--brown-m);
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .cc-kpi-spark {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 22px;
+      margin-top: 8px;
+    }
+
+    .cc-kpi-spark span {
+      flex: 1;
+      background: linear-gradient(180deg, var(--tan-l), var(--tan));
+      border-radius: 1px;
+      opacity: 0.8;
+      min-height: 2px;
+    }
+
+    .cc-kpi.cc-kpi-green .cc-kpi-spark span {
+      background: linear-gradient(180deg, #4ade80, #16a34a);
+    }
+
+    .cc-kpi.cc-kpi-blue .cc-kpi-spark span {
+      background: linear-gradient(180deg, #60a5fa, #1d4ed8);
+    }
+
+    .cc-kpi.cc-kpi-orange .cc-kpi-spark span {
+      background: linear-gradient(180deg, #fb923c, #ea580c);
+    }
+
+    .cc-kpi.cc-kpi-red .cc-kpi-spark span {
+      background: linear-gradient(180deg, #f87171, #b91c1c);
+    }
+
+    .cc-kpi.cc-kpi-purple .cc-kpi-spark span {
+      background: linear-gradient(180deg, #c084fc, #7e22ce);
+    }
+
+    /* Section header */
+    .cc-sec {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 26px 0 12px 0;
+      gap: 12px;
+    }
+
+    .cc-sec-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--brown);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 0.2px;
+    }
+
+    .cc-sec-title::before {
+      content: '';
+      width: 3px;
+      height: 18px;
+      background: linear-gradient(180deg, var(--tan), var(--goldL));
+      border-radius: 2px;
+    }
+
+    .cc-sec-sub {
+      font-size: 12px;
+      color: var(--brown-l);
+    }
+
+    /* Generic command-center card */
+    .cc-card {
+      background: var(--white);
+      border: 1px solid var(--cream-dk);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .cc-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brown);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      letter-spacing: 0.3px;
+    }
+
+    .cc-card-title-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cc-tag {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .cc-tag.live {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .cc-tag.ai {
+      background: linear-gradient(135deg, #6A1B9A, #1565C0);
+      color: white;
+    }
+
+    .cc-tag.new {
+      background: var(--tan);
+      color: var(--cream);
+    }
+
+    /* Grid layouts */
+    .cc-grid-2 {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 16px;
+    }
+
+    .cc-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .cc-grid-12-by {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 980px) {
+
+      .cc-grid-2,
+      .cc-grid-3,
+      .cc-grid-12-by {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Sparkline chart container (SVG) */
+    .cc-chart-wrap {
+      width: 100%;
+      height: 200px;
+    }
+
+    .cc-chart-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+    }
+
+    /* Funnel */
+    .cc-funnel {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .cc-funnel-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .cc-funnel-lbl {
+      width: 110px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brown-m);
+    }
+
+    .cc-funnel-bar-wrap {
+      flex: 1;
+      height: 26px;
+      background: var(--cream);
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .cc-funnel-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--tan), var(--goldL));
+      border-radius: 6px;
+      transition: width .6s cubic-bezier(.4, 1, .3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 8px;
+      color: var(--cream);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .cc-funnel-row:nth-child(1) .cc-funnel-bar {
+      background: linear-gradient(90deg, #1565C0, #42a5f5);
+    }
+
+    .cc-funnel-row:nth-child(2) .cc-funnel-bar {
+      background: linear-gradient(90deg, #6A1B9A, #a855f7);
+    }
+
+    .cc-funnel-row:nth-child(3) .cc-funnel-bar {
+      background: linear-gradient(90deg, var(--tan), var(--goldL));
+    }
+
+    .cc-funnel-row:nth-child(4) .cc-funnel-bar {
+      background: linear-gradient(90deg, #c2410c, #f97316);
+    }
+
+    .cc-funnel-row:nth-child(5) .cc-funnel-bar {
+      background: linear-gradient(90deg, #15803d, #22c55e);
+    }
+
+    /* Donut/pie segments */
+    .cc-donut-legend {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .cc-donut-legend-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+    }
+
+    .cc-legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    /* Territory bars */
+    .cc-terr-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 50px;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 9px;
+    }
+
+    .cc-terr-lbl {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--brown);
+    }
+
+    .cc-terr-bar {
+      height: 18px;
+      background: var(--cream);
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .cc-terr-bar>div {
+      height: 100%;
+      background: linear-gradient(90deg, var(--tan), var(--tan-l));
+      border-radius: 5px;
+      transition: width .5s ease;
+    }
+
+    .cc-terr-val {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brown);
+      text-align: right;
+    }
+
+    /* Heatmap */
+    .cc-heat {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .cc-heat-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      background: var(--cream);
+      position: relative;
+      cursor: pointer;
+      transition: transform .12s;
+    }
+
+    .cc-heat-cell:hover {
+      transform: scale(1.15);
+      z-index: 5;
+    }
+
+    .cc-heat-cell[data-lvl="0"] {
+      background: #f3f4f6;
+    }
+
+    .cc-heat-cell[data-lvl="1"] {
+      background: #fef9c3;
+    }
+
+    .cc-heat-cell[data-lvl="2"] {
+      background: #fde68a;
+    }
+
+    .cc-heat-cell[data-lvl="3"] {
+      background: #fbbf24;
+    }
+
+    .cc-heat-cell[data-lvl="4"] {
+      background: #d97706;
+    }
+
+    .cc-heat-cell[data-lvl="5"] {
+      background: #92400e;
+    }
+
+    /* AI insight cards */
+    .cc-ai-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 760px) {
+      .cc-ai-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .cc-ai {
+      background: linear-gradient(135deg, #fafaf6 0%, #ffffff 100%);
+      border: 1px solid var(--cream-dk);
+      border-left: 4px solid var(--tan);
+      border-radius: 12px;
+      padding: 14px 16px;
+      position: relative;
+      transition: transform .18s, box-shadow .18s;
+    }
+
+    .cc-ai:hover {
+      transform: translateX(2px);
+      box-shadow: var(--shadow-card);
+    }
+
+    .cc-ai.risk {
+      border-left-color: #b91c1c;
+      background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+    }
+
+    .cc-ai.opportunity {
+      border-left-color: #16a34a;
+      background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    }
+
+    .cc-ai.forecast {
+      border-left-color: #1565C0;
+      background: linear-gradient(135deg, #eff6ff 0%, #ffffff 100%);
+    }
+
+    .cc-ai.action {
+      border-left-color: #a855f7;
+      background: linear-gradient(135deg, #faf5ff 0%, #ffffff 100%);
+    }
+
+    .cc-ai-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .cc-ai-type {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      text-transform: uppercase;
+    }
+
+    .cc-ai.risk .cc-ai-type {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .cc-ai.opportunity .cc-ai-type {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .cc-ai.forecast .cc-ai-type {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .cc-ai.action .cc-ai-type {
+      background: #f3e8ff;
+      color: #6b21a8;
+    }
+
+    .cc-ai-conf {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--brown-l);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cc-ai-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--brown);
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+
+    .cc-ai-body {
+      font-size: 12.5px;
+      color: var(--brown-m);
+      line-height: 1.5;
+    }
+
+    /* Alerts */
+    .cc-alert {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      border: 1px solid var(--cream-dk);
+      background: var(--white);
+    }
+
+    .cc-alert.critical {
+      border-left: 4px solid #b91c1c;
+      background: #fef2f2;
+    }
+
+    .cc-alert.warning {
+      border-left: 4px solid #d97706;
+      background: #fffbeb;
+    }
+
+    .cc-alert.opportunity {
+      border-left: 4px solid #16a34a;
+      background: #f0fdf4;
+    }
+
+    .cc-alert-ico {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      border: 1px solid var(--cream-dk);
+    }
+
+    .cc-alert-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brown);
+    }
+
+    .cc-alert-body {
+      font-size: 12px;
+      color: var(--brown-m);
+      margin-top: 2px;
+    }
+
+    .cc-alert-time {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--brown-l);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* Tables (compact) */
+    .cc-tbl {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cc-tbl th,
+    .cc-tbl td {
+      padding: 9px 10px;
+      text-align: left;
+      font-size: 12.5px;
+      border-bottom: 1px solid var(--cream-dk);
+    }
+
+    .cc-tbl th {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--brown-l);
+      font-weight: 700;
+      background: var(--cream);
+    }
+
+    .cc-tbl tr:last-child td {
+      border-bottom: none;
+    }
+
+    .cc-tbl .num {
+      text-align: right;
+      font-family: 'DM Mono', monospace;
+      font-weight: 600;
+    }
+
+    .cc-rank {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--cream);
+      color: var(--brown);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .cc-rank.gold {
+      background: linear-gradient(135deg, #fbbf24, #d97706);
+      color: white;
+    }
+
+    .cc-rank.silver {
+      background: linear-gradient(135deg, #d1d5db, #6b7280);
+      color: white;
+    }
+
+    .cc-rank.bronze {
+      background: linear-gradient(135deg, #fdba74, #c2410c);
+      color: white;
+    }
+
+    /* Progress mini bars */
+    .cc-mini-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--cream);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .cc-mini-bar>div {
+      height: 100%;
+      border-radius: 999px;
+      transition: width .5s ease;
+    }
+
+    /* Status badges */
+    .cc-status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .cc-status-dot.green {
+      background: #16a34a;
+      box-shadow: 0 0 0 2px #dcfce7;
+    }
+
+    .cc-status-dot.yellow {
+      background: #d97706;
+      box-shadow: 0 0 0 2px #fef3c7;
+    }
+
+    .cc-status-dot.red {
+      background: #dc2626;
+      box-shadow: 0 0 0 2px #fee2e2;
+    }
+
+    .cc-status-dot.blue {
+      background: #1565C0;
+      box-shadow: 0 0 0 2px #dbeafe;
+    }
+
+    /* Live map placeholder */
+    .cc-mini-map {
+      height: 200px;
+      background:
+        radial-gradient(circle at 30% 40%, rgba(212, 168, 50, 0.15) 0%, transparent 35%),
+        radial-gradient(circle at 70% 60%, rgba(21, 101, 192, 0.12) 0%, transparent 35%),
+        linear-gradient(135deg, #f7f0df 0%, #faf5e8 100%);
+      border-radius: 10px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--cream-dk);
+    }
+
+    .cc-mini-map::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(0deg, transparent 24%, rgba(61, 43, 10, 0.04) 25%, rgba(61, 43, 10, 0.04) 26%, transparent 27%, transparent 74%, rgba(61, 43, 10, 0.04) 75%, rgba(61, 43, 10, 0.04) 76%, transparent 77%, transparent),
+        linear-gradient(90deg, transparent 24%, rgba(61, 43, 10, 0.04) 25%, rgba(61, 43, 10, 0.04) 26%, transparent 27%, transparent 74%, rgba(61, 43, 10, 0.04) 75%, rgba(61, 43, 10, 0.04) 76%, transparent 77%, transparent);
+      background-size: 40px 40px;
+    }
+
+    .cc-truck {
+      position: absolute;
+      font-size: 20px;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+      animation: ccTruckBob 2s ease-in-out infinite;
+    }
+
+    @keyframes ccTruckBob {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-3px);
+      }
+    }
+
+    .cc-pin {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #b91c1c;
+      box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.6);
+      animation: ccPinPulse 2s infinite;
+    }
+
+    .cc-pin.green {
+      background: #16a34a;
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6);
+    }
+
+    .cc-pin.gold {
+      background: #d97706;
+      box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.6);
+    }
+
+    @keyframes ccPinPulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.55);
+      }
+
+      70% {
+        box-shadow: 0 0 0 12px rgba(185, 28, 28, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(185, 28, 28, 0);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .cc-hero {
+        padding: 18px 18px;
+      }
+
+      .cc-hero-title {
+        font-size: 20px;
+      }
+
+      .cc-kpi-val {
+        font-size: 22px;
+      }
+
+      .cc-funnel-lbl {
+        width: 80px;
+        font-size: 11px;
+      }
+    }
+
     /* BUTTONS */
     .btn {
       padding: 9px 18px;
@@ -2139,7 +3073,12 @@
     }
 
     /* WAREHOUSE PRODUCT TOOLTIP */
-    .wh-tip-wrap { position: relative; display: inline-flex; align-items: center; }
+    .wh-tip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
     .wh-tip-box {
       position: absolute;
       bottom: calc(100% + 8px);
@@ -2155,10 +3094,14 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.15s ease;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.25);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
       min-width: 180px;
     }
-    .wh-tip-wrap:hover .wh-tip-box { opacity: 1; }
+
+    .wh-tip-wrap:hover .wh-tip-box {
+      opacity: 1;
+    }
+
     .wh-tip-box::after {
       content: '';
       position: absolute;
@@ -2907,7 +3850,8 @@
         <p id="reminder-msg" style="color:var(--brown-m);margin-bottom:18px;line-height:1.6"></p>
         <div class="modal-actions" style="justify-content:center">
           <button class="btn btn-ghost" onclick="closeModal('m-order-reminder')">Remind Me Later</button>
-          <button class="btn btn-tan" onclick="closeModal('m-order-reminder');nav('smart-order')">Place Order Now →</button>
+          <button class="btn btn-tan" onclick="closeModal('m-order-reminder');nav('smart-order')">Place Order Now
+            →</button>
         </div>
       </div>
     </div>
@@ -3011,7 +3955,7 @@
         const sub = document.getElementById('reminder-msg');
         if (sub) sub.innerHTML = msg;
         openModal('m-order-reminder');
-      } catch {}
+      } catch { }
     }
 
     function roleLabel(r) {
@@ -3089,13 +4033,13 @@
 
     // ══ CITY / AREA LOOKUP ══════════════════════════
     const CITY_AREAS = {
-      'Colombo':          ['Colombo 01 - Fort', 'Colombo 02 - Staples Street', 'Colombo 02 - Slave Island', 'Colombo 03 - Duplication Road', 'Colombo 03 - Green Path', 'Colombo 04 - Majestic City', 'Colombo 05 - Park Road', 'Colombo 06 - Wellawatte', 'Colombo 07 - Ward Place', 'Colombo 07 - Alexandra Place', 'Colombo 10 - Maligawatte'],
-      'Colombo Suburbs':  ['Nugegoda', 'Kohuwala', 'Maharagama', 'Dehiwala', 'Mount Lavinia', 'Boralesgamuwa', 'Piliyandala', 'Rajagiriya', 'Nawala', 'Malabe', 'Battaramulla'],
-      'Gampaha':          ['Negombo', 'Wattala', 'Ja-Ela', 'Gampaha', 'Kadawatha', 'Kelaniya'],
-      'Southern':         ['Galle', 'Matara', 'Ambalangoda', 'Beruwala', 'Aluthgama'],
-      'Central':          ['Kandy', 'Katugastota', 'Matale', 'Nuwara Eliya', 'Bandarawela'],
-      'North Western':    ['Kurunegala', 'Chilaw'],
-      'Sabaragamuwa':     ['Ratnapura', 'Kegalle', 'Warakapola', 'Avissawella']
+      'Colombo': ['Colombo 01 - Fort', 'Colombo 02 - Staples Street', 'Colombo 02 - Slave Island', 'Colombo 03 - Duplication Road', 'Colombo 03 - Green Path', 'Colombo 04 - Majestic City', 'Colombo 05 - Park Road', 'Colombo 06 - Wellawatte', 'Colombo 07 - Ward Place', 'Colombo 07 - Alexandra Place', 'Colombo 10 - Maligawatte'],
+      'Colombo Suburbs': ['Nugegoda', 'Kohuwala', 'Maharagama', 'Dehiwala', 'Mount Lavinia', 'Boralesgamuwa', 'Piliyandala', 'Rajagiriya', 'Nawala', 'Malabe', 'Battaramulla'],
+      'Gampaha': ['Negombo', 'Wattala', 'Ja-Ela', 'Gampaha', 'Kadawatha', 'Kelaniya'],
+      'Southern': ['Galle', 'Matara', 'Ambalangoda', 'Beruwala', 'Aluthgama'],
+      'Central': ['Kandy', 'Katugastota', 'Matale', 'Nuwara Eliya', 'Bandarawela'],
+      'North Western': ['Kurunegala', 'Chilaw'],
+      'Sabaragamuwa': ['Ratnapura', 'Kegalle', 'Warakapola', 'Avissawella']
     };
 
     function populateAreas(preselect) {
@@ -3625,26 +4569,26 @@ RULES:
         }
         const b = batchMap.get(key);
         b.ids.push(o.id);
-        b.products.push({ id: o.id, productId: o.productId, productName: o.productName, items: parseInt(o.items)||0, kg: parseFloat(o.kg)||0 });
-        b.totalItems += parseInt(o.items)||0;
-        b.totalKg += parseFloat(o.kg)||0;
+        b.products.push({ id: o.id, productId: o.productId, productName: o.productName, items: parseInt(o.items) || 0, kg: parseFloat(o.kg) || 0 });
+        b.totalItems += parseInt(o.items) || 0;
+        b.totalKg += parseFloat(o.kg) || 0;
         // Use first row that has a delivery PIN — each product gets its own delivery record
         // and the first row in the SQL result may not be the confirmed one
         if (!b.deliveryPin && o.deliveryPin) {
-          b.deliveryPin     = o.deliveryPin;
-          b.deliveryStatus  = o.deliveryStatus;
-          b.deliveryId      = o.deliveryId;
-          b.pinVerified     = o.pinVerified;
+          b.deliveryPin = o.deliveryPin;
+          b.deliveryStatus = o.deliveryStatus;
+          b.deliveryId = o.deliveryId;
+          b.pinVerified = o.pinVerified;
           b.receiptConfirmed = o.receiptConfirmed;
-          b.receiptAt       = o.receiptAt;
-          b.receiptNote     = o.receiptNote;
-          b.driverName      = o.driverName;
-          b.stopsAhead      = o.stopsAhead;
-          b.eta             = o.eta;
+          b.receiptAt = o.receiptAt;
+          b.receiptNote = o.receiptNote;
+          b.driverName = o.driverName;
+          b.stopsAhead = o.stopsAhead;
+          b.eta = o.eta;
         }
         // Use the most significant order status across the batch
-        const statusRank = { rejected:5, pending:4, confirmed:3, consolidated:2, delivered:1 };
-        if ((statusRank[o.status]||0) > (statusRank[b.status]||0)) b.status = o.status;
+        const statusRank = { rejected: 5, pending: 4, confirmed: 3, consolidated: 2, delivered: 1 };
+        if ((statusRank[o.status] || 0) > (statusRank[b.status] || 0)) b.status = o.status;
       });
       window._rejectedBatches = {};
 
@@ -3702,7 +4646,7 @@ RULES:
               <div style="font-size:13px;color:var(--brown);font-weight:500">${escapeHtml(b.rejectReason || 'No reason provided')}</div>
             </div>
             <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:8px">
-              ${b.products.map(p => `<span style="font-size:12px;color:var(--brown-m)">• ${escapeHtml(p.productName||'—')} × ${p.items}</span>`).join('')}
+              ${b.products.map(p => `<span style="font-size:12px;color:var(--brown-m)">• ${escapeHtml(p.productName || '—')} × ${p.items}</span>`).join('')}
             </div>
             ${cat === 'out_of_stock' ? `
             <div style="background:#E8F5E9;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);font-weight:600">
@@ -3757,7 +4701,7 @@ RULES:
           <td>
             <div style="font-weight:600;color:var(--brown)">${b.totalItems} items · <strong style="color:var(--blue)">${b.totalKg.toFixed(1)}kg</strong></div>
             <div style="margin-top:4px;display:flex;flex-direction:column;gap:1px">
-              ${b.products.map(p => `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(p.productName||'—')} × ${p.items}</span>`).join('')}
+              ${b.products.map(p => `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(p.productName || '—')} × ${p.items}</span>`).join('')}
             </div>
           </td>
           <td>${prioBadge(b.prio)}</td>
@@ -3919,11 +4863,11 @@ RULES:
       ]);
 
       // Build stock lookup and weight lookup from stock data
-      window._stockMap  = {};
+      window._stockMap = {};
       window._loWeights = {};
       if (Array.isArray(stockData)) {
         stockData.forEach(s => {
-          window._stockMap[s.id]  = s;
+          window._stockMap[s.id] = s;
           window._loWeights[s.id] = parseFloat(s.weightPerUnit || 0);
         });
       }
@@ -3941,8 +4885,8 @@ RULES:
             <span style="margin-left:12px;font-size:11px;color:var(--brown-l)">
               Frequency:
               <select onchange="updateReminderFrequency(this.value)" style="font-family:'Jost',sans-serif;font-size:11px;border:1px solid var(--cream-dk);border-radius:4px;padding:1px 4px">
-                <option value="weekly" ${reminderData.frequency==='weekly'?'selected':''}>Weekly</option>
-                <option value="monthly" ${reminderData.frequency==='monthly'?'selected':''}>Monthly</option>
+                <option value="weekly" ${reminderData.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+                <option value="monthly" ${reminderData.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
               </select>
             </span>
           </div>`;
@@ -3952,8 +4896,8 @@ RULES:
             <span style="margin-left:12px;font-size:11px;color:var(--brown-l)">
               Frequency:
               <select onchange="updateReminderFrequency(this.value)" style="font-family:'Jost',sans-serif;font-size:11px;border:1px solid var(--cream-dk);border-radius:4px;padding:1px 4px">
-                <option value="weekly" ${reminderData.frequency==='weekly'?'selected':''}>Weekly</option>
-                <option value="monthly" ${reminderData.frequency==='monthly'?'selected':''}>Monthly</option>
+                <option value="weekly" ${reminderData.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+                <option value="monthly" ${reminderData.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
               </select>
             </span>
           </div>`;
@@ -3961,8 +4905,8 @@ RULES:
           reminderBanner = `<div style="max-width:760px;margin-bottom:14px;font-size:12px;color:var(--brown-l);display:flex;align-items:center;gap:10px">
             🔔 Reminder frequency:
             <select onchange="updateReminderFrequency(this.value)" style="font-family:'Jost',sans-serif;font-size:12px;border:1.5px solid var(--cream-dk);border-radius:6px;padding:4px 8px">
-              <option value="weekly" ${reminderData.frequency==='weekly'?'selected':''}>Weekly</option>
-              <option value="monthly" ${reminderData.frequency==='monthly'?'selected':''}>Monthly</option>
+              <option value="weekly" ${reminderData.frequency === 'weekly' ? 'selected' : ''}>Weekly</option>
+              <option value="monthly" ${reminderData.frequency === 'monthly' ? 'selected' : ''}>Monthly</option>
             </select>
           </div>`;
         }
@@ -4101,8 +5045,8 @@ RULES:
           const rd = JSON.parse(resubmitData);
           sessionStorage.removeItem('resubmit');
           setTimeout(() => {
-            if (rd.city)  { const el = document.getElementById('i-city');  if (el) { el.value = rd.city; populateAreas(rd.area || ''); } }
-            if (rd.prio)  { const el = document.getElementById('i-prio');  if (el) el.value = rd.prio; }
+            if (rd.city) { const el = document.getElementById('i-city'); if (el) { el.value = rd.city; populateAreas(rd.area || ''); } }
+            if (rd.prio) { const el = document.getElementById('i-prio'); if (el) el.value = rd.prio; }
             if (rd.products && rd.products.length) {
               rd.products.forEach((p, i) => {
                 if (i > 0) addOrderLine();
@@ -4134,21 +5078,21 @@ RULES:
       addOrderLine();
       const n = window._lineCounter;
       setTimeout(() => {
-        const sel   = document.getElementById(`line-${n}-product`);
+        const sel = document.getElementById(`line-${n}-product`);
         const items = document.getElementById(`line-${n}-items`);
-        if (sel)   { sel.value = String(productId); checkStockLine(n); }
+        if (sel) { sel.value = String(productId); checkStockLine(n); }
         if (items) { items.value = String(defaultQty); updateLineSummary(); }
       }, 80);
     }
 
     function toggleLastOrderEdit() {
-      const displays    = document.querySelectorAll('#last-order-list .lo-qty-display');
-      const inputs      = document.querySelectorAll('#last-order-list .lo-qty-input');
-      const mainBtns    = document.getElementById('lo-main-actions');
+      const displays = document.querySelectorAll('#last-order-list .lo-qty-display');
+      const inputs = document.querySelectorAll('#last-order-list .lo-qty-input');
+      const mainBtns = document.getElementById('lo-main-actions');
       const editActions = document.getElementById('lo-edit-actions');
-      const editBtn     = document.getElementById('lo-edit-btn');
-      const addPanel    = document.getElementById('lo-add-product');
-      const isEditing   = inputs[0] && inputs[0].style.display !== 'none';
+      const editBtn = document.getElementById('lo-edit-btn');
+      const addPanel = document.getElementById('lo-add-product');
+      const isEditing = inputs[0] && inputs[0].style.display !== 'none';
 
       if (isEditing) {
         // Cancel — remove dynamically added rows, restore original quantities, restore hidden rows
@@ -4163,18 +5107,18 @@ RULES:
         });
         document.querySelectorAll('#last-order-list .lo-qty-display').forEach(el => el.style.display = '');
         document.querySelectorAll('#last-order-list .lo-remove-btn').forEach(el => el.style.display = 'none');
-        if (mainBtns)    mainBtns.style.display    = 'flex';
-        if (editActions) editActions.style.display  = 'none';
-        if (editBtn)     editBtn.style.display      = 'inline-block';
-        if (addPanel)    addPanel.style.display     = 'none';
+        if (mainBtns) mainBtns.style.display = 'flex';
+        if (editActions) editActions.style.display = 'none';
+        if (editBtn) editBtn.style.display = 'inline-block';
+        if (addPanel) addPanel.style.display = 'none';
       } else {
         // Enter edit mode
         displays.forEach(el => el.style.display = 'none');
         inputs.forEach(el => el.style.display = 'inline-block');
         document.querySelectorAll('#last-order-list .lo-remove-btn').forEach(el => el.style.display = 'inline-block');
-        if (mainBtns)    mainBtns.style.display    = 'none';
-        if (editActions) editActions.style.display  = 'flex';
-        if (editBtn)     editBtn.style.display      = 'none';
+        if (mainBtns) mainBtns.style.display = 'none';
+        if (editActions) editActions.style.display = 'flex';
+        if (editBtn) editBtn.style.display = 'none';
         if (addPanel) {
           addPanel.style.display = 'block';
           const select = document.getElementById('lo-product-select');
@@ -4226,9 +5170,9 @@ RULES:
       if (!window._lastOrder) return;
       const rows = [...document.querySelectorAll('#last-order-list [data-product-id]:not([data-removed])')];
       const edited = rows.map(row => ({
-        productId:   parseInt(row.dataset.productId),
+        productId: parseInt(row.dataset.productId),
         productName: row.dataset.productName,
-        items:       Math.max(1, parseInt(row.querySelector('.lo-qty-input')?.value) || 1)
+        items: Math.max(1, parseInt(row.querySelector('.lo-qty-input')?.value) || 1)
       }));
       if (!edited.length) return;
       if (btn) { btn.disabled = true; btn.textContent = 'Placing order…'; }
@@ -4256,9 +5200,9 @@ RULES:
       // Append new row (already in edit mode — input visible, display hidden)
       const list = document.getElementById('last-order-list');
       const row = document.createElement('div');
-      row.dataset.productId   = productId;
+      row.dataset.productId = productId;
       row.dataset.productName = productName;
-      row.dataset.added       = 'true';
+      row.dataset.added = 'true';
       row.style.cssText = 'display:flex;align-items:center;padding:9px 0;border-bottom:1px solid var(--cream-dk);gap:8px';
       row.innerHTML = `
         <span style="font-size:13px;font-weight:600;color:var(--brown);flex:1">${escapeHtml(productName)}</span>
@@ -4271,9 +5215,9 @@ RULES:
     }
 
     async function _submitLastOrderBatch(products, btn) {
-      const lo      = window._lastOrder;
-      const province    = user.city || lo.city;
-      const validAreas  = CITY_AREAS[province] || [];
+      const lo = window._lastOrder;
+      const province = user.city || lo.city;
+      const validAreas = CITY_AREAS[province] || [];
       const resolvedArea = (validAreas.length && !validAreas.includes(lo.area)) ? validAreas[0] : lo.area;
 
       // Pre-submission stock gate
@@ -4282,8 +5226,10 @@ RULES:
         const st = window._stockMap[p.productId];
         const av = st ? parseInt(st.availableUnits) : null;
         if (av !== null && p.items > av) {
-          toWaitlist.push({ productId: p.productId, productName: p.productName, requestedQty: p.items, availableUnits: av,
-            reason: av > 0 ? `Only ${av} units available (you requested ${p.items})` : `Out of stock (you requested ${p.items})` });
+          toWaitlist.push({
+            productId: p.productId, productName: p.productName, requestedQty: p.items, availableUnits: av,
+            reason: av > 0 ? `Only ${av} units available (you requested ${p.items})` : `Out of stock (you requested ${p.items})`
+          });
         } else {
           canPlace.push(p);
         }
@@ -4323,7 +5269,7 @@ RULES:
     async function _executeBatch() {
       const { canPlace, toWaitlist, province, resolvedArea, btn } = window._pendingBatch || {};
       window._pendingBatch = null;
-      
+
       if (canPlace && canPlace.length) {
         await _doBatchOrders(canPlace, btn, province, resolvedArea);
       } else {
@@ -4347,14 +5293,14 @@ RULES:
         return;
       }
       if (r.ok && r.results?.length) {
-        const placed  = r.results.length;
+        const placed = r.results.length;
         const skipped = r.failed?.length || 0;
         toast(`✅ ${placed} order${placed > 1 ? 's' : ''} placed — Sales Rep notified 🔔${skipped ? ` · ${skipped} line(s) need attention` : ''}`, '#16a34a');
         pollBadge();
         nav('my-orders');
       } else if (r.failed?.length) {
         toast(`❌ All lines failed — stock unavailable`, '#B71C1C');
-        
+
         if (btn) { btn.disabled = false; btn.textContent = '⚠️ Confirm Anyway'; }
       }
     }
@@ -4782,119 +5728,644 @@ RULES:
       const d = await api('/analytics/sales');
       if (d.error) { setContent(`<div class="empty"><div class="empty-icon">⚠️</div><div>${d.error}</div></div>`); return; }
 
-      const statusColour = { pending:'#92400e', confirmed:'#166534', consolidated:'#1e40af', delivered:'#15803d', rejected:'#991b1b' };
-      const statusLabel  = { pending:'Pending', confirmed:'Confirmed', consolidated:'Consolidated', delivered:'Delivered', rejected:'Rejected' };
+      const k = d.kpi || {};
+      const fmt = n => (n == null ? '—' : Number(n).toLocaleString('en-LK'));
+      const fmtMoney = n => {
+        if (n == null) return '—';
+        if (n >= 1_000_000) return 'Rs ' + (n / 1_000_000).toFixed(2) + 'M';
+        if (n >= 1_000) return 'Rs ' + (n / 1_000).toFixed(1) + 'K';
+        return 'Rs ' + Number(n).toLocaleString('en-LK');
+      };
 
-      // Monthly bar chart
-      const maxCount = Math.max(...d.monthly.map(m => m.count), 1);
-      const monthBars = d.monthly.map(m => `
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1">
-          <span style="font-size:11px;font-weight:700;color:var(--brown)">${m.count}</span>
-          <div style="width:100%;background:#e5e7eb;border-radius:6px;height:80px;display:flex;align-items:flex-end">
-            <div style="width:100%;background:var(--tan);border-radius:6px;height:${Math.round((m.count/maxCount)*100)}%;min-height:4px;transition:height .4s"></div>
-          </div>
-          <span style="font-size:10px;color:#6b7280;text-align:center">${m.month}</span>
+      // ── Sparkline from daily data ──
+      const dailySpark = (d.daily || []).slice(-12);
+      const sparkMax = Math.max(...dailySpark.map(x => x.count), 1);
+      const sparkBars = (mult = 1) => dailySpark.map(x =>
+        `<span style="height:${Math.max(2, Math.round((x.count / sparkMax) * 100 * mult))}%"></span>`).join('');
+
+      // Random small variations for distinct sparklines
+      const sparkRev = dailySpark.map(x => `<span style="height:${Math.max(2, Math.round((x.units / Math.max(...dailySpark.map(y => y.units), 1)) * 100))}%"></span>`).join('');
+
+      const trendTag = (v) => {
+        if (v == null) return `<span class="cc-kpi-trend flat">— stable</span>`;
+        if (v > 0) return `<span class="cc-kpi-trend up">▲ ${v}%</span>`;
+        if (v < 0) return `<span class="cc-kpi-trend down">▼ ${Math.abs(v)}%</span>`;
+        return `<span class="cc-kpi-trend flat">→ flat</span>`;
+      };
+
+      // ── Sales trend line chart (SVG) ──
+      const dailyData = d.daily || [];
+      const chartW = 600, chartH = 180, padL = 36, padR = 12, padT = 12, padB = 26;
+      const maxDaily = Math.max(...dailyData.map(x => x.count), 5);
+      const stepX = dailyData.length > 1 ? (chartW - padL - padR) / (dailyData.length - 1) : 0;
+      const pts = dailyData.map((x, i) => {
+        const px = padL + i * stepX;
+        const py = padT + (chartH - padT - padB) * (1 - x.count / maxDaily);
+        return [px, py, x];
+      });
+      const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' ');
+      const areaPath = pts.length
+        ? `${linePath} L ${pts[pts.length - 1][0]} ${chartH - padB} L ${pts[0][0]} ${chartH - padB} Z`
+        : '';
+      const yTicks = [0, 0.25, 0.5, 0.75, 1].map(t => {
+        const py = padT + (chartH - padT - padB) * (1 - t);
+        return `<line x1="${padL}" y1="${py}" x2="${chartW - padR}" y2="${py}" stroke="#EDE0C0" stroke-width="1" stroke-dasharray="3,3"/>
+                <text x="${padL - 6}" y="${py + 3}" font-size="9" fill="#9E7A3A" text-anchor="end">${Math.round(maxDaily * t)}</text>`;
+      }).join('');
+      const xLabels = pts.filter((_, i) => i % 2 === 0).map(p =>
+        `<text x="${p[0]}" y="${chartH - padB + 14}" font-size="9" fill="#9E7A3A" text-anchor="middle">${p[2].label}</text>`
+      ).join('');
+      const dots = pts.map(p =>
+        `<circle cx="${p[0]}" cy="${p[1]}" r="3" fill="#8B6914" stroke="#fff" stroke-width="1.5"/>`
+      ).join('');
+
+      // ── Territory bars (top cities) ──
+      const territories = (d.topCities || []).slice(0, 6);
+      const maxTerr = Math.max(...territories.map(x => x.count), 1);
+      const terrBars = territories.length
+        ? territories.map(t => `
+          <div class="cc-terr-row">
+            <span class="cc-terr-lbl">${escapeHtml(t.city)}</span>
+            <div class="cc-terr-bar"><div style="width:${Math.round((t.count / maxTerr) * 100)}%"></div></div>
+            <span class="cc-terr-val">${t.count}</span>
+          </div>`).join('')
+        : '<div style="color:var(--brown-l);font-size:13px;text-align:center;padding:20px">No territory data</div>';
+
+      // ── Retailer segmentation donut ──
+      const seg = d.retailerSegments || {};
+      const segTotal = (seg.active || 0) + (seg.medium || 0) + (seg.atRisk || 0) + (seg.inactive || 0) || 1;
+      const segData = [
+        { label: 'Active', value: seg.active || 0, color: '#16a34a' },
+        { label: 'Medium', value: seg.medium || 0, color: '#d97706' },
+        { label: 'At Risk', value: seg.atRisk || 0, color: '#ea580c' },
+        { label: 'Inactive', value: seg.inactive || 0, color: '#9ca3af' }
+      ];
+      // Build SVG donut
+      let cumulative = 0;
+      const cx = 70, cy = 70, rOuter = 60, rInner = 40;
+      const donutSlices = segData.map(s => {
+        const pct = s.value / segTotal;
+        if (pct === 0) return '';
+        const startAngle = cumulative * Math.PI * 2 - Math.PI / 2;
+        cumulative += pct;
+        const endAngle = cumulative * Math.PI * 2 - Math.PI / 2;
+        const large = pct > 0.5 ? 1 : 0;
+        const x1 = cx + rOuter * Math.cos(startAngle), y1 = cy + rOuter * Math.sin(startAngle);
+        const x2 = cx + rOuter * Math.cos(endAngle), y2 = cy + rOuter * Math.sin(endAngle);
+        const x3 = cx + rInner * Math.cos(endAngle), y3 = cy + rInner * Math.sin(endAngle);
+        const x4 = cx + rInner * Math.cos(startAngle), y4 = cy + rInner * Math.sin(startAngle);
+        return `<path d="M ${x1} ${y1} A ${rOuter} ${rOuter} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 ${large} 0 ${x4} ${y4} Z" fill="${s.color}"/>`;
+      }).join('');
+      const donutLegend = segData.map(s => `
+        <div class="cc-donut-legend-row">
+          <span class="cc-legend-dot" style="background:${s.color}"></span>
+          <span style="flex:1;color:var(--brown-m)">${s.label}</span>
+          <strong style="color:var(--brown)">${s.value}</strong>
+          <span style="color:var(--brown-l);font-size:11px">${Math.round((s.value / segTotal) * 100)}%</span>
         </div>`).join('');
 
-      // Status breakdown rows
-      const statusRows = d.byStatus.map(s => {
-        const total = d.byStatus.reduce((a,b) => a + b.count, 0) || 1;
-        const pct = Math.round((s.count / total) * 100);
+      // ── Order funnel ──
+      const f = d.funnel || {};
+      const funnelMax = Math.max(f.placed || 0, 1);
+      const funnelStages = [
+        { label: 'Orders Placed', value: f.placed || 0 },
+        { label: 'Approved', value: f.approved || 0 },
+        { label: 'Packed', value: f.packed || 0 },
+        { label: 'Dispatched', value: f.dispatched || 0 },
+        { label: 'Delivered', value: f.delivered || 0 }
+      ];
+      const funnelHtml = funnelStages.map(s => `
+        <div class="cc-funnel-row">
+          <span class="cc-funnel-lbl">${s.label}</span>
+          <div class="cc-funnel-bar-wrap">
+            <div class="cc-funnel-bar" style="width:${Math.max(8, Math.round((s.value / funnelMax) * 100))}%">${s.value}</div>
+          </div>
+        </div>`).join('');
+
+      // ── Activity heatmap (5 rows x 7 cols based on daily data) ──
+      const heatData = (d.daily || []).slice(-35);
+      while (heatData.length < 35) heatData.unshift({ count: 0 });
+      const heatMax = Math.max(...heatData.map(x => x.count), 1);
+      const heatCells = heatData.map(x => {
+        const lvl = x.count === 0 ? 0 : Math.min(5, Math.ceil((x.count / heatMax) * 5));
+        return `<div class="cc-heat-cell" data-lvl="${lvl}" title="${x.label || ''}: ${x.count} orders"></div>`;
+      }).join('');
+
+      // ── Distributors ──
+      const distRows = (d.distributors || []).map((dist, i) => {
+        const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        const slaColor = dist.sla >= 90 ? '#16a34a' : dist.sla >= 75 ? '#d97706' : '#dc2626';
+        const frColor = dist.fillRate >= 90 ? '#16a34a' : dist.fillRate >= 75 ? '#d97706' : '#dc2626';
         return `
-          <div style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-              <span style="font-size:13px;font-weight:600;color:${statusColour[s.status]||'#374151'}">${statusLabel[s.status]||s.status}</span>
-              <span style="font-size:13px;color:#6b7280">${s.count} (${pct}%)</span>
-            </div>
-            <div style="background:#e5e7eb;border-radius:999px;height:8px">
-              <div style="background:${statusColour[s.status]||'var(--tan)'};width:${pct}%;height:8px;border-radius:999px;transition:width .4s"></div>
+          <tr>
+            <td><span class="cc-rank ${rankCls}">${i + 1}</span></td>
+            <td><strong style="color:var(--brown)">${escapeHtml(dist.name)}</strong><div style="font-size:11px;color:var(--brown-l)">${dist.cities.slice(0, 3).join(', ')}</div></td>
+            <td class="num">${dist.orders}</td>
+            <td><div style="display:flex;align-items:center;gap:6px"><span style="color:${frColor};font-weight:700;font-size:12px">${dist.fillRate}%</span><div class="cc-mini-bar" style="width:60px"><div style="width:${dist.fillRate}%;background:${frColor}"></div></div></div></td>
+            <td><span style="color:${slaColor};font-weight:700;font-size:12px">${dist.sla}%</span></td>
+            <td class="num">${dist.share}%</td>
+          </tr>`;
+      }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--brown-l);padding:24px">No distributor data</td></tr>';
+
+      // ── Sales reps leaderboard ──
+      const reps = (d.salesReps || []).slice(0, 6);
+      const maxRepOrders = Math.max(...reps.map(r => r.orders), 1);
+      const repsHtml = reps.length ? reps.map((r, i) => {
+        const rankCls = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+        const conv = r.orders > 0 ? Math.round((r.confirmed / r.orders) * 100) : 0;
+        return `
+          <tr>
+            <td><span class="cc-rank ${rankCls}">${i + 1}</span></td>
+            <td><strong style="color:var(--brown)">${escapeHtml(r.name)}</strong><div style="font-size:11px;color:var(--brown-l)">${escapeHtml(r.city)}</div></td>
+            <td class="num">${r.orders}</td>
+            <td class="num">${r.confirmed}</td>
+            <td><div style="display:flex;align-items:center;gap:6px;justify-content:flex-end"><span style="font-weight:700;font-size:12px;color:${conv >= 70 ? '#16a34a' : conv >= 40 ? '#d97706' : '#dc2626'}">${conv}%</span></div></td>
+            <td><div class="cc-mini-bar" style="width:100%;min-width:60px"><div style="width:${Math.round((r.orders / maxRepOrders) * 100)}%;background:linear-gradient(90deg,var(--tan),var(--goldL))"></div></div></td>
+          </tr>`;
+      }).join('') : '<tr><td colspan="6" style="text-align:center;color:var(--brown-l);padding:24px">No sales rep data — assign reps a city to see performance</td></tr>';
+
+      // ── Warehouses ──
+      const whHtml = (d.warehouses || []).map(w => {
+        const utilColor = w.utilization >= 85 ? '#dc2626' : w.utilization >= 70 ? '#d97706' : '#16a34a';
+        return `
+          <div style="background:var(--cream);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--cream-dk)">
+            <div style="font-size:11px;font-weight:700;color:var(--brown-m);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">📦 ${w.name}</div>
+            <div style="font-size:24px;font-weight:800;color:${utilColor};font-family:'Cormorant Garamond',serif">${w.utilization}%</div>
+            <div style="font-size:10px;color:var(--brown-l);margin-bottom:8px">Utilisation</div>
+            <div class="cc-mini-bar"><div style="width:${w.utilization}%;background:${utilColor}"></div></div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:11px;color:var(--brown-m)">
+              <span>${w.skus} SKUs</span>
+              <span style="color:${w.lowSkus > 0 ? '#dc2626' : '#16a34a'};font-weight:700">${w.lowSkus} low</span>
             </div>
           </div>`;
       }).join('');
 
-      // Top-5 table helper
-      const topTable = (rows, col1Label, col2Label, col1Key, col2Key) => {
-        if (!rows.length) return `<p style="color:#9ca3af;font-size:13px">No data yet</p>`;
-        const maxVal = rows[0][col2Key];
-        return rows.map((r,i) => `
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-            <span style="font-size:12px;font-weight:700;color:#9ca3af;width:18px">${i+1}</span>
-            <div style="flex:1">
-              <div style="font-size:13px;font-weight:600;color:var(--brown)">${r[col1Key]}</div>
-              <div style="background:#e5e7eb;border-radius:999px;height:6px;margin-top:3px">
-                <div style="background:var(--tan);width:${Math.round((r[col2Key]/maxVal)*100)}%;height:6px;border-radius:999px"></div>
-              </div>
+      // ── AI Insights ──
+      const insights = d.aiInsights || [];
+      const aiHtml = insights.length ? insights.map(ai => `
+        <div class="cc-ai ${ai.type}">
+          <div class="cc-ai-head">
+            <span class="cc-ai-type">${ai.type}</span>
+            <span class="cc-ai-conf">🎯 ${ai.confidence}% confidence</span>
+          </div>
+          <div class="cc-ai-title">${escapeHtml(ai.title)}</div>
+          <div class="cc-ai-body">${escapeHtml(ai.body)}</div>
+        </div>`).join('') : `<div style="grid-column:1/-1;text-align:center;color:var(--brown-l);padding:30px">No AI insights yet — data is being collected</div>`;
+
+      // ── Alerts ──
+      const alerts = d.alerts || [];
+      const alertsHtml = alerts.length ? alerts.slice(0, 8).map(a => `
+        <div class="cc-alert ${a.level}">
+          <div class="cc-alert-ico">${a.ico}</div>
+          <div>
+            <div class="cc-alert-title">${escapeHtml(a.title)}</div>
+            <div class="cc-alert-body">${escapeHtml(a.body)}</div>
+          </div>
+          <div class="cc-alert-time">${a.time}</div>
+        </div>`).join('') : `<div style="text-align:center;color:var(--brown-l);padding:24px">✅ No alerts — operations running smoothly</div>`;
+
+      // ── Top retailers (rich) ──
+      const retRows = (d.topRetailers || []).map((r, i) => {
+        const seg = i < 2 ? 'green' : i < 4 ? 'yellow' : 'red';
+        const segLbl = i < 2 ? 'Active' : i < 4 ? 'Medium' : 'At Risk';
+        return `
+          <tr>
+            <td><span class="cc-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}">${i + 1}</span></td>
+            <td><strong style="color:var(--brown)">${escapeHtml(r.retailer)}</strong><div style="font-size:11px;color:var(--brown-l)">${escapeHtml(r.city || '—')}</div></td>
+            <td class="num">${r.count}</td>
+            <td class="num">${fmt(r.units)}</td>
+            <td><span class="cc-status-dot ${seg}"></span><span style="font-size:11px;color:var(--brown-m)">${segLbl}</span></td>
+            <td style="font-size:11px;color:var(--brown-l)">${r.lastOrder || '—'}</td>
+          </tr>`;
+      }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--brown-l);padding:24px">No retailer data yet</td></tr>';
+
+      // ── Fast/slow movers ──
+      const fastList = (d.fastMovers || []).slice(0, 5).map((p, i) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--cream-dk)">
+          <span style="font-size:16px">🔥</span>
+          <div style="flex:1">
+            <div style="font-size:12.5px;font-weight:600;color:var(--brown)">${escapeHtml(p.productName)}</div>
+            <div style="font-size:11px;color:var(--brown-l)">Stock: ${p.stock}</div>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:#16a34a;font-family:'DM Mono',monospace">${p.sold30}</span>
+        </div>`).join('') || '<div style="color:var(--brown-l);font-size:13px;text-align:center;padding:14px">No data</div>';
+
+      const slowList = (d.slowMovers || []).slice(0, 5).map((p, i) => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--cream-dk)">
+          <span style="font-size:16px">🐌</span>
+          <div style="flex:1">
+            <div style="font-size:12.5px;font-weight:600;color:var(--brown)">${escapeHtml(p.productName)}</div>
+            <div style="font-size:11px;color:var(--brown-l)">Stock: ${p.stock}</div>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:#dc2626;font-family:'DM Mono',monospace">${p.sold30}</span>
+        </div>`).join('') || '<div style="color:var(--brown-l);font-size:13px;text-align:center;padding:14px">No data</div>';
+
+      const lowStockHtml = (d.lowStock || []).slice(0, 5).map(p => {
+        const pct = Math.min(100, Math.round((p.availableUnits / Math.max(p.threshold, 1)) * 100));
+        return `
+          <div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+              <span style="font-size:12.5px;font-weight:600;color:var(--brown)">${escapeHtml(p.productName)}</span>
+              <span style="font-size:11px;font-weight:700;color:${p.availableUnits === 0 ? '#dc2626' : '#d97706'};font-family:'DM Mono',monospace">${p.availableUnits}/${p.threshold}</span>
             </div>
-            <span style="font-size:13px;font-weight:700;color:var(--brown);white-space:nowrap">${r[col2Key]}</span>
-          </div>`).join('');
-      };
+            <div class="cc-mini-bar"><div style="width:${pct}%;background:${p.availableUnits === 0 ? '#dc2626' : p.availableUnits < p.threshold / 2 ? '#d97706' : '#16a34a'}"></div></div>
+          </div>`;
+      }).join('') || '<div style="color:#16a34a;font-size:13px;text-align:center;padding:14px">✅ All stock above threshold</div>';
 
-      const successBadge = d.kpi.deliverySuccessRate !== null
-        ? `<span style="font-size:28px;font-weight:800;color:${d.kpi.deliverySuccessRate>=80?'#16a34a':d.kpi.deliverySuccessRate>=50?'#d97706':'#dc2626'}">${d.kpi.deliverySuccessRate}%</span>`
-        : `<span style="font-size:18px;color:#9ca3af">N/A</span>`;
+      // ── Current time / generated ──
+      const now = new Date().toLocaleTimeString('en-LK', { timeZone: 'Asia/Colombo', hour: '2-digit', minute: '2-digit' });
 
+      // ── Build the dashboard ──
       setContent(`
-    <div class="sec-hdr">
-      <div>
-        <div class="sec-title">Sales Analytics Dashboard</div>
-        <div class="sec-sub">Read-only overview · Last 30 days unless noted · Orders confirmed by Sales Representatives</div>
-      </div>
-    </div>
-
-    <!-- KPI Row -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:22px">
-      <div class="card" style="padding:18px;text-align:center">
-        <div style="font-size:28px;font-weight:800;color:var(--brown)">${d.kpi.thisMonth}</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:4px">Orders This Month</div>
-      </div>
-      <div class="card" style="padding:18px;text-align:center">
-        <div style="font-size:28px;font-weight:800;color:#166534">${d.kpi.totalConfirmed}</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:4px">Total Confirmed</div>
-      </div>
-      <div class="card" style="padding:18px;text-align:center">
-        <div style="font-size:28px;font-weight:800;color:#15803d">${d.kpi.totalDelivered}</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:4px">Total Delivered</div>
-      </div>
-      <div class="card" style="padding:18px;text-align:center">
-        <div style="font-size:28px;font-weight:800;color:#991b1b">${d.kpi.totalRejected}</div>
-        <div style="font-size:12px;color:#6b7280;margin-top:4px">Total Rejected</div>
-      </div>
-      <div class="card" style="padding:18px;text-align:center">
-        ${successBadge}
-        <div style="font-size:12px;color:#6b7280;margin-top:4px">Delivery Success Rate<br><span style="font-size:10px">(last 30 days)</span></div>
-      </div>
-    </div>
-
-    <!-- Monthly Trend + Status Breakdown -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:22px">
-      <div class="card" style="padding:20px">
-        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:16px">📈 Monthly Order Trend</div>
-        <div style="display:flex;align-items:flex-end;gap:6px;height:110px">
-          ${d.monthly.length ? monthBars : '<p style="color:#9ca3af;font-size:13px">No data yet</p>'}
+    <!-- ══ HERO ══ -->
+    <div class="cc-hero">
+      <div class="cc-hero-inner">
+        <div>
+          <div class="cc-hero-title">Sales Operations Command Center</div>
+          <div class="cc-hero-sub">Real-time FMCG distribution intelligence · ${escapeHtml(user.name || 'Sales Manager')}</div>
+        </div>
+        <div class="cc-hero-meta">
+          <span class="cc-chip"><span class="cc-live-dot"></span>Live · ${now}</span>
+          <span class="cc-chip">📍
+            <select onchange="this.blur()">
+              <option>All Regions</option>
+              <option>Colombo 1</option>
+              <option>Colombo 2</option>
+              <option>Gampaha</option>
+              <option>Kandy</option>
+              <option>Galle</option>
+            </select>
+          </span>
+          <span class="cc-chip" onclick="render('ot-dashboard')" style="cursor:pointer">🔄 Refresh</span>
         </div>
       </div>
-      <div class="card" style="padding:20px">
-        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:16px">📊 Orders by Status</div>
-        ${statusRows || '<p style="color:#9ca3af;font-size:13px">No data yet</p>'}
+    </div>
+
+    <!-- ══ KPI GRID ══ -->
+    <div class="cc-kpi-grid">
+      <div class="cc-kpi cc-kpi-green">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">💰</div>
+          ${trendTag(k.wow)}
+        </div>
+        <div class="cc-kpi-val">${fmtMoney(k.revenueToday)}</div>
+        <div class="cc-kpi-lbl">Revenue Today</div>
+        <div class="cc-kpi-spark">${sparkRev}</div>
+      </div>
+
+      <div class="cc-kpi cc-kpi-blue">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">📦</div>
+          <span class="cc-kpi-trend up">▲ ${k.ordersToday || 0}</span>
+        </div>
+        <div class="cc-kpi-val">${fmt(k.ordersInPipeline)}</div>
+        <div class="cc-kpi-lbl">Orders Processing</div>
+        <div class="cc-kpi-spark">${sparkBars(0.9)}</div>
+      </div>
+
+      <div class="cc-kpi ${k.sla >= 85 ? 'cc-kpi-green' : k.sla >= 70 ? 'cc-kpi-orange' : 'cc-kpi-red'}">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">⏱️</div>
+          ${trendTag(k.sla - 85)}
+        </div>
+        <div class="cc-kpi-val">${k.sla || 0}%</div>
+        <div class="cc-kpi-lbl">SLA Compliance</div>
+        <div class="cc-kpi-spark">${sparkBars(0.85)}</div>
+      </div>
+
+      <div class="cc-kpi cc-kpi-purple">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">🏪</div>
+          <span class="cc-kpi-trend up">${k.totalRetailers ? Math.round((k.activeRetailers / k.totalRetailers) * 100) : 0}%</span>
+        </div>
+        <div class="cc-kpi-val">${fmt(k.activeRetailers)}</div>
+        <div class="cc-kpi-lbl">Active Retailers</div>
+        <div class="cc-kpi-spark">${sparkBars(0.7)}</div>
+      </div>
+
+      <div class="cc-kpi cc-kpi-green">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">🚚</div>
+          ${trendTag(k.deliverySuccessRate ? k.deliverySuccessRate - 80 : null)}
+        </div>
+        <div class="cc-kpi-val">${k.deliverySuccessRate != null ? k.deliverySuccessRate + '%' : 'N/A'}</div>
+        <div class="cc-kpi-lbl">Delivery Success</div>
+        <div class="cc-kpi-spark">${sparkBars(0.95)}</div>
+      </div>
+
+      <div class="cc-kpi cc-kpi-orange">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">📋</div>
+          <span class="cc-kpi-trend flat">→</span>
+        </div>
+        <div class="cc-kpi-val">${k.cargoReadyPct || 0}%</div>
+        <div class="cc-kpi-lbl">Cargo Ready</div>
+        <div class="cc-kpi-spark">${sparkBars(0.6)}</div>
+      </div>
+
+      <div class="cc-kpi cc-kpi-blue">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">🎯</div>
+          ${trendTag(k.fillRate - 75)}
+        </div>
+        <div class="cc-kpi-val">${k.fillRate || 0}%</div>
+        <div class="cc-kpi-lbl">Distributor Fill Rate</div>
+        <div class="cc-kpi-spark">${sparkBars(0.8)}</div>
+      </div>
+
+      <div class="cc-kpi cc-kpi-red">
+        <div class="cc-kpi-head">
+          <div class="cc-kpi-ico">⚠️</div>
+          ${k.atRisk > 0 ? `<span class="cc-kpi-trend down">▲ alert</span>` : `<span class="cc-kpi-trend up">✓ ok</span>`}
+        </div>
+        <div class="cc-kpi-val">${fmt(k.atRisk)}</div>
+        <div class="cc-kpi-lbl">Delayed Deliveries</div>
+        <div class="cc-kpi-spark">${sparkBars(0.4)}</div>
       </div>
     </div>
 
-    <!-- Top Lists -->
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
-      <div class="card" style="padding:20px">
-        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px">🏙️ Top Cities <span style="font-size:11px;font-weight:400;color:#9ca3af">(last 30 days)</span></div>
-        ${topTable(d.topCities, 'City', 'Orders', 'city', 'count')}
+    <!-- ══ SALES & TERRITORY ANALYTICS ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">📊 Sales &amp; Territory Analytics</div>
+      <span class="cc-sec-sub">Last 14 days · real-time</span>
+    </div>
+    <div class="cc-grid-2">
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">📈 Sales Trend <span class="cc-tag live">live</span></div>
+          <span style="font-size:11px;color:var(--brown-l);font-weight:500">Daily orders · 14d</span>
+        </div>
+        <div class="cc-chart-wrap">
+          <svg viewBox="0 0 ${chartW} ${chartH}" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="ccArea" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#8B6914" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#8B6914" stop-opacity="0.02"/>
+              </linearGradient>
+              <linearGradient id="ccLine" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#8B6914"/>
+                <stop offset="100%" stop-color="#D4A832"/>
+              </linearGradient>
+            </defs>
+            ${yTicks}
+            ${areaPath ? `<path d="${areaPath}" fill="url(#ccArea)"/>` : ''}
+            ${linePath ? `<path d="${linePath}" fill="none" stroke="url(#ccLine)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>` : ''}
+            ${dots}
+            ${xLabels}
+          </svg>
+        </div>
       </div>
-      <div class="card" style="padding:20px">
-        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px">🏪 Top Retailers <span style="font-size:11px;font-weight:400;color:#9ca3af">(last 30 days)</span></div>
-        ${topTable(d.topRetailers, 'Retailer', 'Orders', 'retailer', 'count')}
-      </div>
-      <div class="card" style="padding:20px">
-        <div style="font-size:14px;font-weight:700;color:var(--brown);margin-bottom:14px">🛒 Top Products <span style="font-size:11px;font-weight:400;color:#9ca3af">(last 30 days)</span></div>
-        ${topTable(d.topProducts, 'Product', 'Units', 'productName', 'units')}
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">🌍 Territory Performance</div>
+          <span style="font-size:11px;color:var(--brown-l);font-weight:500">By orders</span>
+        </div>
+        ${terrBars}
       </div>
     </div>
+
+    <div class="cc-grid-2" style="margin-top:16px">
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">🛒 Top-Selling Products</div>
+          <span style="font-size:11px;color:var(--brown-l);font-weight:500">Units · 30d</span>
+        </div>
+        ${(d.topProducts || []).length ? d.topProducts.slice(0, 6).map((p, i) => {
+        const max = d.topProducts[0].units;
+        return `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+              <span class="cc-rank ${i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : ''}">${i + 1}</span>
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:600;color:var(--brown);margin-bottom:3px">${escapeHtml(p.productName)}</div>
+                <div class="cc-mini-bar"><div style="width:${Math.round((p.units / max) * 100)}%;background:linear-gradient(90deg,var(--tan),var(--goldL))"></div></div>
+              </div>
+              <span style="font-size:13px;font-weight:700;color:var(--brown);font-family:'DM Mono',monospace">${fmt(p.units)}</span>
+            </div>`;
+      }).join('') : '<div style="color:var(--brown-l);font-size:13px;text-align:center;padding:30px">No product data</div>'}
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">📅 Monthly Revenue Trend</div>
+          <span style="font-size:11px;color:var(--brown-l);font-weight:500">6 months</span>
+        </div>
+        <div style="display:flex;align-items:flex-end;gap:8px;height:140px;padding:0 4px">
+          ${(d.monthly || []).map(m => {
+        const maxM = Math.max(...d.monthly.map(x => x.count), 1);
+        const h = Math.round((m.count / maxM) * 100);
+        return `
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px">
+                <span style="font-size:11px;font-weight:700;color:var(--brown)">${m.count}</span>
+                <div style="width:100%;background:var(--cream);border-radius:6px;height:90px;display:flex;align-items:flex-end;position:relative">
+                  <div style="width:100%;background:linear-gradient(180deg,var(--goldL),var(--tan));border-radius:6px;height:${Math.max(h, 5)}%;transition:height .5s ease;box-shadow:inset 0 -2px 0 rgba(0,0,0,0.08)"></div>
+                </div>
+                <span style="font-size:10px;color:var(--brown-l);font-weight:600">${escapeHtml(m.month)}</span>
+              </div>`;
+      }).join('') || '<div style="margin:auto;color:var(--brown-l);font-size:13px">No data</div>'}
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ RETAILER INTELLIGENCE ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">🏪 Retailer Intelligence</div>
+      <span class="cc-sec-sub">Activity · segmentation · reorder probability</span>
+    </div>
+    <div class="cc-grid-3">
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">🥧 Retailer Segmentation</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <svg width="140" height="140" viewBox="0 0 140 140" style="flex-shrink:0">
+            ${donutSlices || '<circle cx="70" cy="70" r="50" fill="#f3f4f6"/>'}
+            <text x="70" y="68" text-anchor="middle" font-size="22" font-weight="800" fill="#3D2B0A" font-family="Cormorant Garamond,serif">${segTotal}</text>
+            <text x="70" y="84" text-anchor="middle" font-size="9" fill="#9E7A3A" letter-spacing="1.5">RETAILERS</text>
+          </svg>
+          <div class="cc-donut-legend" style="flex:1;min-width:140px">${donutLegend}</div>
+        </div>
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">🗓️ Activity Heatmap</div>
+          <span style="font-size:11px;color:var(--brown-l)">35d</span>
+        </div>
+        <div class="cc-heat">${heatCells}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:14px;font-size:11px;color:var(--brown-l)">
+          <span>Less</span>
+          <div style="display:flex;gap:3px">
+            ${[0, 1, 2, 3, 4, 5].map(l => `<div class="cc-heat-cell" data-lvl="${l}" style="width:14px;height:14px"></div>`).join('')}
+          </div>
+          <span>More</span>
+        </div>
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">💡 Smart Recommendations <span class="cc-tag ai">AI</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="background:var(--cream);border-radius:8px;padding:10px 12px;font-size:12px;border-left:3px solid #16a34a">
+            <strong style="color:#166534">🎯 ${seg.active || 0} high-value retailers</strong>
+            <div style="color:var(--brown-m);margin-top:2px">Reorder probability &gt;80% — prioritise inventory.</div>
+          </div>
+          <div style="background:var(--cream);border-radius:8px;padding:10px 12px;font-size:12px;border-left:3px solid #d97706">
+            <strong style="color:#92400e">⚡ ${seg.atRisk || 0} retailers at risk</strong>
+            <div style="color:var(--brown-m);margin-top:2px">No order in 30d — assign rep visit.</div>
+          </div>
+          <div style="background:var(--cream);border-radius:8px;padding:10px 12px;font-size:12px;border-left:3px solid #1565C0">
+            <strong style="color:#1e40af">📞 ${seg.inactive || 0} dormant accounts</strong>
+            <div style="color:var(--brown-m);margin-top:2px">Re-engagement campaign suggested.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cc-card" style="margin-top:16px">
+      <div class="cc-card-title">
+        <div class="cc-card-title-left">⭐ High-Value Retailers</div>
+        <span style="font-size:11px;color:var(--brown-l)">Top 6 · last 30 days</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="cc-tbl">
+          <thead><tr><th style="width:30px"></th><th>Retailer</th><th class="num">Orders</th><th class="num">Units</th><th>Segment</th><th>Last Order</th></tr></thead>
+          <tbody>${retRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ LIVE OPERATIONS CENTER ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">🛰️ Live Operations Center</div>
+      <span class="cc-sec-sub">Order processing · logistics · SLA</span>
+    </div>
+    <div class="cc-grid-12-by">
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">🔻 Order Processing Funnel</div>
+          <span style="font-size:11px;color:var(--brown-l)">Last 30d</span>
+        </div>
+        <div class="cc-funnel">${funnelHtml}</div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--cream-dk);display:flex;justify-content:space-around;text-align:center">
+          <div><div style="font-size:18px;font-weight:800;color:#16a34a;font-family:'Cormorant Garamond',serif">${f.placed ? Math.round((f.delivered / f.placed) * 100) : 0}%</div><div style="font-size:10px;color:var(--brown-l);text-transform:uppercase;letter-spacing:0.5px">Conversion</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:#1565C0;font-family:'Cormorant Garamond',serif">${f.placed - f.delivered}</div><div style="font-size:10px;color:var(--brown-l);text-transform:uppercase;letter-spacing:0.5px">In Pipeline</div></div>
+          <div><div style="font-size:18px;font-weight:800;color:${k.atRisk > 0 ? '#dc2626' : '#16a34a'};font-family:'Cormorant Garamond',serif">${k.atRisk || 0}</div><div style="font-size:10px;color:var(--brown-l);text-transform:uppercase;letter-spacing:0.5px">SLA Risk</div></div>
+        </div>
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title">
+          <div class="cc-card-title-left">🗺️ Live Fleet <span class="cc-tag live">live</span></div>
+          <span style="font-size:11px;color:var(--brown-l)">${k.inTransit || 0} active</span>
+        </div>
+        <div class="cc-mini-map">
+          <div class="cc-truck" style="top:30%;left:20%">🚚</div>
+          <div class="cc-truck" style="top:55%;left:55%;animation-delay:0.5s">🚚</div>
+          <div class="cc-truck" style="top:70%;left:30%;animation-delay:1s">🚚</div>
+          <div class="cc-pin green" style="top:25%;left:75%"></div>
+          <div class="cc-pin gold" style="top:60%;left:80%"></div>
+          <div class="cc-pin" style="top:80%;left:50%"></div>
+        </div>
+        <button class="btn btn-ghost" style="width:100%;margin-top:12px;font-size:12px" onclick="nav('live-map')">📍 Open Full Map</button>
+      </div>
+    </div>
+
+    <div class="cc-grid-3" style="margin-top:16px">
+      <div class="cc-card">
+        <div class="cc-card-title"><div class="cc-card-title-left">🚀 In Transit</div></div>
+        <div style="font-size:32px;font-weight:800;color:#c2410c;font-family:'Cormorant Garamond',serif">${fmt(k.inTransit)}</div>
+        <div style="font-size:12px;color:var(--brown-l);margin-top:4px">Active deliveries on the road</div>
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title"><div class="cc-card-title-left">📦 Preparing</div></div>
+        <div style="font-size:32px;font-weight:800;color:#1565C0;font-family:'Cormorant Garamond',serif">${fmt(k.preparing)}</div>
+        <div style="font-size:12px;color:var(--brown-l);margin-top:4px">Awaiting dispatch from warehouse</div>
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title"><div class="cc-card-title-left">✅ Delivered</div></div>
+        <div style="font-size:32px;font-weight:800;color:#15803d;font-family:'Cormorant Garamond',serif">${fmt(k.delivered)}</div>
+        <div style="font-size:12px;color:var(--brown-l);margin-top:4px">Completed deliveries (all-time)</div>
+      </div>
+    </div>
+
+    <!-- ══ WAREHOUSE INTELLIGENCE ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">🏭 Warehouse &amp; Inventory Intelligence</div>
+      <span class="cc-sec-sub">Utilisation · stock movement · alerts</span>
+    </div>
+    <div class="cc-grid-3">
+      <div class="cc-card" style="grid-column:span 2">
+        <div class="cc-card-title"><div class="cc-card-title-left">📦 Warehouse Utilisation</div></div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px">${whHtml}</div>
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title"><div class="cc-card-title-left">⚠️ Low Stock Alerts</div></div>
+        ${lowStockHtml}
+      </div>
+    </div>
+
+    <div class="cc-grid-2" style="margin-top:16px">
+      <div class="cc-card">
+        <div class="cc-card-title"><div class="cc-card-title-left">🔥 Fast Movers <span class="cc-tag" style="background:#dcfce7;color:#166534">30d</span></div></div>
+        ${fastList}
+      </div>
+      <div class="cc-card">
+        <div class="cc-card-title"><div class="cc-card-title-left">🐌 Slow Movers <span class="cc-tag" style="background:#fee2e2;color:#991b1b">Risk</span></div></div>
+        ${slowList}
+      </div>
+    </div>
+
+    <!-- ══ DISTRIBUTOR PERFORMANCE ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">🚛 Distributor Performance</div>
+      <span class="cc-sec-sub">Fill rate · SLA · regional coverage</span>
+    </div>
+    <div class="cc-card">
+      <div style="overflow-x:auto">
+        <table class="cc-tbl">
+          <thead><tr><th style="width:30px">#</th><th>Distributor</th><th class="num">Orders</th><th>Fill Rate</th><th>SLA</th><th class="num">Share</th></tr></thead>
+          <tbody>${distRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ SALES REPS ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">👥 Sales Representative Performance</div>
+      <span class="cc-sec-sub">Leaderboard · conversion · territory coverage</span>
+    </div>
+    <div class="cc-card">
+      <div style="overflow-x:auto">
+        <table class="cc-tbl">
+          <thead><tr><th style="width:30px">#</th><th>Sales Rep</th><th class="num">Orders</th><th class="num">Confirmed</th><th class="num">Conversion</th><th style="min-width:80px">Volume</th></tr></thead>
+          <tbody>${repsHtml}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ AI INSIGHTS ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">🤖 AI Decision Intelligence <span class="cc-tag ai" style="margin-left:6px">Beta</span></div>
+      <span class="cc-sec-sub">Predictive recommendations from operational signals</span>
+    </div>
+    <div class="cc-ai-grid">${aiHtml}</div>
+
+    <!-- ══ ALERT CENTER ══ -->
+    <div class="cc-sec">
+      <div class="cc-sec-title">🚨 Critical Alert Center</div>
+      <span class="cc-sec-sub">Real-time · prioritised</span>
+    </div>
+    <div class="cc-card" style="padding:14px">${alertsHtml}</div>
+
+    <div style="margin-top:24px;padding:14px;text-align:center;font-size:11px;color:var(--brown-l);letter-spacing:0.5px">
+      Generated ${new Date(d.generatedAt || Date.now()).toLocaleString('en-LK', { timeZone: 'Asia/Colombo' })} · Nestlé Smart Sales Operations · Auto-refresh every 60s
+    </div>
       `);
+
+      // Auto-refresh every 60 seconds while on dashboard
+      if (window._dashAuto) clearTimeout(window._dashAuto);
+      window._dashAuto = setTimeout(() => {
+        // Only refresh if still on dashboard tab
+        const tab = document.querySelector('.tab.active');
+        if (tab && tab.id === 'tab-ot-dashboard') pageOtDashboard();
+      }, 60000);
     }
 
     async function pageDeliveries() {
@@ -4981,17 +6452,17 @@ RULES:
       <div class="tw"><table>
         <thead><tr><th>Product</th><th>Units Available</th><th>Threshold</th><th>Suggested Restock</th><th>Update Stock</th></tr></thead>
         <tbody>${stocks.length ? stocks.map(p => {
-          const units     = parseInt(p.availableUnits) || 0;
-          const threshold = parseInt(p.lowStockThreshold) || 50;
-          const isLow     = units > 0 && units <= threshold;
-          const isOut     = units <= 0;
-          const totalDemand = parseInt(p.waitingCount || 0) + parseInt(p.watchCount || 0);
-          const suggested = parseInt(p.suggestedRestock) || 0;
-          return `
+        const units = parseInt(p.availableUnits) || 0;
+        const threshold = parseInt(p.lowStockThreshold) || 50;
+        const isLow = units > 0 && units <= threshold;
+        const isOut = units <= 0;
+        const totalDemand = parseInt(p.waitingCount || 0) + parseInt(p.watchCount || 0);
+        const suggested = parseInt(p.suggestedRestock) || 0;
+        return `
           <tr style="${isOut ? 'background:#FFF5F5' : isLow ? 'background:#FFFDE7' : ''}">
             <td>
               <strong>${escapeHtml(p.productName || '—')}</strong>
-              ${isOut  ? '<span class="badge b-red"   style="margin-left:6px;font-size:10px">OUT</span>'  : ''}
+              ${isOut ? '<span class="badge b-red"   style="margin-left:6px;font-size:10px">OUT</span>' : ''}
               ${isLow && !isOut ? '<span class="badge b-orange" style="margin-left:6px;font-size:10px">LOW</span>' : ''}
             </td>
             <td>
@@ -5037,9 +6508,9 @@ RULES:
     }
 
     async function updateStock(productId, productName, currentKg) {
-      const units     = parseInt(document.getElementById('units-' + productId)?.value) || 0;
+      const units = parseInt(document.getElementById('units-' + productId)?.value) || 0;
       const threshold = parseInt(document.getElementById('threshold-' + productId)?.value) || 50;
-      const kg        = currentKg > 0 ? currentKg : units;
+      const kg = currentKg > 0 ? currentKg : units;
       const r = await api(`/stock/${productId}/update`, 'PUT', { availableUnits: units, availableKg: kg, lowStockThreshold: threshold });
       if (r.error) { toast(`❌ ${r.error}`, '#B71C1C'); return; }
       const notified = (r.restockedCount || 0) + (r.waitingListNotified || 0);
@@ -5074,9 +6545,9 @@ RULES:
         }
         const b = batchMap.get(key);
         b.deliveryIds.push(d.id);
-        b.products.push({ productName: d.productName, items: parseInt(d.items)||0 });
-        b.totalItems += parseInt(d.items)||0;
-        b.totalKg += parseFloat(d.kg)||0;
+        b.products.push({ productName: d.productName, items: parseInt(d.items) || 0 });
+        b.totalItems += parseInt(d.items) || 0;
+        b.totalKg += parseFloat(d.kg) || 0;
       });
 
       setContent(`
@@ -5098,9 +6569,9 @@ RULES:
               <div class="wh-tip-wrap">
                 <span style="cursor:default;font-size:14px;line-height:1;color:#6B7280" title="View products">ⓘ</span>
                 <div class="wh-tip-box">
-                  ${b.products.map(p => `<div style="display:flex;justify-content:space-between;gap:20px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.1)"><span>${escapeHtml(p.productName||'—')}</span><span style="font-weight:700;color:#D4A832">× ${p.items}</span></div>`).join('')}
+                  ${b.products.map(p => `<div style="display:flex;justify-content:space-between;gap:20px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,0.1)"><span>${escapeHtml(p.productName || '—')}</span><span style="font-weight:700;color:#D4A832">× ${p.items}</span></div>`).join('')}
                 </div>
-              </div>` : `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(b.products[0]?.productName||'—')}</span>`}
+              </div>` : `<span style="font-size:11px;color:var(--brown-m)">${escapeHtml(b.products[0]?.productName || '—')}</span>`}
             </div>
           </td>
           <td style="font-weight:700;color:var(--blue)">${b.totalKg.toFixed(1)}kg</td>
@@ -5110,11 +6581,11 @@ RULES:
           <td style="font-size:11px;color:var(--brown-l);font-family:'DM Mono',monospace;white-space:nowrap">${b.orderPlacedAt || '—'}</td>
           <td style="display:flex;gap:6px;flex-wrap:wrap">
             ${b.status === 'assigned'
-              ? `<button class="btn btn-green btn-sm" onclick="markReady([${b.deliveryIds.join(',')}])">✅ Cargo Ready</button>` : ''}
+          ? `<button class="btn btn-green btn-sm" onclick="markReady([${b.deliveryIds.join(',')}])">✅ Cargo Ready</button>` : ''}
             ${b.status === 'warehouse_ready'
-              ? `<button class="btn btn-tan btn-sm" onclick="markLoaded([${b.deliveryIds.join(',')}])">📦 Vehicle Loaded</button>` : ''}
+          ? `<button class="btn btn-tan btn-sm" onclick="markLoaded([${b.deliveryIds.join(',')}])">📦 Vehicle Loaded</button>` : ''}
             ${b.status === 'loaded'
-              ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
+          ? `<span style="font-size:12px;color:var(--green);font-weight:600">✓ Awaiting driver pickup</span>` : ''}
             <button class="btn btn-ghost btn-sm" onclick="openTrackMap(${b.firstId},'${b.city}','${b.retailer}')" style="margin-left:auto">🗺️ Track</button>
           </td>
         </tr>`).join('') : '<tr><td colspan="10"><div class="empty"><div class="empty-icon">📦</div><div>No assigned deliveries yet.</div></div></td></tr>'}</tbody>
@@ -6207,7 +7678,7 @@ RULES:
               </td>
             </tr>`;
           }).join('')
-            : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No pending orders for your city.</div></div></td></tr>'}
+          : '<tr><td colspan="8"><div class="empty"><div class="empty-icon">📋</div><div>No pending orders for your city.</div></div></td></tr>'}
           </tbody></table></div></div>
 
         <div class="modal-bg" id="m-sr-reject" style="z-index:400">
@@ -6382,21 +7853,21 @@ RULES:
           window._allProducts = products.map(p => ({ id: p.id, productName: p.productName || `Product ${p.id}` }));
         } else {
           window._allProducts = [
-            { id:1,productName:'Milo Active Go 1kg' },{ id:2,productName:'Milo Active Go 400g' },
-            { id:3,productName:'Nestomalt 400g' },{ id:4,productName:'Nestomalt 1kg' },
-            { id:5,productName:'Nescafé Classic 200g' },{ id:6,productName:'Nescafé Classic 50g' },
-            { id:7,productName:'Nescafé 3-in-1 Original Box (30 sachets)' },
-            { id:8,productName:'KitKat 4-Finger 45g' },{ id:9,productName:'KitKat Chunky 40g' },
-            { id:10,productName:'Maggi Noodles Chicken 77g' },{ id:11,productName:'Maggi Noodles Masala 77g' },
-            { id:12,productName:'Nestlé Cerelac Wheat 400g' },{ id:13,productName:'Nestlé NAN Pro 1 400g' },
-            { id:14,productName:'Nestlé Everyday Dairy Whitener 400g' },{ id:15,productName:'Nestlé Milkmaid Condensed Milk 400g' },
+            { id: 1, productName: 'Milo Active Go 1kg' }, { id: 2, productName: 'Milo Active Go 400g' },
+            { id: 3, productName: 'Nestomalt 400g' }, { id: 4, productName: 'Nestomalt 1kg' },
+            { id: 5, productName: 'Nescafé Classic 200g' }, { id: 6, productName: 'Nescafé Classic 50g' },
+            { id: 7, productName: 'Nescafé 3-in-1 Original Box (30 sachets)' },
+            { id: 8, productName: 'KitKat 4-Finger 45g' }, { id: 9, productName: 'KitKat Chunky 40g' },
+            { id: 10, productName: 'Maggi Noodles Chicken 77g' }, { id: 11, productName: 'Maggi Noodles Masala 77g' },
+            { id: 12, productName: 'Nestlé Cerelac Wheat 400g' }, { id: 13, productName: 'Nestlé NAN Pro 1 400g' },
+            { id: 14, productName: 'Nestlé Everyday Dairy Whitener 400g' }, { id: 15, productName: 'Nestlé Milkmaid Condensed Milk 400g' },
           ];
         }
         // Refresh any existing line selects
         document.querySelectorAll('[id^="line-"][id$="-product"]').forEach(sel => {
           const cur = sel.value;
           sel.innerHTML = '<option value="">Select product…</option>' +
-            (window._allProducts||[]).map(p => `<option value="${p.id}">${escapeHtml(p.productName)}</option>`).join('');
+            (window._allProducts || []).map(p => `<option value="${p.id}">${escapeHtml(p.productName)}</option>`).join('');
           if (cur) sel.value = cur;
         });
       } catch { window._allProducts = []; }
@@ -6405,7 +7876,7 @@ RULES:
     function addOrderLine() {
       window._lineCounter = (window._lineCounter || 0) + 1;
       const n = window._lineCounter;
-      const opts = (window._allProducts||[]).map(p =>
+      const opts = (window._allProducts || []).map(p =>
         `<option value="${p.id}">${escapeHtml(p.productName)}</option>`).join('');
       const div = document.createElement('div');
       div.id = `line-${n}`;
@@ -6455,12 +7926,12 @@ RULES:
 
     async function checkStockLine(n) {
       const productEl = document.getElementById(`line-${n}-product`);
-      const itemsEl   = document.getElementById(`line-${n}-items`);
-      const kgEl      = document.getElementById(`line-${n}-kg`);
-      const stockEl   = document.getElementById(`line-${n}-stock`);
+      const itemsEl = document.getElementById(`line-${n}-items`);
+      const kgEl = document.getElementById(`line-${n}-kg`);
+      const stockEl = document.getElementById(`line-${n}-stock`);
       if (!productEl || !itemsEl) return;
       const productId = parseInt(productEl.value);
-      const items     = parseInt(itemsEl.value);
+      const items = parseInt(itemsEl.value);
       if (!productId || !items || items <= 0) {
         if (kgEl) kgEl.style.display = 'none';
         if (stockEl) stockEl.style.display = 'none';
@@ -6477,13 +7948,13 @@ RULES:
         const avail = parseInt(s.availableUnits);
         stockEl.style.display = 'block';
         if (avail <= 0) {
-          Object.assign(stockEl.style, { background:'#FFEBEE', color:'#B71C1C' });
+          Object.assign(stockEl.style, { background: '#FFEBEE', color: '#B71C1C' });
           stockEl.textContent = `❌ Out of stock`;
         } else if (items > avail) {
-          Object.assign(stockEl.style, { background:'#FFF3E0', color:'#E65100' });
+          Object.assign(stockEl.style, { background: '#FFF3E0', color: '#E65100' });
           stockEl.textContent = `⚠️ Only ${avail} available`;
         } else {
-          Object.assign(stockEl.style, { background:'#E8F5E9', color:'#1B5E20' });
+          Object.assign(stockEl.style, { background: '#E8F5E9', color: '#1B5E20' });
           stockEl.textContent = `✅ ${avail} in stock`;
         }
       } catch { if (stockEl) stockEl.style.display = 'none'; }
@@ -6492,12 +7963,12 @@ RULES:
     function updateLineSummary() {
       let totalItems = 0, totalKg = 0, lineCount = 0;
       document.querySelectorAll('[id^="line-"][id$="-product"]').forEach(sel => {
-        const n     = sel.id.replace('line-','').replace('-product','');
+        const n = sel.id.replace('line-', '').replace('-product', '');
         const items = parseInt(document.getElementById(`line-${n}-items`)?.value) || 0;
-        const pid   = parseInt(sel.value) || 0;
+        const pid = parseInt(sel.value) || 0;
         if (items > 0 && pid > 0) {
           totalItems += items;
-          totalKg    += (productWeights[pid] || 0) * items;
+          totalKg += (productWeights[pid] || 0) * items;
           lineCount++;
         }
       });
@@ -6510,37 +7981,37 @@ RULES:
     }
 
     function updateDatePriority() {
-      const dateEl  = document.getElementById('i-order-date');
-      const prioEl  = document.getElementById('i-prio');
+      const dateEl = document.getElementById('i-order-date');
+      const prioEl = document.getElementById('i-prio');
       const badgeEl = document.getElementById('priority-badge');
       if (!dateEl || !prioEl || !badgeEl) return;
       const val = dateEl.value;
       if (!val) return;
-      const today  = new Date(); today.setHours(0,0,0,0);
+      const today = new Date(); today.setHours(0, 0, 0, 0);
       const target = new Date(val);
-      const diff   = Math.round((target - today) / 86400000);
+      const diff = Math.round((target - today) / 86400000);
       if (diff <= 1) {
         prioEl.value = 'urgent'; prioEl.disabled = true;
-        Object.assign(badgeEl.style, { background:'#FFEBEE', color:'#B71C1C' });
+        Object.assign(badgeEl.style, { background: '#FFEBEE', color: '#B71C1C' });
         badgeEl.textContent = '⚡ Urgent — delivery needed within 48hrs (auto-set)';
       } else if (diff <= 5) {
         prioEl.value = 'high'; prioEl.disabled = true;
-        Object.assign(badgeEl.style, { background:'#FFF3E0', color:'#E65100' });
+        Object.assign(badgeEl.style, { background: '#FFF3E0', color: '#E65100' });
         badgeEl.textContent = '🔶 High — delivery needed this week (auto-set)';
       } else {
         prioEl.disabled = false;
-        Object.assign(badgeEl.style, { background:'#E8F5E9', color:'#1B5E20' });
+        Object.assign(badgeEl.style, { background: '#E8F5E9', color: '#1B5E20' });
         badgeEl.textContent = '🟢 Standard scheduling — select your priority below';
       }
     }
 
     async function submitBulkOrder() {
-      const cityEl  = document.getElementById('i-city');
-      const areaEl  = document.getElementById('i-area');
+      const cityEl = document.getElementById('i-city');
+      const areaEl = document.getElementById('i-area');
       const notesEl = document.getElementById('i-notes');
-      const prioEl  = document.getElementById('i-prio');
-      const dateEl  = document.getElementById('i-order-date');
-      const errBox  = document.getElementById('submit-err');
+      const prioEl = document.getElementById('i-prio');
+      const dateEl = document.getElementById('i-order-date');
+      const errBox = document.getElementById('submit-err');
       let valid = true;
       if (!cityEl?.value) { document.getElementById('err-city')?.classList.add('show'); valid = false; }
       else document.getElementById('err-city')?.classList.remove('show');
@@ -6549,10 +8020,10 @@ RULES:
 
       const orders = [];
       document.querySelectorAll('[id^="line-"][id$="-product"]').forEach(sel => {
-        const n          = sel.id.replace('line-','').replace('-product','');
-        const productId  = parseInt(sel.value);
+        const n = sel.id.replace('line-', '').replace('-product', '');
+        const productId = parseInt(sel.value);
         const productName = (sel.options[sel.selectedIndex]?.textContent || '').trim();
-        const items      = parseInt(document.getElementById(`line-${n}-items`)?.value);
+        const items = parseInt(document.getElementById(`line-${n}-items`)?.value);
         if (!productId || !items || items <= 0 || !Number.isInteger(items)) return;
         const wt = productWeights[productId] || 0;
         orders.push({
