@@ -7739,6 +7739,73 @@ RULES:
           </tbody></table></div></div>`);
     }
 
+    async function doSrConfirmAll() {
+      const rows = document.querySelectorAll('tr[data-ids]');
+      let ids = [];
+      rows.forEach(r => {
+        if (r.getAttribute('data-ids')) {
+          ids.push(...r.getAttribute('data-ids').split(',').map(id => id.trim()).filter(id => id));
+        }
+      });
+      if (!ids.length) return;
+      
+      const promises = ids.map(id => api(`/orders/${id}/confirm`, 'PUT', {
+        action: 'confirm',
+        confirmedBy: user.id
+      }));
+      
+      const btn = document.querySelector('.btn-green[onclick="doSrConfirmAll()"]');
+      if (btn) { btn.disabled = true; btn.textContent = 'Confirming...'; }
+      
+      await Promise.all(promises);
+      toast('✅ All pending orders confirmed successfully!');
+      pageSrOrders();
+    }
+
+    function doSrReject(idsStr, retailerName) {
+      document.getElementById('sr-reject-ids').value = idsStr;
+      document.getElementById('sr-reject-reason').value = '';
+      document.getElementById('sr-reject-cat').value = '';
+      document.getElementById('sr-reject-err').style.display = 'none';
+      openModal('m-sr-reject');
+    }
+
+    async function confirmSrReject() {
+      const idsStr = document.getElementById('sr-reject-ids').value;
+      const reason = document.getElementById('sr-reject-reason').value.trim();
+      const cat = document.getElementById('sr-reject-cat').value;
+      const err = document.getElementById('sr-reject-err');
+      
+      if (!cat) {
+        err.textContent = '⚠️ Please select a rejection category.';
+        err.style.display = 'flex';
+        return;
+      }
+      if (!reason) {
+        err.textContent = '⚠️ Please provide a reason for rejection.';
+        err.style.display = 'flex';
+        return;
+      }
+      
+      const ids = idsStr.split(',').map(id => id.trim()).filter(id => id);
+      const btn = document.querySelector('#m-sr-reject .btn-red');
+      if (btn) { btn.disabled = true; btn.textContent = 'Rejecting...'; }
+      
+      const promises = ids.map(id => api(`/orders/${id}/confirm`, 'PUT', {
+        action: 'reject',
+        confirmedBy: user.id,
+        rejectReason: reason,
+        rejectCategory: cat
+      }));
+      
+      await Promise.all(promises);
+      if (btn) { btn.disabled = false; btn.textContent = 'Reject Order'; }
+      
+      closeModal('m-sr-reject');
+      toast('✅ Order(s) rejected successfully');
+      pageSrOrders();
+    }
+
     // ══ ADMIN — USER MANAGEMENT ══════════════════════
     async function pageAdminUsers() { const users = await api('/users'); if (users.error) { setContent(`<div class="alert-banner alert-error">❌ ${users.error}</div>`); return; } const RL = { retailer: 'Retailer', order_team: 'Order Team', warehouse: 'Warehouse', distributor: 'Distributor' }; const RC = { retailer: 'b-teal', order_team: 'b-blue', warehouse: 'b-navy', distributor: 'b-orange' }; setContent(`<div class="sec-hdr"><div><div class="sec-title">User Management</div><div class="sec-sub">Add, view and remove system users</div></div><button class="btn btn-tan" onclick="openAddUser()">+ Add User</button></div><div class="card"><div class="card-title">👥 All Users <span class="badge b-gray" style="margin-left:8px">${users.length}</span></div><div class="tw"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th>Actions</th></tr></thead><tbody>${users.length ? users.map(u => `<tr><td><strong>${escapeHtml(u.name)}</strong></td><td style="font-family:'DM Mono',monospace;font-size:12px">${escapeHtml(u.Email)}</td><td><span class="badge ${RC[u.role] || 'b-gray'}">${RL[u.role] || u.role}</span></td><td style="font-size:12px;color:var(--brown-l)">${u.createdAt || '—'}</td><td style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" onclick="openAdminResetPw(${u.id},'${escapeHtml(u.name)}')">🔑 Reset PW</button>${u.id !== user.id ? `<button class="btn btn-red btn-sm" onclick="deleteUser(${u.id},'${escapeHtml(u.name)}')">✕ Remove</button>` : '<span style="font-size:11px;color:var(--brown-l);padding:4px 8px">(you)</span>'}</td></tr>`).join('') : '<tr><td colspan="5"><div class="empty"><div>No users found.</div></div></td></tr>'}</tbody></table></div></div><div class="modal-bg" id="m-add-user" style="z-index:400"><div class="modal" style="max-width:460px"><div class="modal-title">👤 Add New User</div><div class="modal-body"><div class="fg"><label>Full Name *</label><input id="au-name" placeholder="e.g. Kamal Perera"/></div><div class="fg"><label>Email *</label><input id="au-email" type="text" placeholder="kamal@nestle.lk"/></div><div class="fg"><label>Password *</label><input id="au-pass" type="password" placeholder="Min 4 characters"/></div><div class="fg"><label>Role *</label><select id="au-role"><option value="">Select role…</option><option value="retailer">Retailer</option><option value="order_team">Order Processing Team</option><option value="warehouse">Warehouse</option><option value="distributor">Distributor / Driver</option></select></div><div id="au-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-add-user')">Cancel</button><button class="btn btn-tan" onclick="saveNewUser()" id="au-btn">Create User</button></div></div></div></div><div class="modal-bg" id="m-admin-pw" style="z-index:400"><div class="modal" style="max-width:380px"><div class="modal-title">🔑 Reset Password</div><div class="modal-body"><input type="hidden" id="apw-id"/><div class="fg"><label id="apw-label">New password</label><input id="apw-pass" type="password" placeholder="Min 4 characters"/></div><div id="apw-err" class="alert-banner alert-error" style="display:none;margin-top:8px"></div><div class="modal-actions"><button class="btn btn-ghost" onclick="closeModal('m-admin-pw')">Cancel</button><button class="btn btn-tan" onclick="saveAdminPw()" id="apw-btn">Reset Password</button></div></div></div></div>`); }
     function openAddUser() { ['au-name', 'au-email', 'au-pass'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; }); document.getElementById('au-role').value = ''; document.getElementById('au-err').style.display = 'none'; const btn = document.getElementById('au-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Create User'; } openModal('m-add-user'); }
